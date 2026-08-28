@@ -7,7 +7,7 @@ import storage from './storage';
 export const CLOUD_BACKEND_URL = 'https://juegamente-playfully-production.up.railway.app';
 
 // Activa true para conectar al servidor en la nube (Railway) o false para tu red local
-const USE_CLOUD = false;
+const USE_CLOUD = true;
 
 // Función para obtener la URL base dinámica
 export const getBaseUrl = () => {
