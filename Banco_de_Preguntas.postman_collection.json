@@ -1,0 +1,883 @@
+{
+  "info": {
+    "_postman_id": "b1b0b5c1-886f-47dc-98df-8ea242df35c4",
+    "name": "Banco de Preguntas API",
+    "description": "Colección oficial completa y automatizada para pruebas de la API REST de Banco de Preguntas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "0. Test Connection",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            ""
+          ]
+        },
+        "description": "Verifica si el servidor backend está encendido y respondiendo correctamente."
+      },
+      "response": []
+    },
+    {
+      "name": "1. Authentication & Users",
+      "item": [
+        {
+          "name": "1.1 Register User (Registrar Estudiante)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"estudiante_prueba\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Registra un nuevo usuario en la base de datos (nace como rol estudiante y adminPin null)."
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 Login User (Iniciar Sesión)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.token) {",
+                  "    pm.collectionVariables.set(\"authToken\", response.token);",
+                  "    console.log(\"Token guardado en {{authToken}}\");",
+                  "}",
+                  "if (response._id) {",
+                  "    pm.collectionVariables.set(\"userId\", response._id);",
+                  "    console.log(\"User ID guardado en {{userId}}\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"SuperAdmin\",\n  \"password\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión con credenciales válidas y guarda automáticamente el token JWT en {{authToken}} y su ID en {{userId}}."
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 Get Profile (Obtener Perfil)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "profile"
+              ]
+            },
+            "description": "Obtiene los datos del perfil y el historial de cuestionarios del usuario autenticado."
+          },
+          "response": []
+        },
+        {
+          "name": "1.4 Update Profile (Editar Nombre de Usuario)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"SuperAdmin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "profile"
+              ]
+            },
+            "description": "Permite al usuario autenticado cambiar su nombre de usuario en el sistema."
+          },
+          "response": []
+        },
+        {
+          "name": "1.5 Change Password (Cambiar Contraseña)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"admin123\",\n  \"newPassword\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "change-password"
+              ]
+            },
+            "description": "Permite al usuario autenticado cambiar su contraseña validando la clave actual con Bcrypt."
+          },
+          "response": []
+        },
+        {
+          "name": "1.6 Upload Profile Image (Subir Foto de Perfil)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profileImage",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile/image",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "profile",
+                "image"
+              ]
+            },
+            "description": "Sube físicamente una foto de perfil usando Multer en formato multipart/form-data."
+          },
+          "response": []
+        },
+        {
+          "name": "1.7 Save Score (Guardar Puntuación)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.history && response.history.length > 0) {",
+                  "    const lastScore = response.history[response.history.length - 1];",
+                  "    pm.collectionVariables.set(\"scoreId\", lastScore._id);",
+                  "    console.log(\"Score ID guardado en {{scoreId}}:\", lastScore._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryName\": \"Programación Web\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"roomCode\": \"{{roomCode}}\",\n  \"score\": 9,\n  \"total\": 10,\n  \"percentage\": 90,\n  \"lives\": 3,\n  \"questions\": [\n    {\n      \"text\": \"¿Qué hook se usa para estados en React?\",\n      \"options\": [\n        \"useEffect\",\n        \"useState\",\n        \"useMemo\",\n        \"useRef\"\n      ],\n      \"correctAnswer\": 1,\n      \"userAnswer\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/score",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "score"
+              ]
+            },
+            "description": "Guarda el resultado del cuestionario en el historial del alumno."
+          },
+          "response": []
+        },
+        {
+          "name": "1.8 Delete Score Item (Eliminar Registro de Historial)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/history/{{scoreId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "history",
+                "{{scoreId}}"
+              ]
+            },
+            "description": "Elimina un registro específico del historial del usuario autenticado."
+          },
+          "response": []
+        },
+        {
+          "name": "1.9 Verify Admin PIN (Verificar PIN de Docente)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pin\": \"1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-pin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "verify-pin"
+              ]
+            },
+            "description": "Valida el PIN de 4 dígitos para acceder al panel docente (Solo usuarios con rol admin)."
+          },
+          "response": []
+        },
+        {
+          "name": "1.10 Get All Users (Listar Usuarios - Solo SuperAdmin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "users"
+              ]
+            },
+            "description": "Obtiene la lista completa de usuarios gestionables (Solo SuperAdmin)."
+          },
+          "response": []
+        },
+        {
+          "name": "1.11 Update User Role (Actualizar Rol / Ascender a Docente)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"admin\",\n  \"adminPin\": \"1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/users/{{userId}}/role",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "users",
+                "{{userId}}",
+                "role"
+              ]
+            },
+            "description": "Permite al SuperAdmin cambiar el rol de un usuario (admin o user) y asignar su PIN docente."
+          },
+          "response": []
+        },
+        {
+          "name": "1.12 Delete User (Eliminar Usuario - Solo SuperAdmin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Elimina permanentemente una cuenta de usuario (Solo SuperAdmin)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Categories",
+      "item": [
+        {
+          "name": "2.1 Get Categories (Obtener Todas las Categorías)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            },
+            "description": "Lista todas las categorías públicas y privadas con conteo de preguntas."
+          },
+          "response": []
+        },
+        {
+          "name": "2.2 Get My Categories (Obtener Mis Categorías - Solo Admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/mine",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "mine"
+              ]
+            },
+            "description": "Lista únicamente las materias creadas por el docente autenticado."
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 Create Category (Crear Categoría / Examen)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response._id) {",
+                  "    pm.collectionVariables.set(\"categoryId\", response._id);",
+                  "    console.log(\"Category ID guardado en {{categoryId}}:\", response._id);",
+                  "}",
+                  "if (response.roomCode) {",
+                  "    pm.collectionVariables.set(\"roomCode\", response.roomCode);",
+                  "    console.log(\"PIN RoomCode guardado en {{roomCode}}:\", response.roomCode);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Examen de Programación Web\",\n  \"description\": \"Evaluación oficial sobre React, Node.js y MongoDB\",\n  \"icon\": \"💻\",\n  \"color\": \"#6C63FF\",\n  \"isPublic\": false,\n  \"isActive\": true,\n  \"timePerQuestion\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            },
+            "description": "Crea una materia con tiempo por pregunta personalizable (10s, 15s, 30s, 60s, 0) y PIN de sala."
+          },
+          "response": []
+        },
+        {
+          "name": "2.4 Get Category By ID (Obtener Categoría por ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/{{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "{{categoryId}}"
+              ]
+            },
+            "description": "Obtiene los detalles de una materia específica por su ID."
+          },
+          "response": []
+        },
+        {
+          "name": "2.5 Get Category By Room Code (Buscar por PIN de Sala)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/room/{{roomCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "room",
+                "{{roomCode}}"
+              ]
+            },
+            "description": "Permite al estudiante ingresar al examen enviando su PIN de 6 dígitos. Bloquea si isActive es false."
+          },
+          "response": []
+        },
+        {
+          "name": "2.6 Update Category (Actualizar / Bloquear Examen)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Examen de Programación Web (Cerrado)\",\n  \"description\": \"Evaluación final de desarrollo web\",\n  \"icon\": \"🔒\",\n  \"color\": \"#10B981\",\n  \"isActive\": false,\n  \"timePerQuestion\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories/{{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "{{categoryId}}"
+              ]
+            },
+            "description": "Modifica datos de la materia o cambia isActive a false para cerrar el examen."
+          },
+          "response": []
+        },
+        {
+          "name": "2.7 Get Category Ranking (Obtener Calificaciones de la Materia)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.ranking && response.ranking.length > 0) {",
+                  "    pm.collectionVariables.set(\"historyId\", response.ranking[0].historyId);",
+                  "    console.log(\"History ID guardado en {{historyId}}:\", response.ranking[0].historyId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/{{categoryId}}/ranking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "{{categoryId}}",
+                "ranking"
+              ]
+            },
+            "description": "Devuelve la lista de notas de los alumnos ordenadas de mayor a menor porcentaje."
+          },
+          "response": []
+        },
+        {
+          "name": "2.8 Delete Ranking Item (Eliminar Intento del Ranking)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/{{categoryId}}/ranking/{{historyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "{{categoryId}}",
+                "ranking",
+                "{{historyId}}"
+              ]
+            },
+            "description": "Elimina una calificación individual del ranking (Solo Docentes)."
+          },
+          "response": []
+        },
+        {
+          "name": "2.9 Clear Category Ranking (Vaciar Ranking de la Materia)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/{{categoryId}}/ranking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "{{categoryId}}",
+                "ranking"
+              ]
+            },
+            "description": "Limpia por completo la tabla de calificaciones del examen (Solo Docentes)."
+          },
+          "response": []
+        },
+        {
+          "name": "2.10 Delete Category (Eliminar Categoría)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories/{{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "{{categoryId}}"
+              ]
+            },
+            "description": "Elimina la materia y todas sus preguntas asociadas en cascada."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Questions",
+      "item": [
+        {
+          "name": "3.1 Get Questions By Category (Obtener Preguntas por Categoría)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/questions/category/{{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "questions",
+                "category",
+                "{{categoryId}}"
+              ]
+            },
+            "description": "Lista todas las preguntas vinculadas a una materia."
+          },
+          "response": []
+        },
+        {
+          "name": "3.2 Get Random Questions (Obtener Preguntas Aleatorias para Quiz)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/questions/random/{{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "questions",
+                "random",
+                "{{categoryId}}"
+              ]
+            },
+            "description": "Retorna 10 preguntas aleatorias de la materia para iniciar una partida."
+          },
+          "response": []
+        },
+        {
+          "name": "3.3 Get My Questions (Obtener Mis Preguntas - Solo Admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/questions/mine",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "questions",
+                "mine"
+              ]
+            },
+            "description": "Lista las preguntas creadas exclusivamente por el docente autenticado."
+          },
+          "response": []
+        },
+        {
+          "name": "3.4 Create Question (Crear Pregunta Individual)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response._id) {",
+                  "    pm.collectionVariables.set(\"questionId\", response._id);",
+                  "    console.log(\"Question ID guardado en {{questionId}}:\", response._id);",
+                  "}",
+                  "if (response.roomCode) {",
+                  "    pm.collectionVariables.set(\"roomCode\", response.roomCode);",
+                  "    console.log(\"PIN RoomCode guardado en {{roomCode}}:\", response.roomCode);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"¿Qué función cumple el hook useState en React?\",\n  \"options\": [\n    \"Manejar peticiones HTTP\",\n    \"Gestionar el estado local del componente\",\n    \"Crear rutas de navegación\",\n    \"Conectar con la base de datos\"\n  ],\n  \"correctAnswer\": 1,\n  \"category\": \"{{categoryId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "questions"
+              ]
+            },
+            "description": "Crea una pregunta de opción múltiple con su respuesta correcta (0-3)."
+          },
+          "response": []
+        },
+        {
+          "name": "3.5 Bulk Create Questions (Carga Masiva de Preguntas JSON)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"questions\": [\n    {\n      \"text\": \"¿Cuál es la función principal de Express en Node.js?\",\n      \"options\": [\n        \"Renderizar HTML nativo\",\n        \"Crear servidores web y APIs REST\",\n        \"Compilar código C++\",\n        \"Gestionar memoria RAM\"\n      ],\n      \"correctAnswer\": 1\n    },\n    {\n      \"text\": \"¿Qué comando instala paquetes en Node.js?\",\n      \"options\": [\n        \"pip install\",\n        \"composer require\",\n        \"npm install\",\n        \"gem install\"\n      ],\n      \"correctAnswer\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/questions/bulk",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "questions",
+                "bulk"
+              ]
+            },
+            "description": "Importa un lote masivo de preguntas en un solo paso mediante insertMany de Mongoose."
+          },
+          "response": []
+        },
+        {
+          "name": "3.6 Update Question (Actualizar Pregunta)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"¿Qué hook de React se usa para manejar estados locales?\",\n  \"options\": [\n    \"useEffect\",\n    \"useState\",\n    \"useMemo\",\n    \"useCallback\"\n  ],\n  \"correctAnswer\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/questions/{{questionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "questions",
+                "{{questionId}}"
+              ]
+            },
+            "description": "Actualiza el texto, opciones o respuesta correcta de una pregunta existente."
+          },
+          "response": []
+        },
+        {
+          "name": "3.7 Delete Question (Eliminar Pregunta)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/questions/{{questionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "questions",
+                "{{questionId}}"
+              ]
+            },
+            "description": "Elimina una pregunta específica usando su ID."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "categoryId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "questionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "scoreId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "roomCode",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "historyId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
