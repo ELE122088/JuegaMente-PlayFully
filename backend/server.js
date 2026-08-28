@@ -74,6 +74,6 @@ app.use((req, res) => {
 
 // Iniciar servidor con soporte WebSocket
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo con WebSockets en http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Servidor corriendo con WebSockets en puerto ${PORT}`);
 });
