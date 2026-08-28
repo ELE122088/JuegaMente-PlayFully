@@ -6,8 +6,8 @@ import storage from './storage';
 // URL de tu Servidor en la Nube (Render)
 export const CLOUD_BACKEND_URL = 'https://juegamente-playfully-1.onrender.com';
 
-// Activa 'true' para conectar al servidor en la nube (Render) o 'false' para tu red local
-const USE_CLOUD = true;
+// Activa true para conectar al servidor en la nube (Render) o false para tu red local
+const USE_CLOUD = false;
 
 // Función para obtener la URL base dinámica
 export const getBaseUrl = () => {
