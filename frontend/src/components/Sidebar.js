@@ -120,10 +120,15 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
           {/* Cabecera del Perfil con Marca JuegaMente */}
           <View style={[styles.profileHeader, { borderBottomColor: colors.border }]}>
             <View style={{ alignItems: 'center', marginBottom: 14 }}>
-              <Text style={{ fontSize: 22, fontWeight: '900', color: colors.primary, letterSpacing: 0.5 }}>
+              <Image 
+                source={require('../../assets/images/megamind_sidebar.png')} 
+                style={styles.brandMascot}
+                resizeMode="contain"
+              />
+              <Text style={{ fontSize: 20, fontWeight: '900', color: colors.primary, letterSpacing: 0.5 }}>
                 🎮 JuegaMente
               </Text>
-              <Text style={{ fontSize: 11, fontWeight: '800', color: colors.textSecondary, letterSpacing: 1.5, marginTop: 2 }}>
+              <Text style={{ fontSize: 10.5, fontWeight: '800', color: colors.textSecondary, letterSpacing: 1.5, marginTop: 1 }}>
                 ( PLAYFULLY )
               </Text>
             </View>
@@ -345,9 +350,18 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     alignItems: 'center',
-    paddingVertical: 22,
+    paddingVertical: 20,
     borderBottomWidth: 1,
     paddingHorizontal: 16,
+  },
+  brandMascot: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
+    marginBottom: 8,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 4px 10px rgba(108,99,255,0.25)' }
+      : { shadowColor: '#6C63FF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 4 }),
   },
   avatar: {
     width: 76,

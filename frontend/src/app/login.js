@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, Platform, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import api from '../services/api';
 import storage from '../services/storage';
@@ -99,7 +99,11 @@ export default function LoginScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.card, { backgroundColor: colors.card }]}>
-        <Text style={styles.emoji}>🧠</Text>
+        <Image 
+          source={require('../../assets/images/megamind_login.png')} 
+          style={styles.mascotImage}
+          resizeMode="contain"
+        />
         <Text style={[styles.title, { color: colors.text, marginBottom: 2 }]}>JuegaMente</Text>
         <Text style={{ fontSize: 13, fontWeight: '800', color: colors.primary, letterSpacing: 1.5, marginBottom: 6 }}>
           ( PLAYFULLY )
@@ -255,9 +259,14 @@ const styles = StyleSheet.create({
       ? { boxShadow: '0px 4px 10px rgba(0,0,0,0.08)' }
       : { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 10, elevation: 5 }),
   },
-  emoji: {
-    fontSize: 50,
-    marginBottom: 10,
+  mascotImage: {
+    width: 110,
+    height: 110,
+    borderRadius: 24,
+    marginBottom: 12,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 6px 16px rgba(108,99,255,0.25)' }
+      : { shadowColor: '#6C63FF', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 6 }),
   },
   title: {
     fontSize: Platform.OS === 'web' ? 28 : 24,
