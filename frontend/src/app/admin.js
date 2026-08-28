@@ -114,6 +114,20 @@ export default function AdminScreen() {
     }
   };
 
+  // Helper para formatear fecha y hora completa con minutero y segundero
+  const formatDateTimeWithSeconds = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const pad = (n) => String(n).padStart(2, '0');
+    const day = pad(d.getDate());
+    const month = pad(d.getMonth() + 1);
+    const year = d.getFullYear();
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    const seconds = pad(d.getSeconds());
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  };
+
   // Exportar ranking a CSV / Excel
   const handleExportRankingCSV = () => {
     if (!rankingData?.ranking || rankingData.ranking.length === 0) {
@@ -121,15 +135,16 @@ export default function AdminScreen() {
       return;
     }
 
-    const headers = ['Posicion', 'Estudiante', 'Aciertos', 'Total', 'Porcentaje', 'Vidas', 'Fecha'];
-    const rows = rankingData.ranking.map((item, idx) => [
-      idx + 1,
+    const headers = ['Puesto', 'Estudiante', 'Aciertos', 'Total', 'Porcentaje', 'Vidas', 'Victorias 100%', 'Fecha y Hora Exacta'];
+    const rows = rankingData.ranking.map((item) => [
+      `"${item.medal || item.rank || ''}"`,
       `"${(item.username || 'Anonimo').replace(/"/g, '""')}"`,
       item.score,
       item.total,
       `${item.percentage}%`,
       item.lives !== undefined ? item.lives : 'N/A',
-      `"${item.date ? new Date(item.date).toLocaleString('es-ES') : ''}"`,
+      item.perfectCount || 0,
+      `"${formatDateTimeWithSeconds(item.date)}"`,
     ]);
 
     const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -154,8 +169,8 @@ export default function AdminScreen() {
 
     let text = `📊 RANKING DE NOTAS - ${rankingCategory?.name}\n`;
     text += `=========================================\n`;
-    rankingData.ranking.forEach((r, idx) => {
-      text += `#${idx + 1} | ${r.username} | ${r.percentage}% (${r.score}/${r.total}) | Vidas: ${r.lives}\n`;
+    rankingData.ranking.forEach((r) => {
+      text += `${r.medal || `#${r.rank}`} | ${r.username} | ${r.percentage}% (${r.score}/${r.total}) | Vidas: ${r.lives} | ⏱️ ${formatDateTimeWithSeconds(r.date)}\n`;
     });
 
     if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -1115,10 +1130,7 @@ export default function AdminScreen() {
                 contentContainerStyle={styles.rankingList}
                 showsVerticalScrollIndicator={false}
                 renderItem={({ item, index }) => {
-                  let medal = `#${index + 1}`;
-                  if (index === 0) medal = '🥇';
-                  else if (index === 1) medal = '🥈';
-                  else if (index === 2) medal = '🥉';
+                  let medal = item.medal || (index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`);
 
                   const isPassed = item.percentage >= 60;
 
@@ -1127,14 +1139,16 @@ export default function AdminScreen() {
                       <Text style={styles.rankingMedal}>{medal}</Text>
                       
                       <View style={styles.rankingStudentInfo}>
-                        <Text style={[styles.rankingStudentName, { color: colors.text }]}>{item.username}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={[styles.rankingStudentName, { color: colors.text }]}>{item.username}</Text>
+                          {item.perfectCount > 1 && (
+                            <View style={{ backgroundColor: '#F59E0B20', borderColor: '#F59E0B', borderWidth: 1, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8 }}>
+                              <Text style={{ fontSize: 10, fontWeight: '800', color: '#D97706' }}>🔥 {item.perfectCount}x 100%</Text>
+                            </View>
+                          )}
+                        </View>
                         <Text style={[styles.rankingStudentDate, { color: colors.textSecondary }]}>
-                          {item.date ? new Date(item.date).toLocaleDateString('es-ES', {
-                            day: '2-digit',
-                            month: 'short',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          }) : ''}
+                          ⏱️ {formatDateTimeWithSeconds(item.date)}
                         </Text>
                       </View>
 

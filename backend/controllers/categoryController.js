@@ -150,6 +150,10 @@ const getCategoryRanking = async (req, res) => {
           (!h.categoryId && h.categoryName === category.name)
       );
 
+      // Calcular cantidad de veces que el alumno sacó 100% en esta materia (constancia)
+      const perfectCount = attempts.filter((a) => a.percentage === 100).length;
+      const totalAttempts = attempts.length;
+
       attempts.forEach((attempt) => {
         ranking.push({
           historyId: attempt._id,
@@ -161,12 +165,48 @@ const getCategoryRanking = async (req, res) => {
           percentage: attempt.percentage,
           lives: attempt.lives,
           date: attempt.date,
+          perfectCount,
+          totalAttempts,
         });
       });
     });
 
-    // Ordenar de mayor a menor porcentaje, vidas y fecha más reciente
-    ranking.sort((a, b) => b.percentage - a.percentage || b.lives - a.lives || new Date(b.date) - new Date(a.date));
+    // 🏆 Ordenamiento multicriterio:
+    // 1º Mayor porcentaje (%)
+    // 2º Mayor cantidad de vidas conservadas (❤️)
+    // 3º Mayor cantidad de victorias perfectas 100% (Constancia 🔥)
+    ranking.sort((a, b) => {
+      if (b.percentage !== a.percentage) return b.percentage - a.percentage;
+      if (b.lives !== a.lives) return b.lives - a.lives;
+      if ((b.perfectCount || 0) !== (a.perfectCount || 0)) return (b.perfectCount || 0) - (a.perfectCount || 0);
+      return 0; // Empate total si todas las métricas son idénticas
+    });
+
+    // 🥇 Asignación de Puestos Compartidos (Empates Reales)
+    let currentRank = 1;
+    for (let i = 0; i < ranking.length; i++) {
+      if (i > 0) {
+        const prev = ranking[i - 1];
+        const curr = ranking[i];
+        
+        // Empate absoluto si tienen idéntico porcentaje, mismas vidas y misma constancia de 100%
+        const isTie =
+          curr.percentage === prev.percentage &&
+          curr.lives === prev.lives &&
+          (curr.perfectCount || 0) === (prev.perfectCount || 0);
+
+        if (!isTie) {
+          currentRank = i + 1; // Siguiente puesto natural
+        }
+      }
+      ranking[i].rank = currentRank;
+      
+      // Asignar medallas (si empatan en 1º, ambos tienen 🥇)
+      if (currentRank === 1) ranking[i].medal = '🥇';
+      else if (currentRank === 2) ranking[i].medal = '🥈';
+      else if (currentRank === 3) ranking[i].medal = '🥉';
+      else ranking[i].medal = `#${currentRank}`;
+    }
 
     res.json({
       category: {

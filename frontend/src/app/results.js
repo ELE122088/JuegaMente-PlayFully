@@ -108,6 +108,20 @@ export default function ResultsScreen() {
     }
   };
 
+  // Helper para formatear fecha y hora completa con minutero y segundero
+  const formatDateTimeWithSeconds = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const pad = (n) => String(n).padStart(2, '0');
+    const day = pad(d.getDate());
+    const month = pad(d.getMonth() + 1);
+    const year = d.getFullYear();
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    const seconds = pad(d.getSeconds());
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  };
+
   const saveGameScore = async () => {
     try {
       const detailedQuestions = questions.map((q, idx) => ({
@@ -346,10 +360,7 @@ export default function ResultsScreen() {
                 contentContainerStyle={styles.rankingList}
                 showsVerticalScrollIndicator={false}
                 renderItem={({ item, index }) => {
-                  let medal = `#${index + 1}`;
-                  if (index === 0) medal = '🥇';
-                  else if (index === 1) medal = '🥈';
-                  else if (index === 2) medal = '🥉';
+                  let medal = item.medal || (index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`);
 
                   const isMe = currentUsername && item.username && item.username.toLowerCase() === currentUsername.toLowerCase();
                   const isPassed = item.percentage >= 60;
@@ -377,9 +388,14 @@ export default function ResultsScreen() {
                               <Text style={[styles.meBadgeText, { color: colors.primaryText }]}>Tú</Text>
                             </View>
                           )}
+                          {item.perfectCount > 1 && (
+                            <View style={{ backgroundColor: '#F59E0B20', borderColor: '#F59E0B', borderWidth: 1, paddingHorizontal: 5, paddingVertical: 1, borderRadius: 8 }}>
+                              <Text style={{ fontSize: 10, fontWeight: '800', color: '#D97706' }}>🔥 {item.perfectCount}x 100%</Text>
+                            </View>
+                          )}
                         </View>
                         <Text style={[styles.rankingDate, { color: colors.textSecondary }]}>
-                          {item.date ? new Date(item.date).toLocaleDateString() : 'Reciente'} • {item.score}/{item.total} pts
+                          ⏱️ {formatDateTimeWithSeconds(item.date)} • {item.score}/{item.total} pts
                         </Text>
                       </View>
 
