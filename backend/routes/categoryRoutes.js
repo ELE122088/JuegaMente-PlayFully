@@ -18,7 +18,7 @@ const { protect, adminOnly } = require('../middleware/authMiddleware');
 router.get('/', getCategories);
 router.get('/mine', protect, adminOnly, getMyCategories);
 router.get('/room/:code', getCategoryByRoomCode);
-router.get('/:id/ranking', protect, adminOnly, getCategoryRanking);
+router.get('/:id/ranking', protect, getCategoryRanking);
 router.delete('/:id/ranking/:historyId', protect, adminOnly, deleteRankingItem);
 router.delete('/:id/ranking', protect, adminOnly, clearCategoryRanking);
 router.get('/:id', getCategoryById);
