@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Platform, Image, Modal, ScrollView, TextInput } from 'react-native';
 import api from '../services/api';
 import { getSocket } from '../services/socket';
@@ -26,6 +26,16 @@ export default function AdminScreen() {
   const [rankingCategory, setRankingCategory] = useState(null);
   const [rankingData, setRankingData] = useState(null);
   const [rankingLoading, setRankingLoading] = useState(false);
+  const [liveRankingBadge, setLiveRankingBadge] = useState(false);
+
+  // Refs para capturar estado actual dentro del listener de WebSockets sin re-renderizar listeners
+  const rankingCategoryRef = useRef(rankingCategory);
+  const rankingModalVisibleRef = useRef(rankingModalVisible);
+
+  useEffect(() => {
+    rankingCategoryRef.current = rankingCategory;
+    rankingModalVisibleRef.current = rankingModalVisible;
+  }, [rankingCategory, rankingModalVisible]);
 
   // Estados para Carga Masiva (JSON)
   const [showBulkModal, setShowBulkModal] = useState(false);
@@ -56,10 +66,33 @@ export default function AdminScreen() {
         fetchData(); // Recarga materias y preguntas correctamente
       };
 
+      // ⚡ Actualización automática del Ranking en Tiempo Real
+      const handleRankingUpdate = async (data) => {
+        console.log('⚡ [Admin WebSocket] Actualización de ranking en tiempo real recibida:', data);
+        const currentCat = rankingCategoryRef.current;
+        const isVisible = rankingModalVisibleRef.current;
+
+        // Si el modal de ranking está abierto y corresponde a la materia actual
+        if (isVisible && currentCat) {
+          if (!data?.categoryId || data.categoryId === currentCat._id || data.categoryName === currentCat.name) {
+            try {
+              const response = await api.get(`/categories/${currentCat._id}/ranking`);
+              setRankingData(response.data);
+              setLiveRankingBadge(true);
+              setTimeout(() => setLiveRankingBadge(false), 4000);
+            } catch (err) {
+              console.error('Error al actualizar ranking en vivo:', err);
+            }
+          }
+        }
+      };
+
       socket.on('categories:updated', handleCategoriesUpdate);
+      socket.on('ranking:updated', handleRankingUpdate);
 
       return () => {
         socket.off('categories:updated', handleCategoriesUpdate);
+        socket.off('ranking:updated', handleRankingUpdate);
       };
     } catch (err) {
       console.warn('No se pudo conectar socket en panel admin:', err);
@@ -1001,9 +1034,20 @@ export default function AdminScreen() {
                   <Text style={[styles.rankingTitle, { color: colors.text }]}>
                     Ranking: {rankingCategory?.name}
                   </Text>
-                  <Text style={[styles.rankingSubtitle, { color: colors.textSecondary }]}>
-                    {rankingCategory?.isPublic ? '🌐 Práctica Libre' : `PIN de la Sala: ${rankingCategory?.roomCode || '---'}`}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981' }} />
+                    <Text style={{ fontSize: 11.5, fontWeight: '700', color: '#10B981' }}>
+                      En Vivo
+                    </Text>
+                    <Text style={[styles.rankingSubtitle, { color: colors.textSecondary, marginTop: 0 }]}>
+                      • {rankingCategory?.isPublic ? '🌐 Práctica Libre' : `PIN: ${rankingCategory?.roomCode || '---'}`}
+                    </Text>
+                    {liveRankingBadge && (
+                      <View style={{ backgroundColor: '#10B98122', borderColor: '#10B981', borderWidth: 1, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 10 }}>
+                        <Text style={{ fontSize: 10, fontWeight: '800', color: '#10B981' }}>⚡ Actualizado</Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
               </View>
 

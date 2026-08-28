@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Platform, Image } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Platform, Image, Modal, FlatList, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import api from '../services/api';
+import { getSocket } from '../services/socket';
+import storage from '../services/storage';
 import { useTheme } from '../context/ThemeContext';
 
 export default function ResultsScreen() {
@@ -11,6 +13,23 @@ export default function ResultsScreen() {
   
   const [showReview, setShowReview] = useState(false);
   const [saving, setSaving] = useState(true);
+
+  // Estados de Ranking en Tiempo Real para Alumnos
+  const [rankingModalVisible, setRankingModalVisible] = useState(false);
+  const [rankingData, setRankingData] = useState(null);
+  const [rankingLoading, setRankingLoading] = useState(false);
+  const [liveRankingBadge, setLiveRankingBadge] = useState(false);
+  const [currentUsername, setCurrentUsername] = useState('');
+
+  const rankingModalVisibleRef = useRef(rankingModalVisible);
+  const categoryIdRef = useRef(categoryId);
+  const categoryNameRef = useRef(categoryName);
+
+  useEffect(() => {
+    rankingModalVisibleRef.current = rankingModalVisible;
+    categoryIdRef.current = categoryId;
+    categoryNameRef.current = categoryName;
+  }, [rankingModalVisible, categoryId, categoryName]);
 
   const numScore = parseInt(score) || 0;
   const numTotal = parseInt(total) || 10;
@@ -26,8 +45,68 @@ export default function ResultsScreen() {
   const isGameOver = numLives <= 0;
 
   useEffect(() => {
+    setCurrentUsername(storage.getItem('username') || '');
     saveGameScore();
+
+    // ⚡ Escuchar actualizaciones de ranking en tiempo real vía WebSockets
+    try {
+      const socket = getSocket();
+
+      const handleLiveRanking = async (data) => {
+        console.log('⚡ [Results WebSocket] Actualización de ranking en tiempo real:', data);
+        const isVisible = rankingModalVisibleRef.current;
+        const currentCatId = categoryIdRef.current;
+        const currentCatName = categoryNameRef.current;
+
+        if (isVisible && (currentCatId || currentCatName)) {
+          if (!data?.categoryId || data.categoryId === currentCatId || data.categoryName === currentCatName) {
+            try {
+              if (currentCatId) {
+                const res = await api.get(`/categories/${currentCatId}/ranking`);
+                setRankingData(res.data);
+              }
+              setLiveRankingBadge(true);
+              setTimeout(() => setLiveRankingBadge(false), 4000);
+            } catch (err) {
+              console.error('Error al actualizar ranking en vivo:', err);
+            }
+          }
+        }
+      };
+
+      socket.on('ranking:updated', handleLiveRanking);
+
+      return () => {
+        socket.off('ranking:updated', handleLiveRanking);
+      };
+    } catch (err) {
+      console.warn('No se pudo conectar socket en resultados:', err);
+    }
   }, []);
+
+  const fetchLiveRanking = async () => {
+    setRankingModalVisible(true);
+    setRankingLoading(true);
+    try {
+      if (categoryId) {
+        const response = await api.get(`/categories/${categoryId}/ranking`);
+        setRankingData(response.data);
+      } else {
+        // Buscar por nombre si no vino ID
+        const catsRes = await api.get('/categories');
+        const match = catsRes.data?.find(c => c.name === categoryName);
+        if (match) {
+          const res = await api.get(`/categories/${match._id}/ranking`);
+          setRankingData(res.data);
+        }
+      }
+    } catch (err) {
+      console.error('Error al cargar ranking de la materia:', err);
+      Alert.alert('Aviso', 'No se pudo cargar el ranking en este momento');
+    } finally {
+      setRankingLoading(false);
+    }
+  };
 
   const saveGameScore = async () => {
     try {
@@ -192,12 +271,134 @@ export default function ResultsScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity 
+          style={[styles.rankingButton, { backgroundColor: '#4ECDC41A', borderColor: '#4ECDC4', marginBottom: 14 }]}
+          onPress={fetchLiveRanking}
+          activeOpacity={0.8}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Text style={{ fontSize: 20 }}>🏆</Text>
+            <Text style={[styles.rankingButtonText, { color: '#4ECDC4' }]}>
+              Ver Tabla de Posiciones / Ranking
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
           style={[styles.primaryButton, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
           onPress={() => router.replace('/')}
         >
           <Text style={[styles.primaryButtonText, { color: colors.primaryText }]}>Volver a Categorías</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modal de Ranking de Alumnos en Tiempo Real */}
+      <Modal visible={rankingModalVisible} animationType="slide" transparent={true}>
+        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay || 'rgba(0,0,0,0.6)' }]}>
+          <View style={[styles.rankingModalCard, { backgroundColor: colors.card }]}>
+            {/* Header del Modal */}
+            <View style={[styles.rankingHeader, { borderBottomColor: colors.border }]}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rankingModalTitle, { color: colors.text }]}>
+                  🏆 Tabla de Posiciones
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981' }} />
+                  <Text style={{ fontSize: 11.5, fontWeight: '700', color: '#10B981' }}>
+                    En Vivo (Sincronizado)
+                  </Text>
+                  <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                    • {categoryName}
+                  </Text>
+                  {liveRankingBadge && (
+                    <View style={{ backgroundColor: '#10B98122', borderColor: '#10B981', borderWidth: 1, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 10 }}>
+                      <Text style={{ fontSize: 10, fontWeight: '800', color: '#10B981' }}>⚡ Actualizado</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.closeModalBtn, { backgroundColor: colors.border }]}
+                onPress={() => setRankingModalVisible(false)}
+              >
+                <Text style={[styles.closeModalText, { color: colors.text }]}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Contenido del Ranking */}
+            {rankingLoading ? (
+              <View style={styles.rankingLoadingContainer}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={[styles.rankingLoadingText, { color: colors.textSecondary }]}>Cargando posiciones...</Text>
+              </View>
+            ) : !rankingData?.ranking || rankingData.ranking.length === 0 ? (
+              <View style={styles.rankingEmptyContainer}>
+                <Text style={{ fontSize: 40, marginBottom: 8 }}>📊</Text>
+                <Text style={[styles.rankingEmptyTitle, { color: colors.text }]}>Aún no hay puntuaciones</Text>
+                <Text style={[styles.rankingEmptySubtitle, { color: colors.textSecondary }]}>
+                  ¡Sé el primero en aparecer en la tabla de clasificación!
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={rankingData.ranking}
+                keyExtractor={(item, index) => item.historyId || index.toString()}
+                contentContainerStyle={styles.rankingList}
+                showsVerticalScrollIndicator={false}
+                renderItem={({ item, index }) => {
+                  let medal = `#${index + 1}`;
+                  if (index === 0) medal = '🥇';
+                  else if (index === 1) medal = '🥈';
+                  else if (index === 2) medal = '🥉';
+
+                  const isMe = currentUsername && item.username && item.username.toLowerCase() === currentUsername.toLowerCase();
+                  const isPassed = item.percentage >= 60;
+
+                  return (
+                    <View
+                      style={[
+                        styles.rankingRow,
+                        { 
+                          backgroundColor: isMe ? `${colors.primary}18` : colors.background, 
+                          borderColor: isMe ? colors.primary : colors.border,
+                          borderWidth: isMe ? 1.5 : 1,
+                        }
+                      ]}
+                    >
+                      <Text style={styles.rankingMedal}>{medal}</Text>
+                      
+                      <View style={styles.rankingStudentInfo}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={[styles.rankingStudentName, { color: colors.text, fontWeight: isMe ? '800' : '600' }]} numberOfLines={1}>
+                            {item.username || 'Estudiante'}
+                          </Text>
+                          {isMe && (
+                            <View style={[styles.meBadge, { backgroundColor: colors.primary }]}>
+                              <Text style={[styles.meBadgeText, { color: colors.primaryText }]}>Tú</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style={[styles.rankingDate, { color: colors.textSecondary }]}>
+                          {item.date ? new Date(item.date).toLocaleDateString() : 'Reciente'} • {item.score}/{item.total} pts
+                        </Text>
+                      </View>
+
+                      <View style={styles.rankingScoreBadge}>
+                        <Text style={[styles.rankingPercentage, { color: isPassed ? '#4ECDC4' : '#FF6B6B' }]}>
+                          {item.percentage}%
+                        </Text>
+                        <Text style={styles.rankingLives}>
+                          {item.lives > 0 ? '❤️'.repeat(Math.min(item.lives, 5)) : '💔'}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                }}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -378,5 +579,123 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  rankingButton: {
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1.5,
+  },
+  rankingButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  rankingModalCard: {
+    width: '100%',
+    maxWidth: 550,
+    maxHeight: '85%',
+    borderRadius: 20,
+    padding: 20,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 10px 30px rgba(0,0,0,0.25)' }
+      : { shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.25, shadowRadius: 20, elevation: 10 }),
+  },
+  rankingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    marginBottom: 12,
+  },
+  rankingModalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  closeModalBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeModalText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  rankingLoadingContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+    gap: 12,
+  },
+  rankingLoadingText: {
+    fontSize: 14,
+  },
+  rankingEmptyContainer: {
+    paddingVertical: 36,
+    alignItems: 'center',
+  },
+  rankingEmptyTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  rankingEmptySubtitle: {
+    fontSize: 13,
+    textAlign: 'center',
+    paddingHorizontal: 16,
+  },
+  rankingList: {
+    paddingVertical: 6,
+    gap: 10,
+  },
+  rankingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 14,
+    gap: 12,
+  },
+  rankingMedal: {
+    fontSize: 18,
+    fontWeight: '800',
+    width: 30,
+    textAlign: 'center',
+  },
+  rankingStudentInfo: {
+    flex: 1,
+  },
+  rankingStudentName: {
+    fontSize: 15,
+  },
+  meBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+  },
+  meBadgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  rankingDate: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  rankingScoreBadge: {
+    alignItems: 'flex-end',
+  },
+  rankingPercentage: {
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  rankingLives: {
+    fontSize: 11,
+    marginTop: 2,
   },
 });

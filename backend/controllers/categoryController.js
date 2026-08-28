@@ -197,6 +197,9 @@ const deleteRankingItem = async (req, res) => {
       return res.status(404).json({ message: 'Registro de calificación no encontrado' });
     }
 
+    // Emitir evento en tiempo real para refrescar el ranking en pantallas activas
+    emitCategoryUpdate(req, 'ranking:updated', { categoryId: req.params.categoryId });
+
     res.json({ message: 'Calificación eliminada correctamente del ranking' });
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar calificación', error: error.message });
@@ -231,6 +234,9 @@ const clearCategoryRanking = async (req, res) => {
         },
       }
     );
+
+    // Emitir evento en tiempo real para refrescar el ranking en pantallas activas
+    emitCategoryUpdate(req, 'ranking:updated', { categoryId: req.params.categoryId });
 
     res.json({ message: 'Ranking de la categoría vaciado correctamente' });
   } catch (error) {

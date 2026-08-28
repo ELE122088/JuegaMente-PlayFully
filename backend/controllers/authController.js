@@ -4,6 +4,19 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 
+// Helper para emitir eventos de tiempo real con WebSockets
+const emitSocketEvent = (req, eventName, data = {}) => {
+  try {
+    const io = req?.app?.get('io') || global.io;
+    if (io) {
+      io.emit(eventName, { timestamp: Date.now(), ...data });
+      console.log(`📡 [WebSocket Auth] Evento emitido: ${eventName}`, data);
+    }
+  } catch (err) {
+    console.error('Error al emitir evento WebSocket:', err.message);
+  }
+};
+
 // Generar JWT
 const generateToken = (user) => {
   const userRole = user.role || 'user';
@@ -283,6 +296,19 @@ const saveScore = async (req, res) => {
       // Agrega un nuevo ScoreSubdocument al alumno
       user.history.push(newScore);
       await user.save();
+
+      // ⚡ Emitir evento en tiempo real para actualizar los rankings de toda la red
+      emitSocketEvent(req, 'ranking:updated', {
+        categoryId: categoryId || null,
+        categoryName,
+        username: user.username,
+        score,
+        total,
+        percentage,
+        lives,
+        timestamp: Date.now(),
+      });
+      emitSocketEvent(req, 'categories:updated', { categoryId: categoryId || null });
 
       res.status(200).json({ message: 'Puntuación guardada correctamente', history: user.history });
     } else {
