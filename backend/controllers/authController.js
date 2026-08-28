@@ -99,9 +99,32 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' });
     }
 
-    const user = await User.findOne({ username: cleanUsername });
+    const user = await User.findOne({ 
+      username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') } 
+    });
 
     if (user && (await bcrypt.compare(password, user.password))) {
+      // 👑 Si el usuario es SuperAdmin, asegurar automáticamente su rol de administrador y PIN
+      if (user.username && user.username.toLowerCase() === 'superadmin') {
+        let changed = false;
+        if (user.role !== 'admin') {
+          user.role = 'admin';
+          changed = true;
+        }
+        if (!user.isSuperAdmin) {
+          user.isSuperAdmin = true;
+          changed = true;
+        }
+        if (!user.adminPin) {
+          user.adminPin = '1234';
+          changed = true;
+        }
+        if (changed) {
+          await user.save();
+          console.log('👑 Usuario SuperAdmin elevado a rol "admin" automáticamente.');
+        }
+      }
+
       const isSuperAdmin = (user.role === 'admin') && (
         user.isSuperAdmin === true || 
         (user.username && user.username.toLowerCase() === 'superadmin')
@@ -131,6 +154,26 @@ const getUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (user) {
+      // 👑 Si el usuario es SuperAdmin, asegurar automáticamente su rol de administrador y PIN
+      if (user.username && user.username.toLowerCase() === 'superadmin') {
+        let changed = false;
+        if (user.role !== 'admin') {
+          user.role = 'admin';
+          changed = true;
+        }
+        if (!user.isSuperAdmin) {
+          user.isSuperAdmin = true;
+          changed = true;
+        }
+        if (!user.adminPin) {
+          user.adminPin = '1234';
+          changed = true;
+        }
+        if (changed) {
+          await user.save();
+        }
+      }
+
       const isSuperAdmin = (user.role === 'admin') && (
         user.isSuperAdmin === true || 
         (user.username && user.username.toLowerCase() === 'superadmin')
