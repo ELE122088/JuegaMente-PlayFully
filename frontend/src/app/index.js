@@ -590,6 +590,30 @@ export default function CategoriesScreen() {
               </Text>
             </View>
 
+            {/* Acceso a ranking / posiciones de la materia */}
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#F59E0B15',
+                borderColor: '#F59E0B60',
+                borderWidth: 1,
+                borderRadius: 10,
+                paddingVertical: 10,
+                paddingHorizontal: 14,
+                alignItems: 'center',
+                marginBottom: 14,
+                width: '100%',
+              }}
+              onPress={() => {
+                setConfirmModalVisible(false);
+                router.push('/profile');
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={{ color: '#D97706', fontWeight: '800', fontSize: 13 }}>
+                🏆 Ver Historial y Posiciones en Mi Perfil
+              </Text>
+            </TouchableOpacity>
+
             {/* Botones de Acción */}
             <View style={styles.modalButtons}>
               <TouchableOpacity

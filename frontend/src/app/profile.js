@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Modal, ScrollView, Alert, Platform, Image, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import api, { BASE_URL } from '../services/api';
+import { getSocket } from '../services/socket';
 import storage from '../services/storage';
 import Header from '../components/Header';
 import { useTheme } from '../context/ThemeContext';
@@ -15,6 +16,21 @@ export default function ProfileScreen() {
   // Detalle de partida seleccionada
   const [selectedGame, setSelectedGame] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+
+  // Estados de Ranking en Tiempo Real para el Perfil
+  const [rankingModalVisible, setRankingModalVisible] = useState(false);
+  const [rankingData, setRankingData] = useState(null);
+  const [rankingLoading, setRankingLoading] = useState(false);
+  const [selectedRankingCat, setSelectedRankingCat] = useState(null);
+  const [liveRankingBadge, setLiveRankingBadge] = useState(false);
+
+  const rankingModalVisibleRef = useRef(rankingModalVisible);
+  const selectedRankingCatRef = useRef(selectedRankingCat);
+
+  useEffect(() => {
+    rankingModalVisibleRef.current = rankingModalVisible;
+    selectedRankingCatRef.current = selectedRankingCat;
+  }, [rankingModalVisible, selectedRankingCat]);
 
   const router = useRouter();
   const { theme, colors, setTheme } = useTheme();
@@ -35,9 +51,82 @@ export default function ProfileScreen() {
   const [editUsername, setEditUsername] = useState('');
   const [profileEditLoading, setProfileEditLoading] = useState(false);
 
+  // Helper para formatear fecha y hora completa con minutero y segundero
+  const formatDateTimeWithSeconds = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const pad = (n) => String(n).padStart(2, '0');
+    const day = pad(d.getDate());
+    const month = pad(d.getMonth() + 1);
+    const year = d.getFullYear();
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    const seconds = pad(d.getSeconds());
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  };
+
   useEffect(() => {
     fetchProfile();
+
+    // ⚡ Escuchar actualizaciones de ranking en tiempo real vía WebSockets
+    try {
+      const socket = getSocket();
+
+      const handleLiveRanking = async (data) => {
+        const isVisible = rankingModalVisibleRef.current;
+        const currentCat = selectedRankingCatRef.current;
+
+        if (isVisible && currentCat) {
+          if (!data?.categoryId || data.categoryId === currentCat._id || data.categoryName === currentCat.name) {
+            try {
+              if (currentCat._id) {
+                const res = await api.get(`/categories/${currentCat._id}/ranking`);
+                setRankingData(res.data);
+              }
+              setLiveRankingBadge(true);
+              setTimeout(() => setLiveRankingBadge(false), 4000);
+            } catch (err) {
+              console.error('Error al actualizar ranking en vivo en perfil:', err);
+            }
+          }
+        }
+      };
+
+      socket.on('ranking:updated', handleLiveRanking);
+
+      return () => {
+        socket.off('ranking:updated', handleLiveRanking);
+      };
+    } catch (err) {
+      console.warn('No se pudo conectar socket en perfil:', err);
+    }
   }, []);
+
+  const handleOpenCategoryRanking = async (categoryId, categoryName) => {
+    setRankingModalVisible(true);
+    setRankingLoading(true);
+    setSelectedRankingCat({ _id: categoryId, name: categoryName });
+    try {
+      if (categoryId) {
+        const res = await api.get(`/categories/${categoryId}/ranking`);
+        setRankingData(res.data);
+        setSelectedRankingCat(res.data.category || { _id: categoryId, name: categoryName });
+      } else {
+        const catsRes = await api.get('/categories');
+        const match = catsRes.data?.find(c => c.name === categoryName);
+        if (match) {
+          const res = await api.get(`/categories/${match._id}/ranking`);
+          setRankingData(res.data);
+          setSelectedRankingCat(match);
+        }
+      }
+    } catch (err) {
+      console.error('Error al abrir ranking desde perfil:', err);
+      Alert.alert('Aviso', 'No se pudo cargar el ranking en este momento');
+    } finally {
+      setRankingLoading(false);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -350,6 +439,18 @@ export default function ProfileScreen() {
           </Text>
           <Text style={[styles.percentageText, { color: colors.textSecondary }]}>{item.percentage}% aciertos</Text>
         </View>
+
+        {/* Botón de Ranking en Vivo para esta materia */}
+        <TouchableOpacity
+          style={[styles.actionIconBtn, { backgroundColor: '#F59E0B20' }]}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleOpenCategoryRanking(item.category, item.categoryName);
+          }}
+          title="Ver Ranking de esta Materia"
+        >
+          <Text style={{ fontSize: 16 }}>🏆</Text>
+        </TouchableOpacity>
 
         {/* Botón de lupa para ver detalles */}
         <TouchableOpacity
@@ -746,12 +847,158 @@ export default function ProfileScreen() {
               )}
             </ScrollView>
 
-            <TouchableOpacity style={[styles.closeModalBtn, { backgroundColor: colors.primary }]} onPress={() => setModalVisible(false)}>
-              <Text style={[styles.closeModalBtnText, { color: colors.primaryText }]}>Cerrar Detalles</Text>
+            <TouchableOpacity 
+              style={[styles.rankingButton, { backgroundColor: '#F59E0B', marginBottom: 10, marginTop: 4 }]} 
+              onPress={() => {
+                setModalVisible(false);
+                handleOpenCategoryRanking(selectedGame?.category, selectedGame?.categoryName);
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.rankingButtonText}>
+                🏆 Ver Tabla de Posiciones / Ranking de esta Materia
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.closeModalBtn, { backgroundColor: colors.inputBg, borderColor: colors.border, borderWidth: 1 }]} onPress={() => setModalVisible(false)}>
+              <Text style={[styles.closeModalBtnText, { color: colors.text }]}>Cerrar Detalles</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
+
+      {/* 🏆 Modal de Ranking en Tiempo Real para la Materia Seleccionada */}
+      <Modal
+        visible={rankingModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setRankingModalVisible(false)}
+      >
+        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.rankingModalCard, { backgroundColor: colors.card }]}>
+            
+            {/* Cabecera del Ranking */}
+            <View style={styles.rankingHeader}>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Text style={[styles.rankingTitle, { color: colors.text }]}>
+                    🏆 Tabla de Posiciones
+                  </Text>
+                  <View style={styles.liveTagBadge}>
+                    <Text style={styles.liveTagDot}>🟢</Text>
+                    <Text style={styles.liveTagText}>En Vivo</Text>
+                  </View>
+                </View>
+                <Text style={[styles.rankingCategorySubtitle, { color: colors.primary }]}>
+                  {selectedRankingCat?.name || rankingData?.category?.name || 'Materia'}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.rankingCloseBtn, { backgroundColor: colors.inputBg }]}
+                onPress={() => setRankingModalVisible(false)}
+              >
+                <Text style={[styles.rankingCloseBtnText, { color: colors.text }]}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Notificación de actualización en tiempo real */}
+            {liveRankingBadge && (
+              <View style={styles.liveAlertBadge}>
+                <Text style={styles.liveAlertText}>⚡ ¡Ranking actualizado en tiempo real!</Text>
+              </View>
+            )}
+
+            {/* Contenido del Ranking */}
+            {rankingLoading ? (
+              <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={{ marginTop: 12, color: colors.textSecondary, fontSize: 13 }}>
+                  Cargando posiciones oficiales...
+                </Text>
+              </View>
+            ) : rankingData?.ranking && rankingData.ranking.length > 0 ? (
+              <FlatList
+                data={rankingData.ranking}
+                keyExtractor={(item, index) => item._id || String(index)}
+                style={{ maxHeight: 380, width: '100%', marginTop: 8 }}
+                contentContainerStyle={{ paddingBottom: 10 }}
+                showsVerticalScrollIndicator={false}
+                renderItem={({ item, index }) => {
+                  let medal = item.medal || (index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`);
+                  const isMe = profile?.username && item.username && item.username.toLowerCase() === profile.username.toLowerCase();
+                  const isPassed = item.percentage >= 60;
+
+                  return (
+                    <View
+                      style={[
+                        styles.rankingRow,
+                        {
+                          backgroundColor: isMe ? `${colors.primary}18` : colors.background,
+                          borderColor: isMe ? colors.primary : colors.border,
+                          borderWidth: isMe ? 1.5 : 1,
+                        }
+                      ]}
+                    >
+                      <Text style={styles.rankingMedal}>{medal}</Text>
+
+                      <View style={styles.rankingStudentInfo}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={[styles.rankingStudentName, { color: colors.text, fontWeight: isMe ? '800' : '600' }]} numberOfLines={1}>
+                            {item.username || 'Estudiante'}
+                          </Text>
+                          {isMe && (
+                            <View style={[styles.meBadge, { backgroundColor: colors.primary }]}>
+                              <Text style={[styles.meBadgeText, { color: colors.primaryText }]}>Tú</Text>
+                            </View>
+                          )}
+                          {item.perfectCount > 1 && (
+                            <View style={{ backgroundColor: '#F59E0B20', borderColor: '#F59E0B', borderWidth: 1, paddingHorizontal: 5, paddingVertical: 1, borderRadius: 8 }}>
+                              <Text style={{ fontSize: 10, fontWeight: '800', color: '#D97706' }}>🔥 {item.perfectCount}x 100%</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style={[styles.rankingDate, { color: colors.textSecondary }]}>
+                          ⏱️ {formatDateTimeWithSeconds(item.date)} • {item.score}/{item.total} pts
+                        </Text>
+                      </View>
+
+                      <View style={styles.rankingScoreBadge}>
+                        <Text style={[styles.rankingPercentage, { color: isPassed ? '#4ECDC4' : '#FF6B6B' }]}>
+                          {item.percentage}%
+                        </Text>
+                        <Text style={styles.rankingLives}>
+                          {item.lives > 0 ? '❤️'.repeat(Math.min(item.lives, 5)) : '💔'}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                }}
+              />
+            ) : (
+              <View style={{ paddingVertical: 35, alignItems: 'center' }}>
+                <Text style={{ fontSize: 36, marginBottom: 8 }}>🏁</Text>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
+                  Sin posiciones registradas
+                </Text>
+                <Text style={{ fontSize: 12.5, color: colors.textSecondary, textAlign: 'center', marginTop: 4, paddingHorizontal: 20 }}>
+                  Sé el primero en rendir una evaluación en esta materia para liderar el ranking.
+                </Text>
+              </View>
+            )}
+
+            {/* Botón de Salir del Ranking */}
+            <TouchableOpacity
+              style={[styles.closeModalBtn, { backgroundColor: colors.primary, marginTop: 12 }]}
+              onPress={() => setRankingModalVisible(false)}
+            >
+              <Text style={[styles.closeModalBtnText, { color: colors.primaryText }]}>Entendido</Text>
+            </TouchableOpacity>
+
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }
@@ -1157,5 +1404,134 @@ const styles = StyleSheet.create({
   savePassBtnText: {
     fontSize: 13,
     fontWeight: '700',
+  },
+  // Estilos del Ranking en Tiempo Real en Perfil
+  rankingButton: {
+    paddingVertical: 13,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rankingButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  rankingModalCard: {
+    borderRadius: 18,
+    padding: 18,
+    width: '100%',
+    maxWidth: 500,
+    maxHeight: '90%',
+  },
+  rankingHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F030',
+  },
+  rankingTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  rankingCategorySubtitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  liveTagBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#10B98120',
+    borderColor: '#10B981',
+    borderWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 12,
+    gap: 4,
+  },
+  liveTagDot: {
+    fontSize: 8,
+  },
+  liveTagText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#059669',
+  },
+  rankingCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rankingCloseBtnText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  liveAlertBadge: {
+    backgroundColor: '#10B98125',
+    borderColor: '#10B981',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  liveAlertText: {
+    color: '#059669',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  rankingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 12,
+    marginVertical: 4,
+    borderWidth: 1,
+  },
+  rankingMedal: {
+    fontSize: 22,
+    marginRight: 10,
+    width: 32,
+    textAlign: 'center',
+  },
+  rankingStudentInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  rankingStudentName: {
+    fontSize: 14,
+  },
+  meBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 8,
+  },
+  meBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  rankingDate: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  rankingScoreBadge: {
+    alignItems: 'flex-end',
+    marginLeft: 8,
+  },
+  rankingPercentage: {
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  rankingLives: {
+    fontSize: 11,
+    marginTop: 1,
   },
 });

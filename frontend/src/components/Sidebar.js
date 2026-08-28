@@ -187,6 +187,22 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
               <Text style={[styles.menuText, { color: colors.text }]}>Mi Perfil</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity 
+              style={[
+                styles.menuItem, 
+                { 
+                  backgroundColor: '#F59E0B12', 
+                  borderColor: '#F59E0B50',
+                  borderWidth: 1.5 
+                }
+              ]} 
+              onPress={() => handleNavigate('/profile')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.menuIcon}>🏆</Text>
+              <Text style={[styles.menuText, { color: '#D97706' }]}>Rankings en Vivo</Text>
+            </TouchableOpacity>
+
             {(isAdmin || role === 'admin') && (
               <TouchableOpacity 
                 style={[
