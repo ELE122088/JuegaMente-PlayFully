@@ -1,9 +1,15 @@
 const express = require('express');
 const http = require('http');
+const dns = require('dns');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+
+// Forzar resolución IPv4 primero para compatibilidad con MongoDB Atlas en Render/Linux
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 // Cargar variables de entorno
 dotenv.config();

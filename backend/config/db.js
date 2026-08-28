@@ -1,16 +1,15 @@
 const mongoose = require('mongoose');
 
+const DEFAULT_MONGO_URI = 'mongodb+srv://markarvar1988_db_user:Kieb2xUgmg5MOhoH@cluster0.mrvmafh.mongodb.net/Banco_preguntas?retryWrites=true&w=majority';
+
 const connectDB = async () => {
-  const uri = process.env.MONGO_URI;
-  if (!uri) {
-    console.error('❌ MONGO_URI no está configurada en las variables de entorno.');
-    return;
-  }
+  const uri = process.env.MONGO_URI || DEFAULT_MONGO_URI;
 
   const attemptConnect = async () => {
     try {
       const conn = await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 5000,
+        family: 4,
+        serverSelectionTimeoutMS: 8000,
       });
       console.log(`✅ MongoDB conectado exitosamente: ${conn.connection.host}`);
 
