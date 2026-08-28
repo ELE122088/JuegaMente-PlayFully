@@ -1,18 +1,14 @@
 const mongoose = require('mongoose');
 
-const DEFAULT_MONGO_URI = 'mongodb://markarvar1988_db_user:Kieb2xUgmg5MOhoH@ac-boymlpt-shard-00-00.mrvmafh.mongodb.net:27017,ac-boymlpt-shard-00-01.mrvmafh.mongodb.net:27017,ac-boymlpt-shard-00-02.mrvmafh.mongodb.net:27017/Banco_preguntas?ssl=true&replicaSet=atlas-118fuj-shard-0&authSource=admin&retryWrites=true&w=majority';
+const DEFAULT_MONGO_URI = 'mongodb+srv://markarvar1988_db_user:Kieb2xUgmg5MOhoH@cluster0.mrvmafh.mongodb.net/Banco_preguntas?retryWrites=true&w=majority';
 
 const connectDB = async () => {
-  // Si MONGO_URI tiene el formato srv pero falla, o no está definida, usar la URI directa del Replica Set
-  let uri = process.env.MONGO_URI || DEFAULT_MONGO_URI;
-  if (uri.startsWith('mongodb+srv://')) {
-    uri = DEFAULT_MONGO_URI;
-  }
+  const uri = process.env.MONGO_URI || DEFAULT_MONGO_URI;
 
   const attemptConnect = async () => {
     try {
       const conn = await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 8000,
+        serverSelectionTimeoutMS: 10000,
       });
       console.log(`✅ MongoDB conectado exitosamente: ${conn.connection.host}`);
 
