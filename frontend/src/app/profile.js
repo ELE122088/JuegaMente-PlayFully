@@ -1,0 +1,1161 @@
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Modal, ScrollView, Alert, Platform, Image, TextInput } from 'react-native';
+import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import api, { BASE_URL } from '../services/api';
+import storage from '../services/storage';
+import Header from '../components/Header';
+import { useTheme } from '../context/ThemeContext';
+import { useSidebar } from '../context/SidebarContext';
+
+export default function ProfileScreen() {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Detalle de partida seleccionada
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const router = useRouter();
+  const { theme, colors, setTheme } = useTheme();
+  const { refreshUser } = useSidebar();
+  const [isThemeExpanded, setIsThemeExpanded] = useState(false);
+
+  // Estados para Cambiar Contraseña
+  const [isPasswordExpanded, setIsPasswordExpanded] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [passLoading, setPassLoading] = useState(false);
+
+  // Estados para Editar Perfil (Nombre de Usuario)
+  const [isProfileEditExpanded, setIsProfileEditExpanded] = useState(false);
+  const [editUsername, setEditUsername] = useState('');
+  const [profileEditLoading, setProfileEditLoading] = useState(false);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const response = await api.get('/auth/profile');
+      setProfile(response.data);
+    } catch (error) {
+      console.error('Error al cargar perfil:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        const msg = 'Se requiere permiso para acceder a la galería para cambiar la foto de perfil.';
+        if (Platform.OS === 'web') {
+          alert(msg);
+        } else {
+          Alert.alert('Permiso requerido', msg);
+        }
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions ? ImagePicker.MediaTypeOptions.Images : 'images',
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const selectedImage = result.assets[0];
+        await handleUploadImage(selectedImage.uri);
+      }
+    } catch (pickerError) {
+      console.error('Error al seleccionar imagen:', pickerError);
+      if (Platform.OS === 'web') {
+        alert('Error al abrir la galería de imágenes.');
+      } else {
+        Alert.alert('Error', 'Error al abrir la galería de imágenes.');
+      }
+    }
+  };
+
+  const handleUploadImage = async (uri) => {
+    setLoading(true);
+    try {
+      const formData = new FormData();
+
+      if (Platform.OS === 'web') {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const file = new File([blob], `avatar-${profile?.username || 'user'}.jpg`, { type: blob.type || 'image/jpeg' });
+        formData.append('profileImage', file);
+      } else {
+        formData.append('profileImage', {
+          uri: Platform.OS === 'android' ? uri : uri.replace('file://', ''),
+          name: `avatar-${profile?.username || 'user'}.jpg`,
+          type: 'image/jpeg',
+        });
+      }
+
+      const response = await api.post('/auth/profile/image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setProfile(prev => ({
+        ...prev,
+        profileImage: response.data.profileImage,
+      }));
+
+      storage.setItem('profileImage', response.data.profileImage);
+      refreshUser();
+
+      const successMsg = '¡Foto de perfil actualizada con éxito!';
+      if (Platform.OS === 'web') {
+        alert(successMsg);
+      } else {
+        Alert.alert('Éxito', successMsg);
+      }
+    } catch (uploadError) {
+      console.error('Error al subir la imagen:', uploadError);
+      const errMsg = uploadError.response?.data?.message || 'Hubo un problema al subir la foto de perfil.';
+      if (Platform.OS === 'web') {
+        alert(errMsg);
+      } else {
+        Alert.alert('Error', errMsg);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    const performLogout = () => {
+      try {
+        storage.removeItem('token');
+        storage.removeItem('username');
+        storage.removeItem('isAdmin');
+        storage.removeItem('profileImage');
+        refreshUser();
+        router.replace('/login');
+      } catch (e) {
+        console.error('Error al cerrar sesión:', e);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      const confirmLog = window.confirm('¿Estás seguro de que deseas cerrar sesión?');
+      if (confirmLog) performLogout();
+    } else {
+      Alert.alert(
+        'Cerrar Sesión',
+        '¿Estás seguro de que deseas cerrar sesión?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Cerrar Sesión', style: 'destructive', onPress: performLogout }
+        ]
+      );
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!currentPassword.trim() || !newPassword.trim()) {
+      const msg = 'Por favor completa todos los campos de contraseña';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Error', msg);
+      return;
+    }
+
+    if (newPassword.length < 4) {
+      const msg = 'La nueva contraseña debe tener al menos 4 caracteres';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Error', msg);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      const msg = 'La nueva contraseña y la confirmación no coinciden';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Error', msg);
+      return;
+    }
+
+    setPassLoading(true);
+    try {
+      const response = await api.put('/auth/change-password', {
+        currentPassword: currentPassword.trim(),
+        newPassword: newPassword.trim(),
+      });
+
+      const msg = response.data.message || '¡Contraseña actualizada correctamente!';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Éxito', msg);
+
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setIsPasswordExpanded(false);
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Error al cambiar la contraseña';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Error', msg);
+    } finally {
+      setPassLoading(false);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    const cleanName = editUsername.trim();
+    if (!cleanName) {
+      const msg = 'El nombre de usuario no puede estar vacío';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Error', msg);
+      return;
+    }
+
+    if (cleanName.length < 4) {
+      const msg = 'El nombre de usuario debe tener al menos 4 caracteres';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Error', msg);
+      return;
+    }
+
+    if (cleanName === profile?.username) {
+      setIsProfileEditExpanded(false);
+      return;
+    }
+
+    setProfileEditLoading(true);
+    try {
+      const response = await api.put('/auth/profile', {
+        username: cleanName,
+      });
+
+      setProfile((prev) => ({
+        ...prev,
+        username: response.data.username,
+      }));
+
+      storage.setItem('username', response.data.username);
+      if (response.data.token) {
+        storage.setItem('token', response.data.token);
+      }
+      refreshUser();
+
+      const msg = '¡Nombre de usuario actualizado con éxito!';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Éxito', msg);
+
+      setIsProfileEditExpanded(false);
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Error al actualizar el nombre de usuario';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Error', msg);
+    } finally {
+      setProfileEditLoading(false);
+    }
+  };
+
+  const getStats = () => {
+    if (!profile || !profile.history || profile.history.length === 0) {
+      return { total: 0, average: 0 };
+    }
+    const total = profile.history.length;
+    const sumPercentages = profile.history.reduce((acc, curr) => acc + curr.percentage, 0);
+    const average = Math.round(sumPercentages / total);
+    return { total, average };
+  };
+
+  const { total, average } = getStats();
+
+  const handleShowGameDetail = (game) => {
+    setSelectedGame(game);
+    setModalVisible(true);
+  };
+
+  const handleDeleteHistory = async (scoreId, event) => {
+    event.stopPropagation(); // Evitar abrir el modal al tocar el botón de eliminar
+
+    const performDelete = async () => {
+      try {
+        await api.delete(`/auth/history/${scoreId}`);
+        fetchProfile(); // Recargar el perfil
+      } catch (error) {
+        const msg = error.response?.data?.message || 'No se pudo eliminar el registro';
+        if (Platform.OS === 'web') {
+          alert(`Error: ${msg}`);
+        } else {
+          Alert.alert('Error', msg);
+        }
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar esta partida de tu historial? Esta acción no se puede deshacer.');
+      if (confirmDelete) {
+        performDelete();
+      }
+    } else {
+      Alert.alert(
+        'Eliminar Registro',
+        '¿Estás seguro de que deseas eliminar esta partida de tu historial?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Eliminar', style: 'destructive', onPress: performDelete }
+        ]
+      );
+    }
+  };
+
+  const renderHistoryItem = ({ item }) => {
+    const isGood = item.percentage >= 80;
+    const isRegular = item.percentage >= 60 && item.percentage < 80;
+
+    let cardColor = '#FF6B6B'; // Rojo
+    if (isGood) cardColor = '#4ECDC4'; // Verde
+    else if (isRegular) cardColor = '#FFD166'; // Amarillo
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.historyCard,
+          {
+            backgroundColor: colors.card,
+            borderLeftColor: cardColor,
+          }
+        ]}
+        onPress={() => handleShowGameDetail(item)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.historyInfo}>
+          <Text style={[styles.historyCategory, { color: colors.text }]} numberOfLines={1}>{item.categoryName}</Text>
+          <Text style={[styles.historyDate, { color: colors.textSecondary }]}>
+            {new Date(item.date).toLocaleDateString('es-ES', {
+              day: '2-digit',
+              month: 'short',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </Text>
+        </View>
+        <View style={styles.historyScore}>
+          <Text style={[styles.scoreText, { color: cardColor }]}>
+            {item.score}/{item.total}
+          </Text>
+          <Text style={[styles.percentageText, { color: colors.textSecondary }]}>{item.percentage}% aciertos</Text>
+        </View>
+
+        {/* Botón de lupa para ver detalles */}
+        <TouchableOpacity
+          style={styles.actionIconBtn}
+          onPress={() => handleShowGameDetail(item)}
+        >
+          <Text style={[styles.arrowIcon, { color: colors.textSecondary }]}>🔍</Text>
+        </TouchableOpacity>
+
+        {/* Botón de eliminar (Cualquier usuario para su historial propio) */}
+        <TouchableOpacity
+          style={[styles.actionIconBtn, styles.deleteHistoryBtn]}
+          onPress={(e) => handleDeleteHistory(item._id, e)}
+        >
+          <Text style={styles.deleteHistoryIcon}>🗑️</Text>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Header title="Mi Perfil" showBack={true} />
+
+      <FlatList
+        data={profile?.history || []}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={renderHistoryItem}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <>
+            {/* Cabecera de Perfil */}
+            <View style={[styles.profileHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+              <TouchableOpacity
+                style={[styles.avatarContainer, { backgroundColor: colors.primary }]}
+                onPress={handlePickImage}
+                activeOpacity={0.8}
+              >
+                {profile?.profileImage ? (
+                  <Image
+                    source={{ uri: `${BASE_URL}${profile.profileImage}` }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <Text style={[styles.avatarText, { color: colors.primaryText }]}>
+                    {profile?.username?.substring(0, 2).toUpperCase()}
+                  </Text>
+                )}
+                <View style={[styles.editBadge, { backgroundColor: colors.primary, borderColor: colors.card }]}>
+                  <Text style={styles.editBadgeText}>📷</Text>
+                </View>
+              </TouchableOpacity>
+              <Text style={[styles.username, { color: colors.text }]}>{profile?.username}</Text>
+              <Text style={[styles.role, { color: colors.textSecondary }]}>
+                {profile?.role === 'admin' || profile?.isAdmin ? '👑 Administrador / Docente' : '🎓 Estudiante'}
+              </Text>
+            </View>
+
+            {/* Selector de Temas (Colapsable / Desplegable por Click) */}
+            <View
+              style={[styles.themeWrapper, { backgroundColor: colors.card, borderColor: colors.border }]}
+            >
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => setIsThemeExpanded(!isThemeExpanded)}
+                style={styles.themeHeader}
+              >
+                <View style={styles.themeHeaderLeft}>
+                  <Text style={styles.themeHeaderIcon}>🎨</Text>
+                  <View>
+                    <Text style={[styles.themeHeaderTitle, { color: colors.text }]}>Tema de la Aplicación</Text>
+                    <Text style={[styles.themeHeaderSubtitle, { color: colors.textSecondary }]}>
+                      Actual: {
+                        theme === 'light' ? '☀️ Claro' :
+                        theme === 'dark' ? '🌙 Oscuro' :
+                        theme === 'emerald' ? '🍃 Esmeralda' :
+                        theme === 'sunset' ? '🌅 Atardecer' :
+                        theme === 'sakura' ? '🌸 Sakura' :
+                        theme === 'ocean' ? '🌊 Océano' :
+                        theme === 'gold' ? '👑 Dorado' :
+                        theme === 'cyber' ? '🍇 Púrpura' :
+                        theme === 'neon' ? '🌌 Neón' : '🏛️ Medianoche'
+                      }
+                    </Text>
+                  </View>
+                </View>
+                <Text style={[styles.chevron, { color: colors.textSecondary }]}>
+                  {isThemeExpanded ? '▲' : '▼'}
+                </Text>
+              </TouchableOpacity>
+
+              {isThemeExpanded && (
+                <View style={styles.themeOptionsGrid}>
+                  {[
+                    { id: 'light', name: 'Claro', emoji: '☀️' },
+                    { id: 'dark', name: 'Oscuro', emoji: '🌙' },
+                    { id: 'emerald', name: 'Esmeralda', emoji: '🍃' },
+                    { id: 'sunset', name: 'Atardecer', emoji: '🌅' },
+                    { id: 'sakura', name: 'Sakura', emoji: '🌸' },
+                    { id: 'ocean', name: 'Océano', emoji: '🌊' },
+                    { id: 'gold', name: 'Dorado', emoji: '👑' },
+                    { id: 'cyber', name: 'Púrpura', emoji: '🍇' },
+                    { id: 'neon', name: 'Neón', emoji: '🌌' },
+                    { id: 'midnight', name: 'Medianoche', emoji: '🏛️' },
+                  ].map((t) => (
+                    <TouchableOpacity
+                      key={t.id}
+                      style={[
+                        styles.themeOption,
+                        theme === t.id && [styles.themeOptionActive, { borderColor: colors.primary, backgroundColor: `${colors.primary}1A` }]
+                      ]}
+                      onPress={() => setTheme(t.id)}
+                    >
+                      <Text style={styles.themeEmoji}>{t.emoji}</Text>
+                      <Text style={[styles.themeText, { color: colors.text, fontWeight: theme === t.id ? 'bold' : 'normal' }]}>
+                        {t.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            {/* Editar Perfil / Nombre de Usuario (Colapsable) */}
+            <View style={[styles.themeWrapper, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 12 }]}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  const nextState = !isProfileEditExpanded;
+                  setIsProfileEditExpanded(nextState);
+                  if (nextState) {
+                    setEditUsername(profile?.username || '');
+                  }
+                }}
+                style={styles.themeHeader}
+              >
+                <View style={styles.themeHeaderLeft}>
+                  <Text style={styles.themeHeaderIcon}>✏️</Text>
+                  <View>
+                    <Text style={[styles.themeHeaderTitle, { color: colors.text }]}>Información de Perfil</Text>
+                    <Text style={[styles.themeHeaderSubtitle, { color: colors.textSecondary }]}>
+                      Cambiar nombre de usuario ({profile?.username || 'Cargando...'})
+                    </Text>
+                  </View>
+                </View>
+                <Text style={[styles.chevron, { color: colors.textSecondary }]}>
+                  {isProfileEditExpanded ? '▲' : '▼'}
+                </Text>
+              </TouchableOpacity>
+
+              {isProfileEditExpanded && (
+                <View style={styles.passwordFormContainer}>
+                  <Text style={[styles.passInputLabel, { color: colors.text }]}>Nombre de Usuario</Text>
+                  <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+                    <TextInput
+                      style={[styles.passInput, { color: colors.text }]}
+                      placeholder="Mínimo 4 caracteres"
+                      placeholderTextColor={colors.textSecondary}
+                      value={editUsername}
+                      onChangeText={setEditUsername}
+                      autoCapitalize="none"
+                    />
+                  </View>
+
+                  <TouchableOpacity
+                    style={[styles.savePassBtn, { backgroundColor: colors.primary }]}
+                    onPress={handleUpdateProfile}
+                    disabled={profileEditLoading}
+                  >
+                    {profileEditLoading ? (
+                      <ActivityIndicator color={colors.primaryText} size="small" />
+                    ) : (
+                      <Text style={[styles.savePassBtnText, { color: colors.primaryText }]}>
+                        Guardar Cambios
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* Cambiar Contraseña (Colapsable) */}
+            <View style={[styles.themeWrapper, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 12 }]}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => setIsPasswordExpanded(!isPasswordExpanded)}
+                style={styles.themeHeader}
+              >
+                <View style={styles.themeHeaderLeft}>
+                  <Text style={styles.themeHeaderIcon}>🔑</Text>
+                  <View>
+                    <Text style={[styles.themeHeaderTitle, { color: colors.text }]}>Seguridad y Contraseña</Text>
+                    <Text style={[styles.themeHeaderSubtitle, { color: colors.textSecondary }]}>
+                      Actualizar clave de acceso
+                    </Text>
+                  </View>
+                </View>
+                <Text style={[styles.chevron, { color: colors.textSecondary }]}>
+                  {isPasswordExpanded ? '▲' : '▼'}
+                </Text>
+              </TouchableOpacity>
+
+              {isPasswordExpanded && (
+                <View style={styles.passwordFormContainer}>
+                  {/* Contraseña Actual */}
+                  <Text style={[styles.passInputLabel, { color: colors.text }]}>Contraseña Actual</Text>
+                  <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+                    <TextInput
+                      style={[styles.passInput, { color: colors.text }]}
+                      placeholder="Ingresa tu clave actual"
+                      placeholderTextColor={colors.textSecondary}
+                      secureTextEntry={!showCurrentPass}
+                      value={currentPassword}
+                      onChangeText={setCurrentPassword}
+                    />
+                    <TouchableOpacity onPress={() => setShowCurrentPass(!showCurrentPass)} style={styles.eyeBtn}>
+                      <Text style={styles.eyeIcon}>{showCurrentPass ? '👁️' : '🙈'}</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Nueva Contraseña */}
+                  <Text style={[styles.passInputLabel, { color: colors.text }]}>Nueva Contraseña</Text>
+                  <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+                    <TextInput
+                      style={[styles.passInput, { color: colors.text }]}
+                      placeholder="Mínimo 4 caracteres"
+                      placeholderTextColor={colors.textSecondary}
+                      secureTextEntry={!showNewPass}
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                    />
+                    <TouchableOpacity onPress={() => setShowNewPass(!showNewPass)} style={styles.eyeBtn}>
+                      <Text style={styles.eyeIcon}>{showNewPass ? '👁️' : '🙈'}</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Confirmar Contraseña */}
+                  <Text style={[styles.passInputLabel, { color: colors.text }]}>Confirmar Nueva Contraseña</Text>
+                  <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+                    <TextInput
+                      style={[styles.passInput, { color: colors.text }]}
+                      placeholder="Repite la nueva clave"
+                      placeholderTextColor={colors.textSecondary}
+                      secureTextEntry={!showNewPass}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                    />
+                  </View>
+
+                  <TouchableOpacity
+                    style={[styles.savePassBtn, { backgroundColor: colors.primary }]}
+                    onPress={handleChangePassword}
+                    disabled={passLoading}
+                  >
+                    {passLoading ? (
+                      <ActivityIndicator color={colors.primaryText} size="small" />
+                    ) : (
+                      <Text style={[styles.savePassBtnText, { color: colors.primaryText }]}>
+                        Guardar Nueva Contraseña
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* Estadísticas */}
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Resumen de Progreso</Text>
+            <View style={styles.statsContainer}>
+              <View style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Text style={[styles.statNum, { color: colors.text }]}>{total}</Text>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Pruebas</Text>
+              </View>
+              <View style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Text style={[styles.statNum, { color: average >= 60 ? '#4ECDC4' : '#FF6B6B' }]}>
+                  {average}%
+                </Text>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Promedio</Text>
+              </View>
+            </View>
+
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Historial de Partidas</Text>
+          </>
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Image
+              source={require('../../assets/images/empty_history_illustration1_1787436082611.jpg')}
+              style={styles.emptyIllustration}
+              resizeMode="contain"
+            />
+            <Text style={[styles.emptyText, { color: colors.text }]}>Aún no has jugado ninguna partida</Text>
+            <Text style={[styles.emptySub, { color: colors.textSecondary }]}>Las puntuaciones que guardes aparecerán aquí.</Text>
+          </View>
+        }
+        ListFooterComponent={
+          <View style={styles.footer}>
+            <TouchableOpacity style={[styles.logoutButton, { backgroundColor: '#FF6B6B' }]} onPress={handleLogout}>
+              <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+            </TouchableOpacity>
+          </View>
+        }
+      />
+
+      {/* Modal para ver detalles del cuestionario */}
+      <Modal visible={modalVisible} animationType="slide" transparent={true} onRequestClose={() => setModalVisible(false)}>
+        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Detalles de la Partida</Text>
+            <Text style={[styles.modalCategory, { color: colors.primary }]}>{selectedGame?.categoryName}</Text>
+
+            <Text style={[styles.modalDate, { color: colors.textSecondary }]}>
+              {selectedGame && new Date(selectedGame.date).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </Text>
+
+            <View style={[styles.modalStats, { backgroundColor: colors.background }]}>
+              <Text style={[styles.modalStatText, { color: colors.text }]}>
+                Aciertos: <Text style={{ fontWeight: 'bold' }}>{selectedGame?.score}/{selectedGame?.total}</Text> ({selectedGame?.percentage}%)
+              </Text>
+              <Text style={[styles.modalStatText, { marginTop: 4, color: colors.text }]}>
+                Vidas restantes:{' '}
+                {selectedGame?.lives !== undefined ? (
+                  selectedGame.lives === 0
+                    ? '💔 0 Vidas (Game Over)'
+                    : `${'❤️'.repeat(Math.max(0, selectedGame.lives))}`
+                ) : 'N/A'}
+              </Text>
+            </View>
+
+            <ScrollView 
+              style={styles.questionsScroll} 
+              contentContainerStyle={{ paddingBottom: 16 }}
+              showsVerticalScrollIndicator={true}
+            >
+              {selectedGame?.questions && selectedGame.questions.length > 0 ? (
+                selectedGame.questions.map((q, qIndex) => {
+                  const isCorrect = q.userAnswer === q.correctAnswer;
+                  return (
+                    <View key={qIndex} style={[styles.questionCard, { backgroundColor: colors.card, borderColor: isCorrect ? '#C3E6CB' : '#F5C6CB' }]}>
+                      <View style={styles.qHeader}>
+                        <Text style={[styles.qNumber, { color: colors.textSecondary }]}>Pregunta {qIndex + 1}</Text>
+                        <Text style={[styles.qBadge, isCorrect ? styles.qBadgeCorrect : styles.qBadgeWrong]}>
+                          {q.userAnswer === -1 ? '⏱️ Tiempo Expirado' : isCorrect ? '✓ Correcta' : '✗ Incorrecta'}
+                        </Text>
+                      </View>
+                      <Text style={[styles.qText, { color: colors.text }]}>{q.text}</Text>
+                      <View style={styles.qOptionsContainer}>
+                        {q.options && q.options.map((opt, oIndex) => {
+                          const isCorrectOption = oIndex === q.correctAnswer;
+                          const isUserAnswer = oIndex === q.userAnswer;
+
+                          let optStyle = [styles.qOption, { backgroundColor: colors.background, borderColor: colors.border }];
+                          let optTextStyle = [styles.qOptionText, { color: colors.text }];
+
+                          if (isCorrectOption) {
+                            optStyle.push(styles.qOptCorrectBg);
+                            optTextStyle.push(styles.qOptCorrectText);
+                          } else if (isUserAnswer && !isCorrectOption) {
+                            optStyle.push(styles.qOptWrongBg);
+                            optTextStyle.push(styles.qOptWrongText);
+                          }
+
+                          return (
+                            <View key={oIndex} style={optStyle}>
+                              <Text style={optTextStyle}>
+                                {String.fromCharCode(65 + oIndex)}. {opt}
+                                {isCorrectOption ? ' ✓' : ''}
+                                {isUserAnswer && !isCorrectOption ? ' ✗' : ''}
+                              </Text>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  );
+                })
+              ) : (
+                <Text style={[styles.noDetailText, { color: colors.textSecondary }]}>No hay detalles de preguntas guardados para esta partida anterior.</Text>
+              )}
+            </ScrollView>
+
+            <TouchableOpacity style={[styles.closeModalBtn, { backgroundColor: colors.primary }]} onPress={() => setModalVisible(false)}>
+              <Text style={[styles.closeModalBtnText, { color: colors.primaryText }]}>Cerrar Detalles</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  listContainer: {
+    paddingBottom: 40,
+  },
+  profileHeader: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+  },
+  avatarContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  avatarText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  username: {
+    fontSize: 24,
+    fontWeight: '800',
+    fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
+  },
+  role: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  themeWrapper: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  themeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 14,
+  },
+  themeHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  themeHeaderIcon: {
+    fontSize: 22,
+  },
+  themeHeaderTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  themeHeaderSubtitle: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  chevron: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  themeOptionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 8,
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(128,128,128,0.1)',
+  },
+  themeOption: {
+    width: '48%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    gap: 8,
+  },
+  themeOptionActive: {
+    elevation: 1,
+  },
+  themeEmoji: {
+    fontSize: 18,
+  },
+  themeText: {
+    fontSize: 12,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    padding: 12,
+    gap: 12,
+  },
+  statBox: {
+    flex: 1,
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 1px 2px rgba(0,0,0,0.05)' }
+      : { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }),
+  },
+  statNum: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 11,
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginLeft: 16,
+    marginTop: 8,
+    marginBottom: 10,
+    fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
+  },
+  historyCard: {
+    borderRadius: 12,
+    padding: 12,
+    marginHorizontal: 16,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderLeftWidth: 5,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 1px 2px rgba(0,0,0,0.05)' }
+      : { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }),
+  },
+  historyInfo: {
+    flex: 1,
+  },
+  historyCategory: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  historyDate: {
+    fontSize: 11,
+  },
+  historyScore: {
+    alignItems: 'flex-end',
+    marginRight: 10,
+  },
+  scoreText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  percentageText: {
+    fontSize: 10,
+  },
+  actionIconBtn: {
+    padding: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteHistoryBtn: {
+    marginLeft: 10,
+  },
+  arrowIcon: {
+    fontSize: 14,
+  },
+  deleteHistoryIcon: {
+    fontSize: 14,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 16,
+  },
+  emptyIllustration: {
+    width: 140,
+    height: 140,
+    marginBottom: 16,
+    borderRadius: 24,
+  },
+  emptyText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  emptySub: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  footer: {
+    padding: 16,
+    marginTop: 10,
+  },
+  logoutButton: {
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  logoutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  modalCard: {
+    borderRadius: 16,
+    padding: 16,
+    width: '100%',
+    maxWidth: 480,
+    height: Platform.OS === 'web' ? undefined : '82%',
+    maxHeight: '88%',
+    flexDirection: 'column',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    textAlign: 'center',
+    fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
+  },
+  modalCategory: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  modalDate: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 2,
+    marginBottom: 10,
+  },
+  modalStats: {
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  modalStatText: {
+    fontSize: 14,
+  },
+  questionsScroll: {
+    flex: 1,
+    width: '100%',
+    marginBottom: 12,
+  },
+  noDetailText: {
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 24,
+    fontStyle: 'italic',
+  },
+  questionCard: {
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1.5,
+  },
+  qHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  qNumber: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  qBadge: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  qBadgeCorrect: {
+    backgroundColor: '#D4EDDA',
+    color: '#155724',
+  },
+  qBadgeWrong: {
+    backgroundColor: '#F8D7DA',
+    color: '#721C24',
+  },
+  qText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 10,
+  },
+  qOptionsContainer: {
+    gap: 6,
+  },
+  qOption: {
+    padding: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  qOptCorrectBg: {
+    backgroundColor: '#D4EDDA',
+    borderColor: '#C3E6CB',
+  },
+  qOptWrongBg: {
+    backgroundColor: '#F8D7DA',
+    borderColor: '#F5C6CB',
+  },
+  qOptionText: {
+    fontSize: 13,
+  },
+  qOptCorrectText: {
+    color: '#155724',
+    fontWeight: '600',
+  },
+  qOptWrongText: {
+    color: '#721C24',
+    fontWeight: '600',
+  },
+  closeModalBtn: {
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  closeModalBtnText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  avatarImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+  },
+  editBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    boxShadow: '0px 1px 2px rgba(0,0,0,0.2)',
+    elevation: 2,
+  },
+  editBadgeText: {
+    fontSize: 11,
+  },
+  // Estilos de Formulario de Contraseña
+  passwordFormContainer: {
+    padding: 12,
+    gap: 8,
+  },
+  passInputLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 4,
+  },
+  passInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 44,
+  },
+  passInput: {
+    flex: 1,
+    fontSize: 13,
+    height: '100%',
+  },
+  eyeBtn: {
+    padding: 6,
+  },
+  eyeIcon: {
+    fontSize: 16,
+  },
+  savePassBtn: {
+    marginTop: 10,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  savePassBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+});

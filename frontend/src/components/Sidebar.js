@@ -1,0 +1,548 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ScrollView, Image, TextInput, Modal, ActivityIndicator, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useTheme } from '../context/ThemeContext';
+import api, { BASE_URL } from '../services/api';
+
+const DRAWER_WIDTH = 295;
+
+export default function Sidebar({ isOpen, onClose, username, role, isAdmin, profileImage, onLogout }) {
+  const router = useRouter();
+  const { theme, colors, setTheme } = useTheme();
+  
+  const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
+  const backdropAnim = useRef(new Animated.Value(0)).current;
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isThemeExpanded, setIsThemeExpanded] = useState(false);
+
+  // Estados para el Modal de PIN
+  const [pinVisible, setPinVisible] = useState(false);
+  const [pin, setPin] = useState('');
+  const [pinLoading, setPinLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(backdropAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: -DRAWER_WIDTH,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(backdropAnim, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShouldRender(false);
+      });
+    }
+  }, [isOpen]);
+
+  const handleVerifyPin = async () => {
+    if (!pin.trim()) {
+      Alert.alert('Error', 'Por favor, introduce el PIN.');
+      return;
+    }
+    setPinLoading(true);
+    try {
+      const response = await api.post('/auth/verify-pin', { pin: pin.trim() });
+      if (response.data.success) {
+        setPinVisible(false);
+        router.push('/admin');
+      }
+    } catch (error) {
+      const msg = error.response?.data?.message || 'PIN incorrecto. Inténtalo de nuevo.';
+      Alert.alert('Error de Acceso', msg);
+    } finally {
+      setPinLoading(false);
+    }
+  };
+
+  // No renderizar si no está abierto ni está el PIN visible
+  if (!shouldRender && !pinVisible) return null;
+
+  const handleNavigate = (path) => {
+    onClose();
+    router.push(path);
+  };
+
+  return (
+    <View style={StyleSheet.absoluteFillObject}>
+      {/* Backdrop traslúcido */}
+      {shouldRender && (
+        <Animated.View 
+          style={[
+            styles.backdrop, 
+            { 
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              opacity: backdropAnim 
+            }
+          ]}
+        >
+          <TouchableOpacity 
+            style={styles.backdropClickable} 
+            activeOpacity={1} 
+            onPress={onClose} 
+          />
+        </Animated.View>
+      )}
+
+      {/* Drawer Deslizable */}
+      {shouldRender && (
+        <Animated.View 
+          style={[
+            styles.drawer, 
+            { 
+              backgroundColor: colors.card,
+              borderRightColor: colors.border,
+              transform: [{ translateX: slideAnim }] 
+            }
+          ]}
+          {...(Platform.OS === 'web' ? {
+            onMouseLeave: onClose
+          } : {})}
+        >
+          {/* Cabecera del Perfil con Marca JuegaMente */}
+          <View style={[styles.profileHeader, { borderBottomColor: colors.border }]}>
+            <View style={{ alignItems: 'center', marginBottom: 14 }}>
+              <Text style={{ fontSize: 22, fontWeight: '900', color: colors.primary, letterSpacing: 0.5 }}>
+                🎮 JuegaMente
+              </Text>
+              <Text style={{ fontSize: 11, fontWeight: '800', color: colors.textSecondary, letterSpacing: 1.5, marginTop: 2 }}>
+                ( PLAYFULLY )
+              </Text>
+            </View>
+            <TouchableOpacity 
+              style={[styles.avatar, { backgroundColor: colors.primary }]}
+              onPress={() => handleNavigate('/profile')}
+              activeOpacity={0.8}
+            >
+              {profileImage ? (
+                <Image source={{ uri: `${BASE_URL}${profileImage}` }} style={styles.avatarImage} />
+              ) : (
+                <Text style={[styles.avatarText, { color: colors.primaryText }]}>
+                  {username?.substring(0, 2).toUpperCase()}
+                </Text>
+              )}
+            </TouchableOpacity>
+            <Text style={[styles.username, { color: colors.text }]} numberOfLines={1}>{username}</Text>
+            <View style={[styles.roleBadge, { backgroundColor: (isAdmin || role === 'admin') ? '#F59E0B20' : `${colors.primary}20` }]}>
+              <Text style={[styles.role, { color: (isAdmin || role === 'admin') ? '#D97706' : colors.primary }]}>
+                {isAdmin || role === 'admin' ? '👑 Administrador' : '🎓 Estudiante'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Opciones del Menú */}
+          <ScrollView contentContainerStyle={styles.menuList} showsVerticalScrollIndicator={false}>
+            <TouchableOpacity 
+              style={[
+                styles.menuItem, 
+                { 
+                  backgroundColor: colors.inputBg || `${colors.card}`, 
+                  borderColor: colors.border,
+                  borderWidth: 1.5 
+                }
+              ]} 
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.menuIcon}>🏠</Text>
+              <Text style={[styles.menuText, { color: colors.text }]}>Inicio</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[
+                styles.menuItem, 
+                { 
+                  backgroundColor: colors.inputBg || `${colors.card}`, 
+                  borderColor: colors.border,
+                  borderWidth: 1.5 
+                }
+              ]} 
+              onPress={() => handleNavigate('/profile')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.menuIcon}>👤</Text>
+              <Text style={[styles.menuText, { color: colors.text }]}>Mi Perfil</Text>
+            </TouchableOpacity>
+
+            {(isAdmin || role === 'admin') && (
+              <TouchableOpacity 
+                style={[
+                  styles.menuItem, 
+                  { 
+                    backgroundColor: colors.inputBg || `${colors.card}`, 
+                    borderColor: colors.border,
+                    borderWidth: 1.5 
+                  }
+                ]} 
+                onPress={() => {
+                  onClose();
+                  setPin('');
+                  setPinVisible(true);
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.menuIcon}>⚙️</Text>
+                <Text style={[styles.menuText, { color: colors.text }]}>Panel Admin</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Selector de Temas Colapsable (Acordeón por Clic) */}
+            <View style={[styles.themeSection, { borderColor: colors.border, backgroundColor: colors.inputBg || `${colors.card}`, borderWidth: 1.5 }]}>
+              <TouchableOpacity 
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 6 }}
+                onPress={() => setIsThemeExpanded(!isThemeExpanded)}
+                activeOpacity={0.7}
+              >
+                <View style={{ flex: 1, paddingRight: 8 }}>
+                  <Text style={[styles.themeTitle, { color: colors.text, marginBottom: 2, fontWeight: '700' }]}>
+                    🎨 Tema de la App
+                  </Text>
+                  <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                    Actual: {
+                      theme === 'light' ? '☀️ Claro' :
+                      theme === 'dark' ? '🌙 Oscuro' :
+                      theme === 'emerald' ? '🍃 Esmeralda' :
+                      theme === 'sunset' ? '🌅 Atardecer' :
+                      theme === 'sakura' ? '🌸 Sakura' :
+                      theme === 'ocean' ? '🌊 Océano' :
+                      theme === 'gold' ? '👑 Dorado' :
+                      theme === 'cyber' ? '🍇 Púrpura' :
+                      theme === 'neon' ? '🌌 Neón' : '🏛️ Medianoche'
+                    }
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 13, color: colors.textSecondary, fontWeight: 'bold' }}>
+                  {isThemeExpanded ? '▲' : '▼'}
+                </Text>
+              </TouchableOpacity>
+
+              {isThemeExpanded && (
+                <View style={styles.themeGrid}>
+                  {[
+                    { id: 'light', emoji: '☀️', name: 'Claro' },
+                    { id: 'dark', emoji: '🌙', name: 'Oscuro' },
+                    { id: 'emerald', emoji: '🍃', name: 'Esmeralda' },
+                    { id: 'sunset', emoji: '🌅', name: 'Atardecer' },
+                    { id: 'sakura', emoji: '🌸', name: 'Sakura' },
+                    { id: 'ocean', emoji: '🌊', name: 'Océano' },
+                    { id: 'gold', emoji: '👑', name: 'Dorado' },
+                    { id: 'cyber', emoji: '🍇', name: 'Púrpura' },
+                    { id: 'neon', emoji: '🌌', name: 'Neón' },
+                    { id: 'midnight', emoji: '🏛️', name: 'Medianoche' },
+                  ].map((t) => (
+                    <TouchableOpacity 
+                      key={t.id}
+                      style={[
+                        styles.themeBtn,
+                        theme === t.id && [styles.themeBtnActive, { borderColor: colors.primary, backgroundColor: `${colors.primary}1A` }]
+                      ]}
+                      onPress={() => setTheme(t.id)}
+                    >
+                      <Text style={styles.themeEmoji}>{t.emoji}</Text>
+                      <Text style={[styles.themeBtnText, { color: colors.text, fontWeight: theme === t.id ? 'bold' : 'normal' }]}>{t.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          </ScrollView>
+
+          {/* Footer con Cierre de Sesión y Versión Compacta */}
+          <View style={[styles.footer, { borderTopColor: colors.border }]}>
+            <TouchableOpacity style={styles.logoutBtn} onPress={onLogout} activeOpacity={0.85}>
+              <Text style={styles.logoutIcon}>🚪</Text>
+              <Text style={styles.logoutText}>Cerrar Sesión</Text>
+            </TouchableOpacity>
+            <Text style={[styles.versionText, { color: colors.textSecondary }]}>
+              v1.0.0
+            </Text>
+          </View>
+        </Animated.View>
+      )}
+
+      {/* Modal de Validación de PIN de Administrador */}
+      <Modal visible={pinVisible} animationType="fade" transparent={true}>
+        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
+            <Text style={styles.modalEmoji}>🔒</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Acceso de Seguridad</Text>
+            <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>Por favor, introduce el PIN de Administrador</Text>
+
+            <TextInput
+              style={[styles.pinInput, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+              value={pin}
+              onChangeText={setPin}
+              placeholder="PIN de 4 dígitos"
+              placeholderTextColor={colors.textSecondary}
+              secureTextEntry
+              keyboardType="numeric"
+              maxLength={4}
+              autoFocus
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.cancelBtn, { backgroundColor: colors.border }]} 
+                onPress={() => setPinVisible(false)}
+              >
+                <Text style={[styles.cancelBtnText, { color: colors.text }]}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.confirmBtn, { backgroundColor: colors.primary }]} 
+                onPress={handleVerifyPin}
+                disabled={pinLoading}
+              >
+                {pinLoading ? (
+                  <ActivityIndicator color={colors.primaryText} />
+                ) : (
+                  <Text style={[styles.confirmBtnText, { color: colors.primaryText }]}>Verificar</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 999,
+  },
+  backdropClickable: {
+    flex: 1,
+  },
+  drawer: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: DRAWER_WIDTH,
+    borderRightWidth: 1,
+    zIndex: 1000,
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    flexDirection: 'column',
+  },
+  profileHeader: {
+    alignItems: 'center',
+    paddingVertical: 22,
+    borderBottomWidth: 1,
+    paddingHorizontal: 16,
+  },
+  avatar: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 3px 6px rgba(0,0,0,0.12)' }
+      : { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 4 }),
+  },
+  avatarImage: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+  },
+  avatarText: {
+    fontSize: 26,
+    fontWeight: 'bold',
+  },
+  username: {
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 4,
+    width: '100%',
+    textAlign: 'center',
+  },
+  roleBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 2,
+  },
+  role: {
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  menuList: {
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginVertical: 4,
+    paddingHorizontal: 14,
+  },
+  menuIcon: {
+    fontSize: 22,
+    marginRight: 14,
+  },
+  menuText: {
+    fontSize: 16.5,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  themeSection: {
+    marginTop: 16,
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+  },
+  themeTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  themeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 10,
+  },
+  themeBtn: {
+    width: '48%',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    backgroundColor: 'rgba(128,128,128,0.05)',
+  },
+  themeBtnActive: {
+    elevation: 1,
+  },
+  themeEmoji: {
+    fontSize: 18,
+    marginBottom: 2,
+  },
+  themeBtnText: {
+    fontSize: 10.5,
+    fontWeight: '600',
+  },
+  footer: {
+    borderTopWidth: 1,
+    padding: 16,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 14,
+    alignItems: 'center',
+    gap: 8,
+  },
+  versionText: {
+    fontSize: 11,
+    fontWeight: '600',
+    opacity: 0.5,
+    letterSpacing: 0.5,
+    textAlign: 'center',
+  },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF6B6B',
+    paddingVertical: 13,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  logoutIcon: {
+    fontSize: 20,
+    marginRight: 10,
+    color: '#FFFFFF',
+  },
+  logoutText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  // Estilos del Modal de PIN
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 320,
+    alignItems: 'center',
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 4px 10px rgba(0,0,0,0.1)' }
+      : { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 }),
+  },
+  modalEmoji: {
+    fontSize: 40,
+    marginBottom: 12,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  modalSubtitle: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  pinInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 20,
+    textAlign: 'center',
+    letterSpacing: 8,
+    width: '100%',
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  cancelBtn: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  cancelBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  confirmBtn: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  confirmBtnText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+});

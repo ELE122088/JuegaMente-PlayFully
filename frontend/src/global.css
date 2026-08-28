@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Aplicar la tipografía premium a todos los elementos del navegador */
+body, html, #root, div, span, input, textarea, button, select, p, a {
+  font-family: var(--font-sans) !important;
+}
+
+/* Estilo específico de Outfit para títulos y encabezados */
+h1, h2, h3, h4, h5, h6, [role="heading"] {
+  font-family: var(--font-display) !important;
+}
+
+/* Smooth scrolling global */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar personalizada para navegadores Webkit */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.5);
+}
+
+/* Selección de texto personalizada */
+::selection {
+  background: rgba(108, 99, 255, 0.3);
+  color: inherit;
+}
+
+/* Suavizar transiciones en el cambio de temas */
+* {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 250ms;
+  transition-timing-function: ease;
+}
+
+/* Deshabilitar transiciones en animaciones activas para evitar conflictos */
+[style*="transform"], [style*="opacity"] {
+  transition-property: background-color, border-color;
+}
+
+/* Animación fadeIn para contenido */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
