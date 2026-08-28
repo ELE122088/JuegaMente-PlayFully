@@ -61,10 +61,25 @@ app.get('/', (req, res) => {
   res.json({
     message: '🧠 API JuegaMente (Playfully) funcionando correctamente con WebSockets',
     endpoints: {
+      health: '/api/health',
       categories: '/api/categories',
       questions: '/api/questions',
       auth: '/api/auth',
     },
+  });
+});
+
+// Ruta de diagnóstico de salud y base de datos
+app.get('/api/health', (req, res) => {
+  const mongoose = require('mongoose');
+  const state = mongoose.connection.readyState;
+  const states = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+  res.json({
+    databaseStatus: states[state] || 'unknown',
+    readyState: state,
+    connectedHost: mongoose.connection.host || null,
+    lastDbError: global.lastDbError || null,
+    uptime: process.uptime(),
   });
 });
 

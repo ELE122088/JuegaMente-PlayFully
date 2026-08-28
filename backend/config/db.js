@@ -67,7 +67,9 @@ const connectDB = async () => {
       } catch (migError) {
         console.error('⚠️ Error al ejecutar la migración automática de usuarios:', migError.message);
       }
+      global.lastDbError = null;
     } catch (error) {
+      global.lastDbError = error.message;
       console.error(`❌ Error de conexión a MongoDB: ${error.message}`);
       console.log('🔄 Reintentando conectar a MongoDB en 5 segundos...');
       setTimeout(attemptConnect, 5000);
