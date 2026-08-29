@@ -481,7 +481,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header title="Mi Perfil" showBack={true} />
+      <Header title="" showBack={true} />
 
       <FlatList
         data={profile?.history || []}
@@ -1017,7 +1017,7 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 12,
     borderBottomWidth: 1,
   },
   avatarContainer: {
