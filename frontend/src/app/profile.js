@@ -506,10 +506,10 @@ export default function ProfileScreen() {
         ListHeaderComponent={
           <>
             {/* =========================================================
-                FUSIÓN (ACTIVA: OPCIÓN A + C SIN CÁMARA): Cabecera Compacta Integrada
+                FUSIÓN (ACTIVA: OPCIÓN A + C SIN CÁMARA): Barra Ultra-Slim en 1 Sola Línea
             ========================================================= */}
             <View style={[styles.profileFusionContainer, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-              {/* Botón ← Volver estilo píldora (de Opción A) */}
+              {/* Flecha de Retorno a la izquierda */}
               <TouchableOpacity
                 style={[styles.fusionBackBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
                 onPress={() => {
@@ -518,10 +518,10 @@ export default function ProfileScreen() {
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.fusionBackText, { color: colors.text }]}>← Volver</Text>
+                <Text style={[styles.fusionBackText, { color: colors.text }]}>←</Text>
               </TouchableOpacity>
 
-              {/* Información Horizontal del Usuario (de Opción C - Sin Cámara) */}
+              {/* Avatar + Nombre + Rol DIRECTAMENTE al lado de la flecha en la misma fila */}
               <View style={styles.fusionUserInfo}>
                 <TouchableOpacity
                   style={[styles.fusionAvatar, { backgroundColor: colors.primary }]}
@@ -1081,31 +1081,34 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingBottom: 40,
   },
-  // Estilos de la FUSIÓN (Opción A + C sin Cámara)
+  // Estilos de la FUSIÓN (Opción A + C en 1 sola fila sin Cámara)
   profileFusionContainer: {
-    paddingTop: Platform.OS === 'web' ? 14 : 44,
-    paddingBottom: 14,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    gap: 10,
-  },
-  fusionBackBtn: {
-    alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
+    paddingTop: Platform.OS === 'web' ? 12 : 44,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    gap: 12,
+  },
+  fusionBackBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     ...(Platform.OS === 'web'
       ? { boxShadow: '0px 2px 4px rgba(0,0,0,0.06)' }
       : { elevation: 1 }),
   },
   fusionBackText: {
-    fontSize: 12.5,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '800',
+    marginTop: -2,
   },
   fusionUserInfo: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
