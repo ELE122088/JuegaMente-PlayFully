@@ -353,15 +353,17 @@ export default function ProfileScreen() {
 
   const getStats = () => {
     if (!profile || !profile.history || profile.history.length === 0) {
-      return { total: 0, average: 0 };
+      return { total: 0, average: 0, bestScore: 0, passed: 0 };
     }
     const total = profile.history.length;
-    const sumPercentages = profile.history.reduce((acc, curr) => acc + curr.percentage, 0);
+    const sumPercentages = profile.history.reduce((acc, curr) => acc + (curr.percentage || 0), 0);
     const average = Math.round(sumPercentages / total);
-    return { total, average };
+    const bestScore = Math.max(...profile.history.map((h) => h.percentage || 0));
+    const passed = profile.history.filter((h) => (h.percentage || 0) >= 60).length;
+    return { total, average, bestScore, passed };
   };
 
-  const { total, average } = getStats();
+  const { total, average, bestScore, passed } = getStats();
 
   const handleShowGameDetail = (game) => {
     setSelectedGame(game);
@@ -756,18 +758,53 @@ export default function ProfileScreen() {
               )}
             </View>
 
-            {/* Estadísticas */}
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Resumen de Progreso</Text>
-            <View style={styles.statsContainer}>
-              <View style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <Text style={[styles.statNum, { color: colors.text }]}>{total}</Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Pruebas</Text>
+            {/* Estadísticas: Propuesta A (Cuadrícula KPI Gamificada 2x2) */}
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Resumen de Rendimiento</Text>
+            <View style={styles.kpiGridContainer}>
+              {/* 1. Partidas Jugadas */}
+              <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={[styles.kpiIconWrapper, { backgroundColor: '#3B82F618' }]}>
+                  <Text style={styles.kpiIcon}>🎮</Text>
+                </View>
+                <View style={styles.kpiContent}>
+                  <Text style={[styles.kpiValue, { color: colors.text }]}>{total}</Text>
+                  <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Partidas</Text>
+                </View>
               </View>
-              <View style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <Text style={[styles.statNum, { color: average >= 60 ? '#4ECDC4' : '#FF6B6B' }]}>
-                  {average}%
-                </Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Promedio</Text>
+
+              {/* 2. Promedio General */}
+              <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={[styles.kpiIconWrapper, { backgroundColor: average >= 60 ? '#10B98118' : '#EF444418' }]}>
+                  <Text style={styles.kpiIcon}>{average >= 60 ? '🎯' : '📉'}</Text>
+                </View>
+                <View style={styles.kpiContent}>
+                  <Text style={[styles.kpiValue, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
+                    {average}%
+                  </Text>
+                  <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Promedio</Text>
+                </View>
+              </View>
+
+              {/* 3. Mejor Récord */}
+              <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={[styles.kpiIconWrapper, { backgroundColor: '#F59E0B18' }]}>
+                  <Text style={styles.kpiIcon}>🏆</Text>
+                </View>
+                <View style={styles.kpiContent}>
+                  <Text style={[styles.kpiValue, { color: '#D97706' }]}>{bestScore}%</Text>
+                  <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Mejor Récord</Text>
+                </View>
+              </View>
+
+              {/* 4. Partidas Aprobadas */}
+              <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={[styles.kpiIconWrapper, { backgroundColor: '#8B5CF618' }]}>
+                  <Text style={styles.kpiIcon}>✅</Text>
+                </View>
+                <View style={styles.kpiContent}>
+                  <Text style={[styles.kpiValue, { color: '#8B5CF6' }]}>{passed}</Text>
+                  <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Aprobadas</Text>
+                </View>
               </View>
             </View>
 
@@ -1225,29 +1262,50 @@ const styles = StyleSheet.create({
   themeText: {
     fontSize: 12,
   },
-  statsContainer: {
+  // Cuadrícula KPI Gamificada (2x2)
+  kpiGridContainer: {
     flexDirection: 'row',
-    padding: 12,
-    gap: 12,
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    rowGap: 10,
+    columnGap: 10,
+    marginBottom: 8,
   },
-  statBox: {
-    flex: 1,
-    borderRadius: 12,
-    padding: 12,
+  kpiCard: {
+    width: '48.5%',
+    flexDirection: 'row',
     alignItems: 'center',
+    padding: 12,
+    borderRadius: 14,
     borderWidth: 1,
+    gap: 10,
     ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 1px 2px rgba(0,0,0,0.05)' }
-      : { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }),
+      ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.04)' }
+      : { elevation: 1 }),
   },
-  statNum: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 2,
+  kpiIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  statLabel: {
+  kpiIcon: {
+    fontSize: 18,
+  },
+  kpiContent: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  kpiValue: {
+    fontSize: 17,
+    fontWeight: '800',
+    marginBottom: 1,
+  },
+  kpiLabel: {
     fontSize: 11,
-    textAlign: 'center',
+    fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 18,
