@@ -408,24 +408,34 @@ export default function ProfileScreen() {
     const isGood = item.percentage >= 80;
     const isRegular = item.percentage >= 60 && item.percentage < 80;
 
-    let badgeBg = '#EF444418';
+    let badgeBg = '#EF444414';
     let badgeColor = '#EF4444';
-    let statusText = '❌ Reprobada';
+    let statusText = 'Reprobada';
+    let defaultIcon = '📚';
 
     if (isGood) {
-      badgeBg = '#10B98118';
+      badgeBg = '#10B98114';
       badgeColor = '#10B981';
-      statusText = '✅ Excelente';
+      statusText = 'Excelente';
     } else if (isRegular) {
-      badgeBg = '#F59E0B18';
+      badgeBg = '#F59E0B14';
       badgeColor = '#D97706';
-      statusText = '👍 Aprobada';
+      statusText = 'Aprobada';
     }
+
+    const catNameLower = (item.categoryName || '').toLowerCase();
+    if (catNameLower.includes('mat')) defaultIcon = '🔢';
+    else if (catNameLower.includes('hist')) defaultIcon = '🏛️';
+    else if (catNameLower.includes('cien') || catNameLower.includes('bio') || catNameLower.includes('quim')) defaultIcon = '🔬';
+    else if (catNameLower.includes('geo')) defaultIcon = '🌍';
+    else if (catNameLower.includes('art') || catNameLower.includes('mus')) defaultIcon = '🎨';
+    else if (catNameLower.includes('lit') || catNameLower.includes('leng')) defaultIcon = '📖';
+    else if (catNameLower.includes('ing') || catNameLower.includes('tech')) defaultIcon = '💻';
 
     return (
       <TouchableOpacity
         style={[
-          styles.historyCardModern,
+          styles.historyCompactCard,
           {
             backgroundColor: colors.card,
             borderColor: colors.border,
@@ -434,67 +444,64 @@ export default function ProfileScreen() {
         onPress={() => handleShowGameDetail(item)}
         activeOpacity={0.7}
       >
-        {/* Fila Superior: Título de Materia y Píldora de Calificación */}
-        <View style={styles.historyTopRow}>
-          <Text style={[styles.historyCategory, { color: colors.text }]} numberOfLines={1}>
-            {item.categoryName}
-          </Text>
-          <View style={[styles.historyScorePill, { backgroundColor: badgeBg }]}>
-            <Text style={[styles.historyScorePillText, { color: badgeColor }]}>
-              {item.score}/{item.total} • {item.percentage}%
-            </Text>
-          </View>
+        {/* 1. Icono de Materia a la Izquierda */}
+        <View style={[styles.historyCategoryCircle, { backgroundColor: badgeBg }]}>
+          <Text style={styles.historyCategoryEmoji}>{defaultIcon}</Text>
         </View>
 
-        {/* Fila Inferior: Fecha + Estado Textual y Botones de Acción */}
-        <View style={styles.historyBottomRow}>
-          <View style={styles.historyMetaLeft}>
-            <Text style={[styles.historyDate, { color: colors.textSecondary }]}>
-              {new Date(item.date).toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: 'short',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </Text>
-            <Text style={styles.historyDot}>•</Text>
-            <Text style={[styles.historyStatusText, { color: badgeColor }]}>
-              {statusText}
-            </Text>
-          </View>
+        {/* 2. Información Central: Materia + Fecha */}
+        <View style={styles.historyCompactCenter}>
+          <Text style={[styles.historyCompactTitle, { color: colors.text }]} numberOfLines={1}>
+            {item.categoryName}
+          </Text>
+          <Text style={[styles.historyCompactSub, { color: colors.textSecondary }]}>
+            {new Date(item.date).toLocaleDateString('es-ES', {
+              day: '2-digit',
+              month: 'short',
+              hour: '2-digit',
+              minute: '2-digit',
+            })} • <Text style={{ color: badgeColor, fontWeight: '700' }}>{statusText}</Text>
+          </Text>
+        </View>
 
-          {/* Grupo de Botones de Acción Redondeados */}
-          <View style={styles.historyActionsGroup}>
-            {/* Botón Ranking */}
-            <TouchableOpacity
-              style={[styles.historyMicroBtn, { backgroundColor: '#F59E0B18' }]}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleOpenCategoryRanking(item.category, item.categoryName);
-              }}
-              title="Ver Ranking"
-            >
-              <Text style={styles.historyMicroBtnIcon}>🏆</Text>
-            </TouchableOpacity>
+        {/* 3. Puntuación a la Derecha */}
+        <View style={styles.historyCompactScoreBox}>
+          <Text style={[styles.historyCompactPercent, { color: badgeColor }]}>
+            {item.percentage}%
+          </Text>
+          <Text style={[styles.historyCompactScoreFraction, { color: colors.textSecondary }]}>
+            {item.score}/{item.total} pts
+          </Text>
+        </View>
 
-            {/* Botón Ver Preguntas / Lupa */}
-            <TouchableOpacity
-              style={[styles.historyMicroBtn, { backgroundColor: colors.inputBg || `${colors.card}` }]}
-              onPress={() => handleShowGameDetail(item)}
-              title="Ver Detalles"
-            >
-              <Text style={styles.historyMicroBtnIcon}>🔍</Text>
-            </TouchableOpacity>
+        {/* 4. Botones de Acción Inline */}
+        <View style={styles.historyCompactActions}>
+          <TouchableOpacity
+            style={[styles.historyMicroBtn, { backgroundColor: '#F59E0B18' }]}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleOpenCategoryRanking(item.category, item.categoryName);
+            }}
+            title="Ver Ranking"
+          >
+            <Text style={styles.historyMicroBtnIcon}>🏆</Text>
+          </TouchableOpacity>
 
-            {/* Botón Eliminar */}
-            <TouchableOpacity
-              style={[styles.historyMicroBtn, { backgroundColor: '#EF444414' }]}
-              onPress={(e) => handleDeleteHistory(item._id, e)}
-              title="Eliminar"
-            >
-              <Text style={styles.historyMicroBtnIcon}>🗑️</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={[styles.historyMicroBtn, { backgroundColor: colors.inputBg || `${colors.card}` }]}
+            onPress={() => handleShowGameDetail(item)}
+            title="Ver Detalles"
+          >
+            <Text style={styles.historyMicroBtnIcon}>🔍</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.historyMicroBtn, { backgroundColor: '#EF444414' }]}
+            onPress={(e) => handleDeleteHistory(item._id, e)}
+            title="Eliminar"
+          >
+            <Text style={styles.historyMicroBtnIcon}>🗑️</Text>
+          </TouchableOpacity>
         </View>
       </TouchableOpacity>
     );
@@ -1555,6 +1562,62 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
   },
+  // Estilos de Propuesta 2: Lista Compacta Minimalista
+  historyCompactCard: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 1px 4px rgba(0,0,0,0.03)' }
+      : { elevation: 1 }),
+  },
+  historyCategoryCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  historyCategoryEmoji: {
+    fontSize: 18,
+  },
+  historyCompactCenter: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  historyCompactTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  historyCompactSub: {
+    fontSize: 10.5,
+  },
+  historyCompactScoreBox: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  historyCompactPercent: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  historyCompactScoreFraction: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  historyCompactActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginLeft: 4,
+  },
+  // Estilos de Propuesta 1: Tarjetas Modernas con Píldora
   historyCardModern: {
     borderRadius: 16,
     padding: 12,
