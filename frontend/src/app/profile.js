@@ -506,58 +506,51 @@ export default function ProfileScreen() {
         ListHeaderComponent={
           <>
             {/* =========================================================
-                OPCIÓN C (ACTIVA): Barra Ultra-Slim Horizontal Integrada
+                FUSIÓN (ACTIVA: OPCIÓN A + C SIN CÁMARA): Cabecera Compacta Integrada
             ========================================================= */}
-            <View style={[styles.optCContainer, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-              {/* Botón de Retorno a la izquierda */}
+            <View style={[styles.profileFusionContainer, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+              {/* Botón ← Volver estilo píldora (de Opción A) */}
               <TouchableOpacity
-                style={[styles.optCBackBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
+                style={[styles.fusionBackBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
                 onPress={() => {
                   if (router.canGoBack()) router.back();
                   else router.replace('/');
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.optCBackText, { color: colors.text }]}>←</Text>
+                <Text style={[styles.fusionBackText, { color: colors.text }]}>← Volver</Text>
               </TouchableOpacity>
 
-              {/* Avatar + Info de Usuario en el centro */}
-              <View style={styles.optCCenterInfo}>
+              {/* Información Horizontal del Usuario (de Opción C - Sin Cámara) */}
+              <View style={styles.fusionUserInfo}>
                 <TouchableOpacity
-                  style={[styles.optCAvatar, { backgroundColor: colors.primary }]}
+                  style={[styles.fusionAvatar, { backgroundColor: colors.primary }]}
                   onPress={handlePickImage}
                   activeOpacity={0.8}
                 >
                   {profile?.profileImage ? (
                     <Image
                       source={{ uri: `${BASE_URL}${profile.profileImage}` }}
-                      style={styles.optCAvatarImg}
+                      style={styles.fusionAvatarImg}
                     />
                   ) : (
-                    <Text style={[styles.optCAvatarTxt, { color: colors.primaryText }]}>
+                    <Text style={[styles.fusionAvatarTxt, { color: colors.primaryText }]}>
                       {profile?.username?.substring(0, 2).toUpperCase()}
                     </Text>
                   )}
                 </TouchableOpacity>
 
-                <View style={styles.optCTexts}>
-                  <Text style={[styles.optCUsername, { color: colors.text }]} numberOfLines={1}>
+                <View style={styles.fusionTexts}>
+                  <Text style={[styles.fusionUsername, { color: colors.text }]} numberOfLines={1}>
                     {profile?.username}
                   </Text>
-                  <Text style={[styles.optCRole, { color: (profile?.role === 'admin' || profile?.isAdmin) ? '#D97706' : colors.primary }]}>
-                    {profile?.role === 'admin' || profile?.isAdmin ? '👑 Administrador' : '🎓 Estudiante'}
-                  </Text>
+                  <View style={[styles.fusionRoleBadge, { backgroundColor: (profile?.role === 'admin' || profile?.isAdmin) ? '#F59E0B20' : `${colors.primary}20` }]}>
+                    <Text style={[styles.fusionRoleText, { color: (profile?.role === 'admin' || profile?.isAdmin) ? '#D97706' : colors.primary }]} numberOfLines={1}>
+                      {profile?.role === 'admin' || profile?.isAdmin ? '👑 Administrador' : '🎓 Estudiante'}
+                    </Text>
+                  </View>
                 </View>
               </View>
-
-              {/* Botón de Cambiar Foto a la derecha */}
-              <TouchableOpacity
-                style={[styles.optCEditBtn, { backgroundColor: `${colors.primary}18`, borderColor: `${colors.primary}30` }]}
-                onPress={handlePickImage}
-                activeOpacity={0.7}
-              >
-                <Text style={{ fontSize: 15 }}>📷</Text>
-              </TouchableOpacity>
             </View>
 
             {/* =========================================================
@@ -1087,6 +1080,74 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 40,
+  },
+  // Estilos de la FUSIÓN (Opción A + C sin Cámara)
+  profileFusionContainer: {
+    paddingTop: Platform.OS === 'web' ? 14 : 44,
+    paddingBottom: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    gap: 10,
+  },
+  fusionBackBtn: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 4px rgba(0,0,0,0.06)' }
+      : { elevation: 1 }),
+  },
+  fusionBackText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  fusionUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  fusionAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.12)' }
+      : { elevation: 2 }),
+  },
+  fusionAvatarImg: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  fusionAvatarTxt: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  fusionTexts: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  fusionUsername: {
+    fontSize: 17,
+    fontWeight: '800',
+    marginBottom: 3,
+  },
+  fusionRoleBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  fusionRoleText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   // Estilos de Opción C: Barra Ultra-Slim Horizontal Integrada
   optCContainer: {
