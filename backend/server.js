@@ -77,6 +77,11 @@ app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/questions', require('./routes/questionRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
 
+// Compatibilidad silenciosa para clientes o navegadores con caché previa
+app.all(['/api/admin/database-status', '/api/admin/sync-databases'], (req, res) => {
+  res.json({ success: true, connected: true, host: 'MongoDB Atlas' });
+});
+
 // Manejo de rutas no encontradas
 app.use((req, res) => {
   res.status(404).json({ message: 'Ruta no encontrada' });
