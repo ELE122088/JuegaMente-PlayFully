@@ -1045,23 +1045,23 @@ const styles = StyleSheet.create({
   backPillBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5.5,
-    borderRadius: 18,
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 14,
     borderWidth: 1,
-    gap: 4,
+    gap: 3,
     ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 4px rgba(0,0,0,0.06)' }
+      ? { boxShadow: '0px 1px 3px rgba(0,0,0,0.05)' }
       : { elevation: 1 }),
   },
   backPillArrow: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '800',
   },
   backPillText: {
-    fontSize: 10.5,
+    fontSize: 9.5,
     fontWeight: '600',
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
   },
   slimAvatar: {
     width: 44,
