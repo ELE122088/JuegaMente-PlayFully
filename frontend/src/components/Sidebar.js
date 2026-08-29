@@ -160,10 +160,10 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
           */}
 
           {/* =========================================================
-              OPCIÓN 2 (ACTIVA): Barra Slim de Marca + Perfil Compacto
+              OPCIÓN 2 (Bloqueada/Comentada): Barra Slim de Marca + Perfil Compacto
           ========================================================= */}
+          {/*
           <View style={[styles.opt2Container, { borderBottomColor: colors.border }]}>
-            {/* 1. Tira Slim Superior de Marca */}
             <View style={[styles.opt2BrandBar, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}30` }]}>
               <Image 
                 source={require('../../assets/images/megamind_sidebar.png')} 
@@ -175,7 +175,6 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
               </Text>
             </View>
 
-            {/* 2. Tarjeta Compacta de Perfil */}
             <TouchableOpacity 
               style={[styles.opt2UserCard, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
               onPress={() => handleNavigate('/profile')}
@@ -202,6 +201,43 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
 
               <View style={[styles.opt2ProfileArrow, { backgroundColor: `${colors.textSecondary}15` }]}>
                 <Text style={{ fontSize: 11, color: colors.textSecondary, fontWeight: '800' }}>⚙️</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          */}
+
+          {/* =========================================================
+              OPCIÓN 3 (ACTIVA): Perfil Minimalista Ultra-Limpio (Mascota en Header)
+          ========================================================= */}
+          <View style={[styles.opt3Container, { borderBottomColor: colors.border, backgroundColor: colors.inputBg || `${colors.card}` }]}>
+            <TouchableOpacity 
+              style={styles.opt3Row}
+              onPress={() => handleNavigate('/profile')}
+              activeOpacity={0.75}
+            >
+              <View style={[styles.opt3Avatar, { backgroundColor: colors.primary }]}>
+                {profileImage ? (
+                  <Image source={{ uri: `${BASE_URL}${profileImage}` }} style={styles.opt3AvatarImg} />
+                ) : (
+                  <Text style={[styles.opt3AvatarTxt, { color: colors.primaryText }]}>
+                    {username?.substring(0, 2).toUpperCase()}
+                  </Text>
+                )}
+              </View>
+
+              <View style={styles.opt3UserInfo}>
+                <Text style={[styles.opt3Username, { color: colors.text }]} numberOfLines={1}>
+                  {username}
+                </Text>
+                <View style={[styles.opt3RoleBadge, { backgroundColor: (isAdmin || role === 'admin') ? '#F59E0B20' : `${colors.primary}20` }]}>
+                  <Text style={[styles.opt3RoleText, { color: (isAdmin || role === 'admin') ? '#D97706' : colors.primary }]} numberOfLines={1}>
+                    {isAdmin || role === 'admin' ? '👑 Administrador' : '🎓 Estudiante'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={[styles.opt3ActionBtn, { backgroundColor: `${colors.textSecondary}15` }]}>
+                <Text style={{ fontSize: 13, color: colors.textSecondary }}>➜</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -547,6 +583,63 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // Estilos para Opción 3: Perfil Minimalista Ultra-Limpio
+  opt3Container: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  opt3Row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  opt3Avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 5px rgba(0,0,0,0.12)' }
+      : { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 3, elevation: 3 }),
+  },
+  opt3AvatarImg: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+  opt3AvatarTxt: {
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  opt3UserInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  opt3Username: {
+    fontSize: 15.5,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  opt3RoleBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  opt3RoleText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+  },
+  opt3ActionBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
