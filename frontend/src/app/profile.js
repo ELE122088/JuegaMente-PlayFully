@@ -481,22 +481,6 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* =========================================================
-          OPCIÓN B (Bloqueada/Comentada): Botón Flotante Circular ← en Esquina
-      ========================================================= */}
-      {/*
-      <TouchableOpacity
-        style={[styles.floatingBackCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
-        onPress={() => {
-          if (router.canGoBack()) router.back();
-          else router.replace('/');
-        }}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.floatingBackIcon, { color: colors.text }]}>←</Text>
-      </TouchableOpacity>
-      */}
-
       <FlatList
         data={profile?.history || []}
         keyExtractor={(item, index) => index.toString()}
@@ -505,59 +489,23 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* =========================================================
-                FUSIÓN (ACTIVA: OPCIÓN A + C SIN CÁMARA): Barra Ultra-Slim en 1 Sola Línea
-            ========================================================= */}
-            <View style={[styles.profileFusionContainer, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-              {/* Flecha de Retorno a la izquierda */}
-              <TouchableOpacity
-                style={[styles.fusionBackBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
-                onPress={() => {
-                  if (router.canGoBack()) router.back();
-                  else router.replace('/');
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.fusionBackText, { color: colors.text }]}>←</Text>
-              </TouchableOpacity>
-
-              {/* Avatar + Nombre + Rol DIRECTAMENTE al lado de la flecha en la misma fila */}
-              <View style={styles.fusionUserInfo}>
+            {/* Cabecera de Perfil Integrada con Botón Pastilla [← Volver] Arriba a la Izquierda (Sin Cámara) */}
+            <View style={[styles.profileHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+              {/* Botón tipo pastilla [← Volver] arriba a la izquierda */}
+              <View style={styles.profileTopBar}>
                 <TouchableOpacity
-                  style={[styles.fusionAvatar, { backgroundColor: colors.primary }]}
-                  onPress={handlePickImage}
-                  activeOpacity={0.8}
+                  style={[styles.backPillBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
+                  onPress={() => {
+                    if (router.canGoBack()) router.back();
+                    else router.replace('/');
+                  }}
+                  activeOpacity={0.7}
                 >
-                  {profile?.profileImage ? (
-                    <Image
-                      source={{ uri: `${BASE_URL}${profile.profileImage}` }}
-                      style={styles.fusionAvatarImg}
-                    />
-                  ) : (
-                    <Text style={[styles.fusionAvatarTxt, { color: colors.primaryText }]}>
-                      {profile?.username?.substring(0, 2).toUpperCase()}
-                    </Text>
-                  )}
+                  <Text style={[styles.backPillText, { color: colors.text }]}>← Volver</Text>
                 </TouchableOpacity>
-
-                <View style={styles.fusionTexts}>
-                  <Text style={[styles.fusionUsername, { color: colors.text }]} numberOfLines={1}>
-                    {profile?.username}
-                  </Text>
-                  <View style={[styles.fusionRoleBadge, { backgroundColor: (profile?.role === 'admin' || profile?.isAdmin) ? '#F59E0B20' : `${colors.primary}20` }]}>
-                    <Text style={[styles.fusionRoleText, { color: (profile?.role === 'admin' || profile?.isAdmin) ? '#D97706' : colors.primary }]} numberOfLines={1}>
-                      {profile?.role === 'admin' || profile?.isAdmin ? '👑 Administrador' : '🎓 Estudiante'}
-                    </Text>
-                  </View>
-                </View>
               </View>
-            </View>
 
-            {/* =========================================================
-                OPCIÓN A / B (Bloqueadas/Comentadas): Cabeceras Verticales Anteriores
-            ========================================================= */}
-            {/*
-            <View style={[styles.profileHeaderOptB, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+              {/* Avatar centrado (Toca para cambiar foto, sin icono de cámara) */}
               <TouchableOpacity
                 style={[styles.avatarContainer, { backgroundColor: colors.primary }]}
                 onPress={handlePickImage}
@@ -573,16 +521,13 @@ export default function ProfileScreen() {
                     {profile?.username?.substring(0, 2).toUpperCase()}
                   </Text>
                 )}
-                <View style={[styles.editBadge, { backgroundColor: colors.primary, borderColor: colors.card }]}>
-                  <Text style={styles.editBadgeText}>📷</Text>
-                </View>
               </TouchableOpacity>
+
               <Text style={[styles.username, { color: colors.text }]}>{profile?.username}</Text>
               <Text style={[styles.role, { color: colors.textSecondary }]}>
                 {profile?.role === 'admin' || profile?.isAdmin ? '👑 Administrador / Docente' : '🎓 Estudiante'}
               </Text>
             </View>
-            */}
 
             {/* Selector de Temas (Colapsable / Desplegable por Click) */}
             <View
