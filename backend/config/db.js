@@ -3,20 +3,42 @@ const mongoose = require('mongoose');
 const DEFAULT_MONGO_URI = 'mongodb+srv://markarvar1988_db_user:Kieb2xUgmg5MOhoH@cluster0.mrvmafh.mongodb.net/Banco_preguntas?retryWrites=true&w=majority';
 
 const connectDB = async () => {
-  const uri =
-    process.env.MONGO_URL ||
-    process.env.MONGO_PRIVATE_URL ||
-    process.env.MONGODB_URL ||
-    process.env.DATABASE_URL ||
-    process.env.MONGO_URI ||
-    DEFAULT_MONGO_URI;
+  const candidateURIs = [
+    process.env.MONGO_URL,
+    process.env.MONGO_PRIVATE_URL,
+    process.env.MONGODB_URL,
+    'mongodb://mongodb.railway.internal:27017/Banco_preguntas',
+    process.env.DATABASE_URL,
+    process.env.MONGO_URI,
+    DEFAULT_MONGO_URI,
+    'mongodb://127.0.0.1:27017/Banco_preguntas',
+  ].filter(Boolean);
 
   const attemptConnect = async () => {
+    let connected = false;
+
+    for (const uri of candidateURIs) {
+      try {
+        console.log(`🔌 Probando conexión a MongoDB (${uri.substring(0, 25)}...)...`);
+        const conn = await mongoose.connect(uri, {
+          serverSelectionTimeoutMS: 4000,
+        });
+        console.log(`✅ MongoDB conectado exitosamente a: ${conn.connection.host}`);
+        connected = true;
+        break;
+      } catch (err) {
+        console.warn(`⚠️ No se pudo conectar a ${uri.substring(0, 25)}...: ${err.message}`);
+      }
+    }
+
+    if (!connected) {
+      global.lastDbError = 'No se pudo conectar a ninguna base de datos candidata';
+      console.error('❌ Reintentando conexión general en 5 segundos...');
+      setTimeout(attemptConnect, 5000);
+      return;
+    }
+
     try {
-      const conn = await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 10000,
-      });
-      console.log(`✅ MongoDB conectado exitosamente: ${conn.connection.host}`);
 
       // Migración automática de usuarios antiguos usando la colección nativa
       try {
