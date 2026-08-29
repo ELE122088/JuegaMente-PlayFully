@@ -489,9 +489,23 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* Cabecera de Perfil Ultra-Slim en 1 Sola Línea con Micro-Círculo (←) */}
+            {/* Cabecera de Perfil Ultra-Slim en 1 Sola Línea con Estilo iOS Nativo ‹ volver */}
             <View style={[styles.profileSlimHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-              {/* SUGERENCIA 2 (ACTIVA): Micro-Círculo Minimalista (←) */}
+              {/* SUGERENCIA 3 (ACTIVA): Estilo iOS Nativo ‹ volver */}
+              <TouchableOpacity
+                style={styles.iosBackBtn}
+                onPress={() => {
+                  if (router.canGoBack()) router.back();
+                  else router.replace('/');
+                }}
+                activeOpacity={0.6}
+              >
+                <Text style={[styles.iosBackChevron, { color: colors.primary }]}>‹</Text>
+                <Text style={[styles.iosBackText, { color: colors.primary }]}>volver</Text>
+              </TouchableOpacity>
+
+              {/* SUGERENCIA 2 (Bloqueada/Comentada): Micro-Círculo (←) */}
+              {/*
               <TouchableOpacity
                 style={[styles.microCircleBackBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
                 onPress={() => {
@@ -502,6 +516,7 @@ export default function ProfileScreen() {
               >
                 <Text style={[styles.microCircleBackIcon, { color: colors.text }]}>←</Text>
               </TouchableOpacity>
+              */}
 
               {/* SUGERENCIA 1 (Bloqueada/Comentada): Micro-Pastilla [← volver] */}
               {/*
@@ -1055,6 +1070,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     gap: 12,
+  },
+  // Estilo de Sugerencia 3: iOS Nativo ‹ volver
+  iosBackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingRight: 4,
+    gap: 2,
+  },
+  iosBackChevron: {
+    fontSize: 22,
+    fontWeight: '300',
+    marginTop: -2,
+  },
+  iosBackText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   // Estilo de Sugerencia 2: Micro-Círculo Minimalista (←)
   microCircleBackBtn: {
