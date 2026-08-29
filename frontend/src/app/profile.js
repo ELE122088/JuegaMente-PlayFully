@@ -489,44 +489,49 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* Cabecera de Perfil Integrada con Botón Pastilla [← Volver] Arriba a la Izquierda (Sin Cámara) */}
-            <View style={[styles.profileHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-              {/* Botón tipo pastilla [← Volver] arriba a la izquierda */}
-              <View style={styles.profileTopBar}>
-                <TouchableOpacity
-                  style={[styles.backPillBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
-                  onPress={() => {
-                    if (router.canGoBack()) router.back();
-                    else router.replace('/');
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.backPillText, { color: colors.text }]}>← Volver</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Avatar centrado (Toca para cambiar foto, sin icono de cámara) */}
+            {/* Cabecera de Perfil Ultra-Slim en 1 Sola Línea: [← Volver] + Avatar + Nombre/Rol (Sin Cámara) */}
+            <View style={[styles.profileSlimHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+              {/* 1. Botón Pastilla [← Volver] a la izquierda */}
               <TouchableOpacity
-                style={[styles.avatarContainer, { backgroundColor: colors.primary }]}
+                style={[styles.backPillBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
+                onPress={() => {
+                  if (router.canGoBack()) router.back();
+                  else router.replace('/');
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.backPillText, { color: colors.text }]}>← Volver</Text>
+              </TouchableOpacity>
+
+              {/* 2. Avatar circular inmediatamente al lado */}
+              <TouchableOpacity
+                style={[styles.slimAvatar, { backgroundColor: colors.primary }]}
                 onPress={handlePickImage}
                 activeOpacity={0.8}
               >
                 {profile?.profileImage ? (
                   <Image
                     source={{ uri: `${BASE_URL}${profile.profileImage}` }}
-                    style={styles.avatarImage}
+                    style={styles.slimAvatarImg}
                   />
                 ) : (
-                  <Text style={[styles.avatarText, { color: colors.primaryText }]}>
+                  <Text style={[styles.slimAvatarTxt, { color: colors.primaryText }]}>
                     {profile?.username?.substring(0, 2).toUpperCase()}
                   </Text>
                 )}
               </TouchableOpacity>
 
-              <Text style={[styles.username, { color: colors.text }]}>{profile?.username}</Text>
-              <Text style={[styles.role, { color: colors.textSecondary }]}>
-                {profile?.role === 'admin' || profile?.isAdmin ? '👑 Administrador / Docente' : '🎓 Estudiante'}
-              </Text>
+              {/* 3. Nombre de Usuario + Insignia de Rol al lado */}
+              <View style={styles.slimUserInfo}>
+                <Text style={[styles.slimUsername, { color: colors.text }]} numberOfLines={1}>
+                  {profile?.username}
+                </Text>
+                <View style={[styles.slimRoleBadge, { backgroundColor: (profile?.role === 'admin' || profile?.isAdmin) ? '#F59E0B20' : `${colors.primary}20` }]}>
+                  <Text style={[styles.slimRoleText, { color: (profile?.role === 'admin' || profile?.isAdmin) ? '#D97706' : colors.primary }]} numberOfLines={1}>
+                    {profile?.role === 'admin' || profile?.isAdmin ? '👑 Administrador' : '🎓 Estudiante'}
+                  </Text>
+                </View>
+              </View>
             </View>
 
             {/* Selector de Temas (Colapsable / Desplegable por Click) */}
@@ -1026,8 +1031,8 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingBottom: 40,
   },
-  // Estilos de la FUSIÓN (Opción A + C en 1 sola fila sin Cámara)
-  profileFusionContainer: {
+  // Cabecera Ultra-Slim en 1 sola fila: [← Volver] + Avatar + Nombre/Rol
+  profileSlimHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingTop: Platform.OS === 'web' ? 12 : 44,
@@ -1036,32 +1041,26 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     gap: 12,
   },
-  fusionBackBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  backPillBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
     borderWidth: 1,
+    gap: 4,
     ...(Platform.OS === 'web'
       ? { boxShadow: '0px 2px 4px rgba(0,0,0,0.06)' }
       : { elevation: 1 }),
   },
-  fusionBackText: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginTop: -2,
+  backPillText: {
+    fontSize: 12.5,
+    fontWeight: '700',
   },
-  fusionUserInfo: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  fusionAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  slimAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -1069,32 +1068,32 @@ const styles = StyleSheet.create({
       ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.12)' }
       : { elevation: 2 }),
   },
-  fusionAvatarImg: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  slimAvatarImg: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
-  fusionAvatarTxt: {
-    fontSize: 18,
+  slimAvatarTxt: {
+    fontSize: 17,
     fontWeight: '800',
   },
-  fusionTexts: {
+  slimUserInfo: {
     flex: 1,
     justifyContent: 'center',
   },
-  fusionUsername: {
-    fontSize: 17,
+  slimUsername: {
+    fontSize: 16,
     fontWeight: '800',
-    marginBottom: 3,
+    marginBottom: 2,
   },
-  fusionRoleBadge: {
+  slimRoleBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
   },
-  fusionRoleText: {
-    fontSize: 11,
+  slimRoleText: {
+    fontSize: 10.5,
     fontWeight: '700',
   },
   // Estilos de Opción C: Barra Ultra-Slim Horizontal Integrada
