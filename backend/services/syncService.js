@@ -17,11 +17,11 @@ class SyncService {
 
   async init() {
     const atlasUri = process.env.MONGO_ATLAS_URI || process.env.ATLAS_URI || ATLAS_DEFAULT_URI;
-    const primaryUri = process.env.MONGO_URI || process.env.MONGO_URL || process.env.DATABASE_URL || '';
+    const currentPrimaryHost = (mongoose.connection.host || '').toLowerCase();
 
-    // Si la conexión primaria ya es Atlas, no necesitamos una conexión secundaria idéntica
-    if (primaryUri && primaryUri.includes('cluster0.mrvmafh.mongodb.net')) {
-      console.log('ℹ️ La base de datos primaria ya es MongoDB Atlas. Modo Dual en espera.');
+    // Si la conexión primaria ya está conectada al clúster de Atlas, no necesitamos duplicarla
+    if (currentPrimaryHost.includes('cluster0') || currentPrimaryHost.includes('mongodb.net')) {
+      console.log('ℹ️ La base de datos primaria ya está conectada a MongoDB Atlas. Modo Dual en standby.');
       this.isAtlasConnected = true;
       return;
     }
