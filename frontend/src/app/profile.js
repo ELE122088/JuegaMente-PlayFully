@@ -489,9 +489,22 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* Cabecera de Perfil Ultra-Slim en 1 Sola Línea: [← Volver] + Avatar + Nombre/Rol (Sin Cámara) */}
+            {/* Cabecera de Perfil Ultra-Slim en 1 Sola Línea con Micro-Círculo (←) */}
             <View style={[styles.profileSlimHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-              {/* 1. Botón Pastilla [← volver] con palabra pequeña y difuminada */}
+              {/* SUGERENCIA 2 (ACTIVA): Micro-Círculo Minimalista (←) */}
+              <TouchableOpacity
+                style={[styles.microCircleBackBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
+                onPress={() => {
+                  if (router.canGoBack()) router.back();
+                  else router.replace('/');
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.microCircleBackIcon, { color: colors.text }]}>←</Text>
+              </TouchableOpacity>
+
+              {/* SUGERENCIA 1 (Bloqueada/Comentada): Micro-Pastilla [← volver] */}
+              {/*
               <TouchableOpacity
                 style={[styles.backPillBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
                 onPress={() => {
@@ -503,6 +516,7 @@ export default function ProfileScreen() {
                 <Text style={[styles.backPillArrow, { color: colors.text }]}>←</Text>
                 <Text style={[styles.backPillText, { color: colors.textSecondary }]}>volver</Text>
               </TouchableOpacity>
+              */}
 
               {/* 2. Avatar circular inmediatamente al lado */}
               <TouchableOpacity
@@ -1041,6 +1055,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     gap: 12,
+  },
+  // Estilo de Sugerencia 2: Micro-Círculo Minimalista (←)
+  microCircleBackBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 1px 4px rgba(0,0,0,0.06)' }
+      : { elevation: 1 }),
+  },
+  microCircleBackIcon: {
+    fontSize: 15,
+    fontWeight: '800',
+    marginTop: -1,
   },
   backPillBtn: {
     flexDirection: 'row',
