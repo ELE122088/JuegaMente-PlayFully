@@ -4,13 +4,13 @@ const DEFAULT_MONGO_URI = 'mongodb+srv://markarvar1988_db_user:Kieb2xUgmg5MOhoH@
 
 const connectDB = async () => {
   const candidateURIs = [
+    process.env.MONGO_ATLAS_URI,
+    DEFAULT_MONGO_URI, // ☁️ MongoDB Atlas Clúster 0 (Prioridad #1)
+    process.env.MONGO_URI,
     process.env.MONGO_URL,
     process.env.MONGO_PRIVATE_URL,
-    process.env.MONGODB_URL,
     'mongodb://mongodb.railway.internal:27017/Banco_preguntas',
     process.env.DATABASE_URL,
-    process.env.MONGO_URI,
-    DEFAULT_MONGO_URI,
     'mongodb://127.0.0.1:27017/Banco_preguntas',
   ].filter(Boolean);
 
@@ -19,15 +19,18 @@ const connectDB = async () => {
 
     for (const uri of candidateURIs) {
       try {
-        console.log(`🔌 Probando conexión a MongoDB (${uri.substring(0, 25)}...)...`);
+        console.log(`🔌 Probando conexión a MongoDB (${uri.substring(0, 35)}...)...`);
         const conn = await mongoose.connect(uri, {
-          serverSelectionTimeoutMS: 4000,
+          serverSelectionTimeoutMS: 12000,
+          family: 4,
+          retryWrites: true,
+          w: 'majority',
         });
         console.log(`✅ MongoDB conectado exitosamente a: ${conn.connection.host}`);
         connected = true;
         break;
       } catch (err) {
-        console.warn(`⚠️ No se pudo conectar a ${uri.substring(0, 25)}...: ${err.message}`);
+        console.warn(`⚠️ No se pudo conectar a ${uri.substring(0, 35)}...: ${err.message}`);
       }
     }
 
