@@ -30,6 +30,10 @@ class SyncService {
       console.log('🔄 Inicializando conexión secundaria con MongoDB Atlas...');
       this.atlasConn = mongoose.createConnection(atlasUri, {
         serverSelectionTimeoutMS: 8000,
+        tls: true,
+        tlsAllowInvalidCertificates: true,
+        tlsAllowInvalidHostnames: true,
+        family: 4, // Forzar IPv4
       });
 
       this.atlasConn.on('connected', () => {
