@@ -482,8 +482,9 @@ export default function ProfileScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* =========================================================
-          OPCIÓN B (ACTIVA): Botón Flotante Circular ← en Esquina
+          OPCIÓN B (Bloqueada/Comentada): Botón Flotante Circular ← en Esquina
       ========================================================= */}
+      {/*
       <TouchableOpacity
         style={[styles.floatingBackCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
         onPress={() => {
@@ -494,6 +495,7 @@ export default function ProfileScreen() {
       >
         <Text style={[styles.floatingBackIcon, { color: colors.text }]}>←</Text>
       </TouchableOpacity>
+      */}
 
       <FlatList
         data={profile?.history || []}
@@ -503,26 +505,66 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* Cabecera de Perfil (Opción B: Centrada con Botón Flotante) */}
-            <View style={[styles.profileHeaderOptB, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-              {/* =========================================================
-                  OPCIÓN A (Bloqueada/Comentada): Barra Integrada
-              ========================================================= */}
-              {/*
-              <View style={styles.profileTopBar}>
-                <TouchableOpacity
-                  style={[styles.backPillBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
-                  onPress={() => {
-                    if (router.canGoBack()) router.back();
-                    else router.replace('/');
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.backPillText, { color: colors.text }]}>← Volver</Text>
-                </TouchableOpacity>
-              </View>
-              */}
+            {/* =========================================================
+                OPCIÓN C (ACTIVA): Barra Ultra-Slim Horizontal Integrada
+            ========================================================= */}
+            <View style={[styles.optCContainer, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+              {/* Botón de Retorno a la izquierda */}
+              <TouchableOpacity
+                style={[styles.optCBackBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
+                onPress={() => {
+                  if (router.canGoBack()) router.back();
+                  else router.replace('/');
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.optCBackText, { color: colors.text }]}>←</Text>
+              </TouchableOpacity>
 
+              {/* Avatar + Info de Usuario en el centro */}
+              <View style={styles.optCCenterInfo}>
+                <TouchableOpacity
+                  style={[styles.optCAvatar, { backgroundColor: colors.primary }]}
+                  onPress={handlePickImage}
+                  activeOpacity={0.8}
+                >
+                  {profile?.profileImage ? (
+                    <Image
+                      source={{ uri: `${BASE_URL}${profile.profileImage}` }}
+                      style={styles.optCAvatarImg}
+                    />
+                  ) : (
+                    <Text style={[styles.optCAvatarTxt, { color: colors.primaryText }]}>
+                      {profile?.username?.substring(0, 2).toUpperCase()}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                <View style={styles.optCTexts}>
+                  <Text style={[styles.optCUsername, { color: colors.text }]} numberOfLines={1}>
+                    {profile?.username}
+                  </Text>
+                  <Text style={[styles.optCRole, { color: (profile?.role === 'admin' || profile?.isAdmin) ? '#D97706' : colors.primary }]}>
+                    {profile?.role === 'admin' || profile?.isAdmin ? '👑 Administrador' : '🎓 Estudiante'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Botón de Cambiar Foto a la derecha */}
+              <TouchableOpacity
+                style={[styles.optCEditBtn, { backgroundColor: `${colors.primary}18`, borderColor: `${colors.primary}30` }]}
+                onPress={handlePickImage}
+                activeOpacity={0.7}
+              >
+                <Text style={{ fontSize: 15 }}>📷</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* =========================================================
+                OPCIÓN A / B (Bloqueadas/Comentadas): Cabeceras Verticales Anteriores
+            ========================================================= */}
+            {/*
+            <View style={[styles.profileHeaderOptB, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
               <TouchableOpacity
                 style={[styles.avatarContainer, { backgroundColor: colors.primary }]}
                 onPress={handlePickImage}
@@ -547,6 +589,7 @@ export default function ProfileScreen() {
                 {profile?.role === 'admin' || profile?.isAdmin ? '👑 Administrador / Docente' : '🎓 Estudiante'}
               </Text>
             </View>
+            */}
 
             {/* Selector de Temas (Colapsable / Desplegable por Click) */}
             <View
@@ -1044,6 +1087,73 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 40,
+  // Estilos de Opción C: Barra Ultra-Slim Horizontal Integrada
+  optCContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: Platform.OS === 'web' ? 12 : 44,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    gap: 12,
+  },
+  optCBackBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  optCBackText: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginTop: -2,
+  },
+  optCCenterInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  optCAvatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  optCAvatarImg: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+  },
+  optCAvatarTxt: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  optCTexts: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  optCUsername: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  optCRole: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 1,
+  },
+  optCEditBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
   },
   // Estilos de Opción B: Botón Flotante Circular
   floatingBackCircle: {
