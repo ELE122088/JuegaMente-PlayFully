@@ -535,75 +535,82 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            {/* Selector de Temas (Colapsable / Desplegable por Click) */}
-            <View
-              style={[styles.themeWrapper, { backgroundColor: colors.card, borderColor: colors.border }]}
-            >
+            {/* PROPUESTA 1: Tarjeta Unificada de Ajustes (Estilo iOS / Configuración) */}
+            <View style={[styles.settingsUnifiedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={styles.settingsCardHeader}>
+                <Text style={[styles.settingsCardTitle, { color: colors.textSecondary }]}>⚙️ CONFIGURACIÓN Y CUENTA</Text>
+              </View>
+
+              {/* 1. Fila: Tema Visual */}
               <TouchableOpacity
-                activeOpacity={0.8}
+                activeOpacity={0.7}
                 onPress={() => setIsThemeExpanded(!isThemeExpanded)}
-                style={styles.themeHeader}
+                style={[styles.settingsRow, isThemeExpanded && { backgroundColor: `${colors.primary}08` }]}
               >
-                <View style={styles.themeHeaderLeft}>
-                  <Text style={styles.themeHeaderIcon}>🎨</Text>
-                  <View>
-                    <Text style={[styles.themeHeaderTitle, { color: colors.text }]}>Tema de la Aplicación</Text>
-                    <Text style={[styles.themeHeaderSubtitle, { color: colors.textSecondary }]}>
-                      Actual: {
-                        theme === 'light' ? '☀️ Claro' :
-                        theme === 'dark' ? '🌙 Oscuro' :
-                        theme === 'emerald' ? '🍃 Esmeralda' :
-                        theme === 'sunset' ? '🌅 Atardecer' :
-                        theme === 'sakura' ? '🌸 Sakura' :
-                        theme === 'ocean' ? '🌊 Océano' :
-                        theme === 'gold' ? '👑 Dorado' :
-                        theme === 'cyber' ? '🍇 Púrpura' :
-                        theme === 'neon' ? '🌌 Neón' : '🏛️ Medianoche'
-                      }
-                    </Text>
+                <View style={styles.settingsRowLeft}>
+                  <View style={[styles.settingsIconCircle, { backgroundColor: `${colors.primary}18` }]}>
+                    <Text style={styles.settingsRowIcon}>🎨</Text>
                   </View>
+                  <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Tema Visual</Text>
                 </View>
-                <Text style={[styles.chevron, { color: colors.textSecondary }]}>
-                  {isThemeExpanded ? '▲' : '▼'}
-                </Text>
+                <View style={styles.settingsRowRight}>
+                  <Text style={[styles.settingsRowValue, { color: colors.primary }]}>
+                    {
+                      theme === 'light' ? '☀️ Claro' :
+                      theme === 'dark' ? '🌙 Oscuro' :
+                      theme === 'emerald' ? '🍃 Esmeralda' :
+                      theme === 'sunset' ? '🌅 Atardecer' :
+                      theme === 'sakura' ? '🌸 Sakura' :
+                      theme === 'ocean' ? '🌊 Océano' :
+                      theme === 'gold' ? '👑 Dorado' :
+                      theme === 'cyber' ? '🍇 Púrpura' :
+                      theme === 'neon' ? '🌌 Neón' : '🏛️ Medianoche'
+                    }
+                  </Text>
+                  <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
+                    {isThemeExpanded ? '▲' : '▼'}
+                  </Text>
+                </View>
               </TouchableOpacity>
 
               {isThemeExpanded && (
-                <View style={styles.themeOptionsGrid}>
-                  {[
-                    { id: 'light', name: 'Claro', emoji: '☀️' },
-                    { id: 'dark', name: 'Oscuro', emoji: '🌙' },
-                    { id: 'emerald', name: 'Esmeralda', emoji: '🍃' },
-                    { id: 'sunset', name: 'Atardecer', emoji: '🌅' },
-                    { id: 'sakura', name: 'Sakura', emoji: '🌸' },
-                    { id: 'ocean', name: 'Océano', emoji: '🌊' },
-                    { id: 'gold', name: 'Dorado', emoji: '👑' },
-                    { id: 'cyber', name: 'Púrpura', emoji: '🍇' },
-                    { id: 'neon', name: 'Neón', emoji: '🌌' },
-                    { id: 'midnight', name: 'Medianoche', emoji: '🏛️' },
-                  ].map((t) => (
-                    <TouchableOpacity
-                      key={t.id}
-                      style={[
-                        styles.themeOption,
-                        theme === t.id && [styles.themeOptionActive, { borderColor: colors.primary, backgroundColor: `${colors.primary}1A` }]
-                      ]}
-                      onPress={() => setTheme(t.id)}
-                    >
-                      <Text style={styles.themeEmoji}>{t.emoji}</Text>
-                      <Text style={[styles.themeText, { color: colors.text, fontWeight: theme === t.id ? 'bold' : 'normal' }]}>
-                        {t.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
+                  <View style={styles.themeOptionsGrid}>
+                    {[
+                      { id: 'light', name: 'Claro', emoji: '☀️' },
+                      { id: 'dark', name: 'Oscuro', emoji: '🌙' },
+                      { id: 'emerald', name: 'Esmeralda', emoji: '🍃' },
+                      { id: 'sunset', name: 'Atardecer', emoji: '🌅' },
+                      { id: 'sakura', name: 'Sakura', emoji: '🌸' },
+                      { id: 'ocean', name: 'Océano', emoji: '🌊' },
+                      { id: 'gold', name: 'Dorado', emoji: '👑' },
+                      { id: 'cyber', name: 'Púrpura', emoji: '🍇' },
+                      { id: 'neon', name: 'Neón', emoji: '🌌' },
+                      { id: 'midnight', name: 'Medianoche', emoji: '🏛️' },
+                    ].map((t) => (
+                      <TouchableOpacity
+                        key={t.id}
+                        style={[
+                          styles.themeOption,
+                          theme === t.id && [styles.themeOptionActive, { borderColor: colors.primary, backgroundColor: `${colors.primary}1A` }]
+                        ]}
+                        onPress={() => setTheme(t.id)}
+                      >
+                        <Text style={styles.themeEmoji}>{t.emoji}</Text>
+                        <Text style={[styles.themeText, { color: colors.text, fontWeight: theme === t.id ? 'bold' : 'normal' }]}>
+                          {t.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
               )}
-            </View>
 
-            {/* Editar Perfil / Nombre de Usuario (Colapsable) */}
-            <View style={[styles.themeWrapper, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 12 }]}>
+              <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
+
+              {/* 2. Fila: Nombre de Usuario */}
               <TouchableOpacity
-                activeOpacity={0.8}
+                activeOpacity={0.7}
                 onPress={() => {
                   const nextState = !isProfileEditExpanded;
                   setIsProfileEditExpanded(nextState);
@@ -611,134 +618,140 @@ export default function ProfileScreen() {
                     setEditUsername(profile?.username || '');
                   }
                 }}
-                style={styles.themeHeader}
+                style={[styles.settingsRow, isProfileEditExpanded && { backgroundColor: `${colors.primary}08` }]}
               >
-                <View style={styles.themeHeaderLeft}>
-                  <Text style={styles.themeHeaderIcon}>✏️</Text>
-                  <View>
-                    <Text style={[styles.themeHeaderTitle, { color: colors.text }]}>Información de Perfil</Text>
-                    <Text style={[styles.themeHeaderSubtitle, { color: colors.textSecondary }]}>
-                      Cambiar nombre de usuario ({profile?.username || 'Cargando...'})
-                    </Text>
+                <View style={styles.settingsRowLeft}>
+                  <View style={[styles.settingsIconCircle, { backgroundColor: '#3B82F618' }]}>
+                    <Text style={styles.settingsRowIcon}>✏️</Text>
                   </View>
+                  <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Nombre de Usuario</Text>
                 </View>
-                <Text style={[styles.chevron, { color: colors.textSecondary }]}>
-                  {isProfileEditExpanded ? '▲' : '▼'}
-                </Text>
+                <View style={styles.settingsRowRight}>
+                  <Text style={[styles.settingsRowValue, { color: colors.textSecondary }]} numberOfLines={1}>
+                    {profile?.username || 'Cargando...'}
+                  </Text>
+                  <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
+                    {isProfileEditExpanded ? '▲' : '▼'}
+                  </Text>
+                </View>
               </TouchableOpacity>
 
               {isProfileEditExpanded && (
-                <View style={styles.passwordFormContainer}>
-                  <Text style={[styles.passInputLabel, { color: colors.text }]}>Nombre de Usuario</Text>
-                  <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
-                    <TextInput
-                      style={[styles.passInput, { color: colors.text }]}
-                      placeholder="Mínimo 4 caracteres"
-                      placeholderTextColor={colors.textSecondary}
-                      value={editUsername}
-                      onChangeText={setEditUsername}
-                      autoCapitalize="none"
-                    />
-                  </View>
+                <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
+                  <View style={styles.passwordFormContainer}>
+                    <Text style={[styles.passInputLabel, { color: colors.text }]}>Nuevo Nombre de Usuario</Text>
+                    <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+                      <TextInput
+                        style={[styles.passInput, { color: colors.text }]}
+                        placeholder="Mínimo 4 caracteres"
+                        placeholderTextColor={colors.textSecondary}
+                        value={editUsername}
+                        onChangeText={setEditUsername}
+                        autoCapitalize="none"
+                      />
+                    </View>
 
-                  <TouchableOpacity
-                    style={[styles.savePassBtn, { backgroundColor: colors.primary }]}
-                    onPress={handleUpdateProfile}
-                    disabled={profileEditLoading}
-                  >
-                    {profileEditLoading ? (
-                      <ActivityIndicator color={colors.primaryText} size="small" />
-                    ) : (
-                      <Text style={[styles.savePassBtnText, { color: colors.primaryText }]}>
-                        Guardar Cambios
-                      </Text>
-                    )}
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.savePassBtn, { backgroundColor: colors.primary }]}
+                      onPress={handleUpdateProfile}
+                      disabled={profileEditLoading}
+                    >
+                      {profileEditLoading ? (
+                        <ActivityIndicator color={colors.primaryText} size="small" />
+                      ) : (
+                        <Text style={[styles.savePassBtnText, { color: colors.primaryText }]}>
+                          Guardar Cambios
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
-            </View>
 
-            {/* Cambiar Contraseña (Colapsable) */}
-            <View style={[styles.themeWrapper, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 12 }]}>
+              <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
+
+              {/* 3. Fila: Seguridad y Contraseña */}
               <TouchableOpacity
-                activeOpacity={0.8}
+                activeOpacity={0.7}
                 onPress={() => setIsPasswordExpanded(!isPasswordExpanded)}
-                style={styles.themeHeader}
+                style={[styles.settingsRow, isPasswordExpanded && { backgroundColor: `${colors.primary}08` }]}
               >
-                <View style={styles.themeHeaderLeft}>
-                  <Text style={styles.themeHeaderIcon}>🔑</Text>
-                  <View>
-                    <Text style={[styles.themeHeaderTitle, { color: colors.text }]}>Seguridad y Contraseña</Text>
-                    <Text style={[styles.themeHeaderSubtitle, { color: colors.textSecondary }]}>
-                      Actualizar clave de acceso
-                    </Text>
+                <View style={styles.settingsRowLeft}>
+                  <View style={[styles.settingsIconCircle, { backgroundColor: '#F59E0B18' }]}>
+                    <Text style={styles.settingsRowIcon}>🔑</Text>
                   </View>
+                  <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Seguridad y Clave</Text>
                 </View>
-                <Text style={[styles.chevron, { color: colors.textSecondary }]}>
-                  {isPasswordExpanded ? '▲' : '▼'}
-                </Text>
+                <View style={styles.settingsRowRight}>
+                  <Text style={[styles.settingsRowValue, { color: colors.textSecondary }]}>Cambiar</Text>
+                  <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
+                    {isPasswordExpanded ? '▲' : '▼'}
+                  </Text>
+                </View>
               </TouchableOpacity>
 
               {isPasswordExpanded && (
-                <View style={styles.passwordFormContainer}>
-                  {/* Contraseña Actual */}
-                  <Text style={[styles.passInputLabel, { color: colors.text }]}>Contraseña Actual</Text>
-                  <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
-                    <TextInput
-                      style={[styles.passInput, { color: colors.text }]}
-                      placeholder="Ingresa tu clave actual"
-                      placeholderTextColor={colors.textSecondary}
-                      secureTextEntry={!showCurrentPass}
-                      value={currentPassword}
-                      onChangeText={setCurrentPassword}
-                    />
-                    <TouchableOpacity onPress={() => setShowCurrentPass(!showCurrentPass)} style={styles.eyeBtn}>
-                      <Text style={styles.eyeIcon}>{showCurrentPass ? '👁️' : '🙈'}</Text>
+                <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
+                  <View style={styles.passwordFormContainer}>
+                    {/* Contraseña Actual */}
+                    <Text style={[styles.passInputLabel, { color: colors.text }]}>Contraseña Actual</Text>
+                    <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+                      <TextInput
+                        style={[styles.passInput, { color: colors.text }]}
+                        placeholder="Ingresa tu clave actual"
+                        placeholderTextColor={colors.textSecondary}
+                        secureTextEntry={!showCurrentPass}
+                        value={currentPassword}
+                        onChangeText={setCurrentPassword}
+                      />
+                      <TouchableOpacity onPress={() => setShowCurrentPass(!showCurrentPass)} style={styles.eyeBtn}>
+                        <Text style={styles.eyeIcon}>{showCurrentPass ? '👁️' : '🙈'}</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* Nueva Contraseña */}
+                    <Text style={[styles.passInputLabel, { color: colors.text }]}>Nueva Contraseña</Text>
+                    <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+                      <TextInput
+                        style={[styles.passInput, { color: colors.text }]}
+                        placeholder="Mínimo 4 caracteres"
+                        placeholderTextColor={colors.textSecondary}
+                        secureTextEntry={!showNewPass}
+                        value={newPassword}
+                        onChangeText={setNewPassword}
+                      />
+                      <TouchableOpacity onPress={() => setShowNewPass(!showNewPass)} style={styles.eyeBtn}>
+                        <Text style={styles.eyeIcon}>{showNewPass ? '👁️' : '🙈'}</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* Confirmar Contraseña */}
+                    <Text style={[styles.passInputLabel, { color: colors.text }]}>Confirmar Nueva Contraseña</Text>
+                    <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+                      <TextInput
+                        style={[styles.passInput, { color: colors.text }]}
+                        placeholder="Repite la nueva clave"
+                        placeholderTextColor={colors.textSecondary}
+                        secureTextEntry={!showNewPass}
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                      />
+                    </View>
+
+                    <TouchableOpacity
+                      style={[styles.savePassBtn, { backgroundColor: colors.primary }]}
+                      onPress={handleChangePassword}
+                      disabled={passLoading}
+                    >
+                      {passLoading ? (
+                        <ActivityIndicator color={colors.primaryText} size="small" />
+                      ) : (
+                        <Text style={[styles.savePassBtnText, { color: colors.primaryText }]}>
+                          Guardar Nueva Contraseña
+                        </Text>
+                      )}
                     </TouchableOpacity>
                   </View>
-
-                  {/* Nueva Contraseña */}
-                  <Text style={[styles.passInputLabel, { color: colors.text }]}>Nueva Contraseña</Text>
-                  <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
-                    <TextInput
-                      style={[styles.passInput, { color: colors.text }]}
-                      placeholder="Mínimo 4 caracteres"
-                      placeholderTextColor={colors.textSecondary}
-                      secureTextEntry={!showNewPass}
-                      value={newPassword}
-                      onChangeText={setNewPassword}
-                    />
-                    <TouchableOpacity onPress={() => setShowNewPass(!showNewPass)} style={styles.eyeBtn}>
-                      <Text style={styles.eyeIcon}>{showNewPass ? '👁️' : '🙈'}</Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Confirmar Contraseña */}
-                  <Text style={[styles.passInputLabel, { color: colors.text }]}>Confirmar Nueva Contraseña</Text>
-                  <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
-                    <TextInput
-                      style={[styles.passInput, { color: colors.text }]}
-                      placeholder="Repite la nueva clave"
-                      placeholderTextColor={colors.textSecondary}
-                      secureTextEntry={!showNewPass}
-                      value={confirmPassword}
-                      onChangeText={setConfirmPassword}
-                    />
-                  </View>
-
-                  <TouchableOpacity
-                    style={[styles.savePassBtn, { backgroundColor: colors.primary }]}
-                    onPress={handleChangePassword}
-                    disabled={passLoading}
-                  >
-                    {passLoading ? (
-                      <ActivityIndicator color={colors.primaryText} size="small" />
-                    ) : (
-                      <Text style={[styles.savePassBtnText, { color: colors.primaryText }]}>
-                        Guardar Nueva Contraseña
-                      </Text>
-                    )}
-                  </TouchableOpacity>
                 </View>
               )}
             </View>
@@ -1111,38 +1124,77 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 2,
   },
-  themeWrapper: {
+  // Tarjeta Unificada de Configuración (Estilo iOS)
+  settingsUnifiedCard: {
     marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 12,
+    marginTop: 12,
+    marginBottom: 8,
+    borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.06)' }
+      : { elevation: 2 }),
   },
-  themeHeader: {
+  settingsCardHeader: {
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 4,
+  },
+  settingsCardTitle: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  settingsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
-  themeHeaderLeft: {
+  settingsRowLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
+    flex: 1,
   },
-  themeHeaderIcon: {
-    fontSize: 22,
+  settingsIconCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  themeHeaderTitle: {
+  settingsRowIcon: {
     fontSize: 15,
-    fontWeight: 'bold',
   },
-  themeHeaderSubtitle: {
-    fontSize: 11,
-    marginTop: 2,
+  settingsRowLabel: {
+    fontSize: 13.5,
+    fontWeight: '700',
   },
-  chevron: {
-    fontSize: 14,
-    fontWeight: 'bold',
+  settingsRowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  settingsRowValue: {
+    fontSize: 12,
+    fontWeight: '600',
+    maxWidth: 130,
+  },
+  settingsChevron: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  settingsDivider: {
+    height: 1,
+    marginHorizontal: 14,
+  },
+  expandedContentWrapper: {
+    borderTopWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
   },
   themeOptionsGrid: {
     flexDirection: 'row',
