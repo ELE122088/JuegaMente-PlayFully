@@ -4,11 +4,11 @@ const DEFAULT_MONGO_URI = 'mongodb+srv://markarvar1988_db_user:Kieb2xUgmg5MOhoH@
 
 const connectDB = async () => {
   const uri =
-    process.env.MONGO_URI ||
     process.env.MONGO_URL ||
-    process.env.DATABASE_URL ||
-    process.env.MONGODB_URL ||
     process.env.MONGO_PRIVATE_URL ||
+    process.env.MONGODB_URL ||
+    process.env.DATABASE_URL ||
+    process.env.MONGO_URI ||
     DEFAULT_MONGO_URI;
 
   const attemptConnect = async () => {
