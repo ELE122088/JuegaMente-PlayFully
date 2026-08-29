@@ -3,18 +3,8 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import storage from './storage';
 
-// URL de tu Servidor en la Nube (Railway)
-export const CLOUD_BACKEND_URL = 'https://juegamente-playfully-production.up.railway.app';
-
-// Activa true para conectar al servidor en la nube o false para tu backend local
-const USE_CLOUD = false;
-
-// Función para obtener la URL base dinámica
+// Función para obtener la URL base del backend local
 export const getBaseUrl = () => {
-  if (USE_CLOUD) {
-    return CLOUD_BACKEND_URL;
-  }
-
   if (Platform.OS === 'web') {
     return 'http://localhost:5000';
   }
