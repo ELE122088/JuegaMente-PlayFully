@@ -89,12 +89,6 @@ const createQuestion = async (req, res) => {
       createdBy: req.user?._id || null,
     });
 
-    // Replicar en tiempo real a MongoDB Atlas en segundo plano
-    try {
-      const syncService = require('../services/syncService');
-      syncService.syncDocument('questions', 'insert', { _id: question._id }, question.toObject());
-    } catch (syncErr) {}
-
     const populated = await question.populate('category', 'name icon color');
     emitCategoryUpdate(req, 'categories:updated', { action: 'question_create', categoryId: category });
     res.status(201).json(populated);
@@ -118,13 +112,6 @@ const deleteQuestion = async (req, res) => {
 
     const catId = question.category;
     await Question.findByIdAndDelete(req.params.id);
-
-    // Replicar eliminación en Atlas
-    try {
-      const syncService = require('../services/syncService');
-      syncService.syncDocument('questions', 'delete', { _id: req.params.id });
-    } catch (syncErr) {}
-
     emitCategoryUpdate(req, 'categories:updated', { action: 'question_delete', categoryId: catId });
     res.json({ message: 'Pregunta eliminada correctamente' });
   } catch (error) {
@@ -152,13 +139,6 @@ const updateQuestion = async (req, res) => {
     question.category = category || question.category;
 
     const updated = await question.save();
-
-    // Replicar actualización a Atlas
-    try {
-      const syncService = require('../services/syncService');
-      syncService.syncDocument('questions', 'update', { _id: updated._id }, { $set: updated.toObject() });
-    } catch (syncErr) {}
-
     const populated = await updated.populate('category', 'name icon color');
     emitCategoryUpdate(req, 'categories:updated', { action: 'question_update', categoryId: updated.category });
     res.json(populated);
@@ -196,15 +176,6 @@ const createBulkQuestions = async (req, res) => {
     });
 
     const inserted = await Question.insertMany(questionsToInsert);
-
-    // Replicar lote a Atlas
-    try {
-      const syncService = require('../services/syncService');
-      for (const qDoc of inserted) {
-        syncService.syncDocument('questions', 'insert', { _id: qDoc._id }, qDoc.toObject());
-      }
-    } catch (syncErr) {}
-
     emitCategoryUpdate(req, 'categories:updated', { action: 'bulk_create', categoryId, count: inserted.length });
     res.status(201).json({
       message: `¡Se importaron ${inserted.length} preguntas exitosamente!`,

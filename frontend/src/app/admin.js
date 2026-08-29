@@ -769,38 +769,6 @@ export default function AdminScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title={isSuperAdmin ? '🔧 Administración (SuperAdmin)' : '🔧 Panel Docente'} showBack={true} />
 
-      {/* 🗄️ Barra de Estado de Bases de Datos Duales (Railway + MongoDB Atlas) */}
-      <View style={[styles.dualDbCard, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <View style={styles.dualDbInfo}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>🗄️ Modo Dual Activo:</Text>
-            <View style={[styles.dbBadge, { backgroundColor: '#10B98118', borderColor: '#10B981' }]}>
-              <Text style={{ fontSize: 10.5, fontWeight: '800', color: '#059669' }}>
-                🚀 Railway: {dbStatus?.primary?.connected ? '🟢 Conectado' : '🟡 Local'}
-              </Text>
-            </View>
-            <View style={[styles.dbBadge, { backgroundColor: dbStatus?.atlas?.connected ? '#10B98118' : '#F59E0B18', borderColor: dbStatus?.atlas?.connected ? '#10B981' : '#F59E0B' }]}>
-              <Text style={{ fontSize: 10.5, fontWeight: '800', color: dbStatus?.atlas?.connected ? '#059669' : '#D97706' }}>
-                ☁️ Atlas: {dbStatus?.atlas?.connected ? '🟢 Sincronizado' : '🟡 Standby'}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <TouchableOpacity 
-          style={[styles.syncDbBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
-          onPress={handleSyncDatabases}
-          disabled={syncingDatabases}
-          activeOpacity={0.7}
-        >
-          {syncingDatabases ? (
-            <ActivityIndicator size="small" color={colors.primary} />
-          ) : (
-            <Text style={[styles.syncDbBtnText, { color: colors.primary }]}>🔄 Sincronizar Ambas BD</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-
       {/* Tabs */}
       <View style={[styles.tabs, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity

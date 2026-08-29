@@ -83,28 +83,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Diagnóstico en vivo de ambas bases de datos (Railway y Atlas)
-app.get('/api/admin/database-status', async (req, res) => {
-  try {
-    const syncService = require('./services/syncService');
-    const status = await syncService.getStatus();
-    res.json(status);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Sincronización forzada bidireccional entre ambas bases de datos
-app.post('/api/admin/sync-databases', async (req, res) => {
-  try {
-    const syncService = require('./services/syncService');
-    const result = await syncService.fullSyncBiDirectional();
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // Rutas de la API
 app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/questions', require('./routes/questionRoutes'));
