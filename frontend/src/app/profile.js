@@ -758,10 +758,70 @@ export default function ProfileScreen() {
               )}
             </View>
 
-            {/* Estadísticas: Propuesta A (Cuadrícula KPI Gamificada 2x2 Fija) */}
+            {/* =========================================================
+                PROPUESTA B (ACTIVA): Barra de Nivel & Rango Académico (Estilo Duolingo)
+            ========================================================= */}
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Resumen de Rendimiento</Text>
+            <View style={[styles.levelCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {/* Encabezado del Nivel: Rango + Porcentaje */}
+              <View style={styles.levelHeader}>
+                <View style={styles.levelRankLeft}>
+                  <Text style={styles.levelRankIcon}>
+                    {average >= 90 ? '👑' : average >= 75 ? '⭐' : average >= 60 ? '📚' : '🌱'}
+                  </Text>
+                  <View>
+                    <Text style={[styles.levelRankTitle, { color: colors.text }]}>
+                      {average >= 90 ? 'Maestro Legendario' : average >= 75 ? 'Estudiante Avanzado' : average >= 60 ? 'Estudiante Destacado' : 'Aprendiz en Progreso'}
+                    </Text>
+                    <Text style={[styles.levelRankSub, { color: colors.textSecondary }]}>
+                      Rango según efectividad
+                    </Text>
+                  </View>
+                </View>
+                <View style={[styles.levelPercentBadge, { backgroundColor: average >= 60 ? '#10B98118' : '#EF444418' }]}>
+                  <Text style={[styles.levelPercentText, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
+                    {average}%
+                  </Text>
+                </View>
+              </View>
+
+              {/* Barra de Progreso Visual */}
+              <View style={[styles.progressBarTrack, { backgroundColor: colors.border }]}>
+                <View
+                  style={[
+                    styles.progressBarFill,
+                    {
+                      width: `${Math.min(Math.max(average, 6), 100)}%`,
+                      backgroundColor: average >= 80 ? '#10B981' : average >= 60 ? colors.primary : '#EF4444',
+                    }
+                  ]}
+                />
+              </View>
+
+              {/* Tira inferior de estadísticas rápidas */}
+              <View style={[styles.levelStatsRow, { borderTopColor: colors.border }]}>
+                <View style={styles.levelStatItem}>
+                  <Text style={[styles.levelStatVal, { color: colors.text }]}>🎮 {total}</Text>
+                  <Text style={[styles.levelStatLbl, { color: colors.textSecondary }]}>Partidas</Text>
+                </View>
+                <View style={styles.levelStatDivider} />
+                <View style={styles.levelStatItem}>
+                  <Text style={[styles.levelStatVal, { color: '#8B5CF6' }]}>✅ {passed}</Text>
+                  <Text style={[styles.levelStatLbl, { color: colors.textSecondary }]}>Aprobadas</Text>
+                </View>
+                <View style={styles.levelStatDivider} />
+                <View style={styles.levelStatItem}>
+                  <Text style={[styles.levelStatVal, { color: '#D97706' }]}>🏆 {bestScore}%</Text>
+                  <Text style={[styles.levelStatLbl, { color: colors.textSecondary }]}>Récord</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* =========================================================
+                PROPUESTA A (Bloqueada/Comentada): Cuadrícula 2x2
+            ========================================================= */}
+            {/*
             <View style={styles.kpiContainer}>
-              {/* Fila 1: Partidas y Promedio */}
               <View style={styles.kpiRow}>
                 <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.kpiIconWrapper, { backgroundColor: '#3B82F618' }]}>
@@ -772,21 +832,16 @@ export default function ProfileScreen() {
                     <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Partidas</Text>
                   </View>
                 </View>
-
                 <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.kpiIconWrapper, { backgroundColor: average >= 60 ? '#10B98118' : '#EF444418' }]}>
                     <Text style={styles.kpiIcon}>{average >= 60 ? '🎯' : '📉'}</Text>
                   </View>
                   <View style={styles.kpiContent}>
-                    <Text style={[styles.kpiValue, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
-                      {average}%
-                    </Text>
+                    <Text style={[styles.kpiValue, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>{average}%</Text>
                     <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Promedio</Text>
                   </View>
                 </View>
               </View>
-
-              {/* Fila 2: Mejor Récord y Aprobadas */}
               <View style={styles.kpiRow}>
                 <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.kpiIconWrapper, { backgroundColor: '#F59E0B18' }]}>
@@ -797,7 +852,6 @@ export default function ProfileScreen() {
                     <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Mejor Récord</Text>
                   </View>
                 </View>
-
                 <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.kpiIconWrapper, { backgroundColor: '#8B5CF618' }]}>
                     <Text style={styles.kpiIcon}>✅</Text>
@@ -809,6 +863,7 @@ export default function ProfileScreen() {
                 </View>
               </View>
             </View>
+            */}
 
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Historial de Partidas</Text>
           </>
@@ -1261,8 +1316,82 @@ const styles = StyleSheet.create({
   themeEmoji: {
     fontSize: 18,
   },
-  themeText: {
-    fontSize: 12,
+  // Estilos de Propuesta B: Barra de Nivel & Rango
+  levelCard: {
+    marginHorizontal: 16,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 12,
+    marginBottom: 8,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.06)' }
+      : { elevation: 2 }),
+  },
+  levelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  levelRankLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  levelRankIcon: {
+    fontSize: 26,
+  },
+  levelRankTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  levelRankSub: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  levelPercentBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  levelPercentText: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  progressBarTrack: {
+    width: '100%',
+    height: 10,
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 5,
+  },
+  levelStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    borderTopWidth: 1,
+    paddingTop: 10,
+  },
+  levelStatItem: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  levelStatVal: {
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
+  levelStatLbl: {
+    fontSize: 10.5,
+    fontWeight: '600',
+  },
+  levelStatDivider: {
+    width: 1,
+    height: 22,
+    backgroundColor: 'rgba(128,128,128,0.2)',
   },
   // Cuadrícula KPI Gamificada (2x2 Fija y Responsiva)
   kpiContainer: {
