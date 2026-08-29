@@ -491,8 +491,8 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* Cabecera de Perfil con Esquinas Inferiores Curvas (Opción 4) */}
-            <View style={[styles.profileSlimHeaderCurved, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {/* Cabecera de Perfil Definitiva: Tarjeta Flotante Redondeada (Opción 2) */}
+            <View style={[styles.profileSlimHeaderCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {/* Botón de Retorno Estilo iOS Nativo ‹ volver */}
               <TouchableOpacity
                 style={styles.iosBackBtn}
@@ -1170,34 +1170,7 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingBottom: 40,
   },
-  // Cabecera Ultra-Slim: Esquinas Inferiores Curvas (Opción 4)
-  profileSlimHeaderCurved: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: Platform.OS === 'web' ? 12 : 44,
-    paddingBottom: 13,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
-    borderBottomWidth: 1,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    gap: 12,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 3px 10px rgba(0, 0, 0, 0.05)' }
-      : { shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 }),
-  },
-  // Cabecera Ultra-Slim: Acento de Color Temático Brillante (Opción 3)
-  profileSlimHeaderGlow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: Platform.OS === 'web' ? 12 : 44,
-    paddingBottom: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 2,
-    gap: 12,
-  },
-  // Cabecera Ultra-Slim: Tarjeta Flotante Redondeada (Opción 2)
+  // Cabecera Ultra-Slim Definitiva: Tarjeta Flotante Redondeada (Opción 2)
   profileSlimHeaderCard: {
     marginHorizontal: 16,
     marginTop: Platform.OS === 'web' ? 14 : 44,
@@ -1212,19 +1185,6 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web'
       ? { boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.05)' }
       : { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 3, elevation: 2 }),
-  },
-  // Cabecera Ultra-Slim con Sombra Flotante Suave (Opción 1)
-  profileSlimHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: Platform.OS === 'web' ? 12 : 44,
-    paddingBottom: 12,
-    paddingHorizontal: 16,
-    gap: 12,
-    zIndex: 10,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 3px 10px rgba(0, 0, 0, 0.07)' }
-      : { shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 3 }),
   },
   iosBackBtn: {
     flexDirection: 'row',
