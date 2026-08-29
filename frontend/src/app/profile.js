@@ -772,13 +772,6 @@ export default function ProfileScreen() {
             <Text style={[styles.emptySub, { color: colors.textSecondary }]}>Las puntuaciones que guardes aparecerán aquí.</Text>
           </View>
         }
-        ListFooterComponent={
-          <View style={styles.footer}>
-            <TouchableOpacity style={[styles.logoutButton, { backgroundColor: '#FF6B6B' }]} onPress={handleLogout}>
-              <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
-            </TouchableOpacity>
-          </View>
-        }
       />
 
       {/* Modal para ver detalles del cuestionario */}
@@ -1280,20 +1273,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     marginTop: 2,
-  },
-  footer: {
-    padding: 16,
-    marginTop: 10,
-  },
-  logoutButton: {
-    padding: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  logoutButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: 'bold',
   },
   modalOverlay: {
     flex: 1,
