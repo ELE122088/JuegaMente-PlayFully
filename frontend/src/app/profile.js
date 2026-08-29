@@ -491,7 +491,7 @@ export default function ProfileScreen() {
           <>
             {/* Cabecera de Perfil Ultra-Slim en 1 Sola Línea con Estilo iOS Nativo ‹ volver */}
             <View style={[styles.profileSlimHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-              {/* SUGERENCIA 3 (ACTIVA): Estilo iOS Nativo ‹ volver */}
+              {/* Botón de Retorno Estilo iOS Nativo ‹ volver */}
               <TouchableOpacity
                 style={styles.iosBackBtn}
                 onPress={() => {
@@ -504,36 +504,7 @@ export default function ProfileScreen() {
                 <Text style={[styles.iosBackText, { color: colors.primary }]}>volver</Text>
               </TouchableOpacity>
 
-              {/* SUGERENCIA 2 (Bloqueada/Comentada): Micro-Círculo (←) */}
-              {/*
-              <TouchableOpacity
-                style={[styles.microCircleBackBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
-                onPress={() => {
-                  if (router.canGoBack()) router.back();
-                  else router.replace('/');
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.microCircleBackIcon, { color: colors.text }]}>←</Text>
-              </TouchableOpacity>
-              */}
-
-              {/* SUGERENCIA 1 (Bloqueada/Comentada): Micro-Pastilla [← volver] */}
-              {/*
-              <TouchableOpacity
-                style={[styles.backPillBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
-                onPress={() => {
-                  if (router.canGoBack()) router.back();
-                  else router.replace('/');
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.backPillArrow, { color: colors.text }]}>←</Text>
-                <Text style={[styles.backPillText, { color: colors.textSecondary }]}>volver</Text>
-              </TouchableOpacity>
-              */}
-
-              {/* 2. Avatar circular inmediatamente al lado */}
+              {/* Avatar circular (Toca para cambiar foto) */}
               <TouchableOpacity
                 style={[styles.slimAvatar, { backgroundColor: colors.primary }]}
                 onPress={handlePickImage}
@@ -551,7 +522,7 @@ export default function ProfileScreen() {
                 )}
               </TouchableOpacity>
 
-              {/* 3. Nombre de Usuario + Insignia de Rol al lado */}
+              {/* Nombre de Usuario + Insignia de Rol en la misma fila */}
               <View style={styles.slimUserInfo}>
                 <Text style={[styles.slimUsername, { color: colors.text }]} numberOfLines={1}>
                   {profile?.username}
@@ -1061,7 +1032,7 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingBottom: 40,
   },
-  // Cabecera Ultra-Slim en 1 sola fila: [← Volver] + Avatar + Nombre/Rol
+  // Cabecera Ultra-Slim Definitiva en 1 Sola Fila (Estilo iOS Nativo ‹ volver + Avatar + Nombre/Rol)
   profileSlimHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1071,7 +1042,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     gap: 12,
   },
-  // Estilo de Sugerencia 3: iOS Nativo ‹ volver
   iosBackBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1087,44 +1057,6 @@ const styles = StyleSheet.create({
   iosBackText: {
     fontSize: 12,
     fontWeight: '600',
-  },
-  // Estilo de Sugerencia 2: Micro-Círculo Minimalista (←)
-  microCircleBackBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 1px 4px rgba(0,0,0,0.06)' }
-      : { elevation: 1 }),
-  },
-  microCircleBackIcon: {
-    fontSize: 15,
-    fontWeight: '800',
-    marginTop: -1,
-  },
-  backPillBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 3.5,
-    borderRadius: 14,
-    borderWidth: 1,
-    gap: 3,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 1px 3px rgba(0,0,0,0.05)' }
-      : { elevation: 1 }),
-  },
-  backPillArrow: {
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  backPillText: {
-    fontSize: 9.5,
-    fontWeight: '600',
-    letterSpacing: 0.3,
   },
   slimAvatar: {
     width: 44,
@@ -1163,132 +1095,6 @@ const styles = StyleSheet.create({
   },
   slimRoleText: {
     fontSize: 10.5,
-    fontWeight: '700',
-  },
-  // Estilos de Opción C: Barra Ultra-Slim Horizontal Integrada
-  optCContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'web' ? 12 : 44,
-    paddingBottom: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    gap: 12,
-  },
-  optCBackBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  optCBackText: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginTop: -2,
-  },
-  optCCenterInfo: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  optCAvatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  optCAvatarImg: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-  },
-  optCAvatarTxt: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  optCTexts: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  optCUsername: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  optCRole: {
-    fontSize: 11,
-    fontWeight: '700',
-    marginTop: 1,
-  },
-  optCEditBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  // Estilos de Opción B: Botón Flotante Circular
-  floatingBackCircle: {
-    position: 'absolute',
-    top: Platform.OS === 'web' ? 14 : 44,
-    left: 16,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    zIndex: 100,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.15)' }
-      : { elevation: 5 }),
-  },
-  floatingBackIcon: {
-    fontSize: 20,
-    fontWeight: '800',
-    marginTop: -2,
-  },
-  profileHeaderOptB: {
-    alignItems: 'center',
-    paddingTop: Platform.OS === 'web' ? 16 : 46,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-  },
-  profileHeader: {
-    alignItems: 'center',
-    paddingTop: Platform.OS === 'web' ? 16 : 48,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-  },
-  profileTopBar: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    marginBottom: 8,
-  },
-  backPillBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    gap: 4,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 4px rgba(0,0,0,0.06)' }
-      : { elevation: 1 }),
-  },
-  backPillText: {
-    fontSize: 12.5,
     fontWeight: '700',
   },
   avatarContainer: {
