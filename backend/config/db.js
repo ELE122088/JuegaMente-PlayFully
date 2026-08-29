@@ -9,7 +9,6 @@ const connectDB = async () => {
     process.env.MONGO_URI,
     process.env.MONGO_URL,
     process.env.MONGO_PRIVATE_URL,
-    'mongodb://mongodb.railway.internal:27017/Banco_preguntas',
     process.env.DATABASE_URL,
     'mongodb://127.0.0.1:27017/Banco_preguntas',
   ].filter(Boolean);
@@ -26,11 +25,16 @@ const connectDB = async () => {
           retryWrites: true,
           w: 'majority',
         });
-        console.log(`✅ MongoDB conectado exitosamente a: ${conn.connection.host}`);
+        
+        // Validar que la sesión está realmente autenticada
+        await conn.connection.db.admin().ping();
+
+        console.log(`✅ MongoDB conectado y autenticado exitosamente a: ${conn.connection.host}`);
         connected = true;
         break;
       } catch (err) {
         console.warn(`⚠️ No se pudo conectar a ${uri.substring(0, 35)}...: ${err.message}`);
+        try { await mongoose.disconnect(); } catch(e) {}
       }
     }
 
