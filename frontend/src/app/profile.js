@@ -491,8 +491,8 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* Cabecera de Perfil con Acento de Color Temático Brillante (Opción 3) */}
-            <View style={[styles.profileSlimHeaderGlow, { backgroundColor: colors.card, borderBottomColor: colors.primary }]}>
+            {/* Cabecera de Perfil con Esquinas Inferiores Curvas (Opción 4) */}
+            <View style={[styles.profileSlimHeaderCurved, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {/* Botón de Retorno Estilo iOS Nativo ‹ volver */}
               <TouchableOpacity
                 style={styles.iosBackBtn}
@@ -1169,6 +1169,23 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 40,
+  },
+  // Cabecera Ultra-Slim: Esquinas Inferiores Curvas (Opción 4)
+  profileSlimHeaderCurved: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: Platform.OS === 'web' ? 12 : 44,
+    paddingBottom: 13,
+    paddingHorizontal: 16,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
+    borderBottomWidth: 1,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    gap: 12,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 3px 10px rgba(0, 0, 0, 0.05)' }
+      : { shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 }),
   },
   // Cabecera Ultra-Slim: Acento de Color Temático Brillante (Opción 3)
   profileSlimHeaderGlow: {
