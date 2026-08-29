@@ -429,6 +429,9 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
               </TouchableOpacity>
             </View>
           </View>
+        </View>
+      </Modal>
+
       {/* 🏆 Modal Directo de Tabla de Posiciones en Tiempo Real */}
       <Modal
         visible={rankingModalVisible}
