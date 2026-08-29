@@ -758,52 +758,54 @@ export default function ProfileScreen() {
               )}
             </View>
 
-            {/* Estadísticas: Propuesta A (Cuadrícula KPI Gamificada 2x2) */}
+            {/* Estadísticas: Propuesta A (Cuadrícula KPI Gamificada 2x2 Fija) */}
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Resumen de Rendimiento</Text>
-            <View style={styles.kpiGridContainer}>
-              {/* 1. Partidas Jugadas */}
-              <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={[styles.kpiIconWrapper, { backgroundColor: '#3B82F618' }]}>
-                  <Text style={styles.kpiIcon}>🎮</Text>
+            <View style={styles.kpiContainer}>
+              {/* Fila 1: Partidas y Promedio */}
+              <View style={styles.kpiRow}>
+                <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <View style={[styles.kpiIconWrapper, { backgroundColor: '#3B82F618' }]}>
+                    <Text style={styles.kpiIcon}>🎮</Text>
+                  </View>
+                  <View style={styles.kpiContent}>
+                    <Text style={[styles.kpiValue, { color: colors.text }]}>{total}</Text>
+                    <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Partidas</Text>
+                  </View>
                 </View>
-                <View style={styles.kpiContent}>
-                  <Text style={[styles.kpiValue, { color: colors.text }]}>{total}</Text>
-                  <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Partidas</Text>
+
+                <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <View style={[styles.kpiIconWrapper, { backgroundColor: average >= 60 ? '#10B98118' : '#EF444418' }]}>
+                    <Text style={styles.kpiIcon}>{average >= 60 ? '🎯' : '📉'}</Text>
+                  </View>
+                  <View style={styles.kpiContent}>
+                    <Text style={[styles.kpiValue, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
+                      {average}%
+                    </Text>
+                    <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Promedio</Text>
+                  </View>
                 </View>
               </View>
 
-              {/* 2. Promedio General */}
-              <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={[styles.kpiIconWrapper, { backgroundColor: average >= 60 ? '#10B98118' : '#EF444418' }]}>
-                  <Text style={styles.kpiIcon}>{average >= 60 ? '🎯' : '📉'}</Text>
+              {/* Fila 2: Mejor Récord y Aprobadas */}
+              <View style={styles.kpiRow}>
+                <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <View style={[styles.kpiIconWrapper, { backgroundColor: '#F59E0B18' }]}>
+                    <Text style={styles.kpiIcon}>🏆</Text>
+                  </View>
+                  <View style={styles.kpiContent}>
+                    <Text style={[styles.kpiValue, { color: '#D97706' }]}>{bestScore}%</Text>
+                    <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Mejor Récord</Text>
+                  </View>
                 </View>
-                <View style={styles.kpiContent}>
-                  <Text style={[styles.kpiValue, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
-                    {average}%
-                  </Text>
-                  <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Promedio</Text>
-                </View>
-              </View>
 
-              {/* 3. Mejor Récord */}
-              <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={[styles.kpiIconWrapper, { backgroundColor: '#F59E0B18' }]}>
-                  <Text style={styles.kpiIcon}>🏆</Text>
-                </View>
-                <View style={styles.kpiContent}>
-                  <Text style={[styles.kpiValue, { color: '#D97706' }]}>{bestScore}%</Text>
-                  <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Mejor Récord</Text>
-                </View>
-              </View>
-
-              {/* 4. Partidas Aprobadas */}
-              <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={[styles.kpiIconWrapper, { backgroundColor: '#8B5CF618' }]}>
-                  <Text style={styles.kpiIcon}>✅</Text>
-                </View>
-                <View style={styles.kpiContent}>
-                  <Text style={[styles.kpiValue, { color: '#8B5CF6' }]}>{passed}</Text>
-                  <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Aprobadas</Text>
+                <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <View style={[styles.kpiIconWrapper, { backgroundColor: '#8B5CF618' }]}>
+                    <Text style={styles.kpiIcon}>✅</Text>
+                  </View>
+                  <View style={styles.kpiContent}>
+                    <Text style={[styles.kpiValue, { color: '#8B5CF6' }]}>{passed}</Text>
+                    <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Aprobadas</Text>
+                  </View>
                 </View>
               </View>
             </View>
@@ -1262,49 +1264,50 @@ const styles = StyleSheet.create({
   themeText: {
     fontSize: 12,
   },
-  // Cuadrícula KPI Gamificada (2x2)
-  kpiGridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  // Cuadrícula KPI Gamificada (2x2 Fija y Responsiva)
+  kpiContainer: {
     paddingHorizontal: 16,
-    rowGap: 10,
-    columnGap: 10,
+    gap: 10,
     marginBottom: 8,
   },
+  kpiRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
   kpiCard: {
-    width: '48.5%',
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
     borderRadius: 14,
     borderWidth: 1,
-    gap: 10,
+    gap: 8,
     ...(Platform.OS === 'web'
       ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.04)' }
       : { elevation: 1 }),
   },
   kpiIconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 34,
+    height: 34,
+    borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
   },
   kpiIcon: {
-    fontSize: 18,
+    fontSize: 16,
   },
   kpiContent: {
     flex: 1,
     justifyContent: 'center',
   },
   kpiValue: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
     marginBottom: 1,
   },
   kpiLabel: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '600',
   },
   sectionTitle: {
