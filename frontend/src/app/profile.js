@@ -481,6 +481,20 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* =========================================================
+          OPCIÓN B (ACTIVA): Botón Flotante Circular ← en Esquina
+      ========================================================= */}
+      <TouchableOpacity
+        style={[styles.floatingBackCircle, { backgroundColor: colors.card, borderColor: colors.border }]}
+        onPress={() => {
+          if (router.canGoBack()) router.back();
+          else router.replace('/');
+        }}
+        activeOpacity={0.7}
+      >
+        <Text style={[styles.floatingBackIcon, { color: colors.text }]}>←</Text>
+      </TouchableOpacity>
+
       <FlatList
         data={profile?.history || []}
         keyExtractor={(item, index) => index.toString()}
@@ -489,9 +503,12 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* Cabecera de Perfil Integrada (Opción A: Sin barra superior separada) */}
-            <View style={[styles.profileHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-              {/* Barra superior integrada con botón ← Volver */}
+            {/* Cabecera de Perfil (Opción B: Centrada con Botón Flotante) */}
+            <View style={[styles.profileHeaderOptB, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+              {/* =========================================================
+                  OPCIÓN A (Bloqueada/Comentada): Barra Integrada
+              ========================================================= */}
+              {/*
               <View style={styles.profileTopBar}>
                 <TouchableOpacity
                   style={[styles.backPillBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
@@ -504,6 +521,7 @@ export default function ProfileScreen() {
                   <Text style={[styles.backPillText, { color: colors.text }]}>← Volver</Text>
                 </TouchableOpacity>
               </View>
+              */}
 
               <TouchableOpacity
                 style={[styles.avatarContainer, { backgroundColor: colors.primary }]}
@@ -1026,6 +1044,34 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 40,
+  },
+  // Estilos de Opción B: Botón Flotante Circular
+  floatingBackCircle: {
+    position: 'absolute',
+    top: Platform.OS === 'web' ? 14 : 44,
+    left: 16,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    zIndex: 100,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.15)' }
+      : { elevation: 5 }),
+  },
+  floatingBackIcon: {
+    fontSize: 20,
+    fontWeight: '800',
+    marginTop: -2,
+  },
+  profileHeaderOptB: {
+    alignItems: 'center',
+    paddingTop: Platform.OS === 'web' ? 16 : 46,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
   },
   profileHeader: {
     alignItems: 'center',
