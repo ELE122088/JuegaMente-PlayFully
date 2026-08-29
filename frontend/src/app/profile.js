@@ -408,67 +408,94 @@ export default function ProfileScreen() {
     const isGood = item.percentage >= 80;
     const isRegular = item.percentage >= 60 && item.percentage < 80;
 
-    let cardColor = '#FF6B6B'; // Rojo
-    if (isGood) cardColor = '#4ECDC4'; // Verde
-    else if (isRegular) cardColor = '#FFD166'; // Amarillo
+    let badgeBg = '#EF444418';
+    let badgeColor = '#EF4444';
+    let statusText = '❌ Reprobada';
+
+    if (isGood) {
+      badgeBg = '#10B98118';
+      badgeColor = '#10B981';
+      statusText = '✅ Excelente';
+    } else if (isRegular) {
+      badgeBg = '#F59E0B18';
+      badgeColor = '#D97706';
+      statusText = '👍 Aprobada';
+    }
 
     return (
       <TouchableOpacity
         style={[
-          styles.historyCard,
+          styles.historyCardModern,
           {
             backgroundColor: colors.card,
-            borderLeftColor: cardColor,
+            borderColor: colors.border,
           }
         ]}
         onPress={() => handleShowGameDetail(item)}
         activeOpacity={0.7}
       >
-        <View style={styles.historyInfo}>
-          <Text style={[styles.historyCategory, { color: colors.text }]} numberOfLines={1}>{item.categoryName}</Text>
-          <Text style={[styles.historyDate, { color: colors.textSecondary }]}>
-            {new Date(item.date).toLocaleDateString('es-ES', {
-              day: '2-digit',
-              month: 'short',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+        {/* Fila Superior: Título de Materia y Píldora de Calificación */}
+        <View style={styles.historyTopRow}>
+          <Text style={[styles.historyCategory, { color: colors.text }]} numberOfLines={1}>
+            {item.categoryName}
           </Text>
-        </View>
-        <View style={styles.historyScore}>
-          <Text style={[styles.scoreText, { color: cardColor }]}>
-            {item.score}/{item.total}
-          </Text>
-          <Text style={[styles.percentageText, { color: colors.textSecondary }]}>{item.percentage}% aciertos</Text>
+          <View style={[styles.historyScorePill, { backgroundColor: badgeBg }]}>
+            <Text style={[styles.historyScorePillText, { color: badgeColor }]}>
+              {item.score}/{item.total} • {item.percentage}%
+            </Text>
+          </View>
         </View>
 
-        {/* Botón de Ranking en Vivo para esta materia */}
-        <TouchableOpacity
-          style={[styles.actionIconBtn, { backgroundColor: '#F59E0B20' }]}
-          onPress={(e) => {
-            e.stopPropagation();
-            handleOpenCategoryRanking(item.category, item.categoryName);
-          }}
-          title="Ver Ranking de esta Materia"
-        >
-          <Text style={{ fontSize: 16 }}>🏆</Text>
-        </TouchableOpacity>
+        {/* Fila Inferior: Fecha + Estado Textual y Botones de Acción */}
+        <View style={styles.historyBottomRow}>
+          <View style={styles.historyMetaLeft}>
+            <Text style={[styles.historyDate, { color: colors.textSecondary }]}>
+              {new Date(item.date).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </Text>
+            <Text style={styles.historyDot}>•</Text>
+            <Text style={[styles.historyStatusText, { color: badgeColor }]}>
+              {statusText}
+            </Text>
+          </View>
 
-        {/* Botón de lupa para ver detalles */}
-        <TouchableOpacity
-          style={styles.actionIconBtn}
-          onPress={() => handleShowGameDetail(item)}
-        >
-          <Text style={[styles.arrowIcon, { color: colors.textSecondary }]}>🔍</Text>
-        </TouchableOpacity>
+          {/* Grupo de Botones de Acción Redondeados */}
+          <View style={styles.historyActionsGroup}>
+            {/* Botón Ranking */}
+            <TouchableOpacity
+              style={[styles.historyMicroBtn, { backgroundColor: '#F59E0B18' }]}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleOpenCategoryRanking(item.category, item.categoryName);
+              }}
+              title="Ver Ranking"
+            >
+              <Text style={styles.historyMicroBtnIcon}>🏆</Text>
+            </TouchableOpacity>
 
-        {/* Botón de eliminar (Cualquier usuario para su historial propio) */}
-        <TouchableOpacity
-          style={[styles.actionIconBtn, styles.deleteHistoryBtn]}
-          onPress={(e) => handleDeleteHistory(item._id, e)}
-        >
-          <Text style={styles.deleteHistoryIcon}>🗑️</Text>
-        </TouchableOpacity>
+            {/* Botón Ver Preguntas / Lupa */}
+            <TouchableOpacity
+              style={[styles.historyMicroBtn, { backgroundColor: colors.inputBg || `${colors.card}` }]}
+              onPress={() => handleShowGameDetail(item)}
+              title="Ver Detalles"
+            >
+              <Text style={styles.historyMicroBtnIcon}>🔍</Text>
+            </TouchableOpacity>
+
+            {/* Botón Eliminar */}
+            <TouchableOpacity
+              style={[styles.historyMicroBtn, { backgroundColor: '#EF444414' }]}
+              onPress={(e) => handleDeleteHistory(item._id, e)}
+              title="Eliminar"
+            >
+              <Text style={styles.historyMicroBtnIcon}>🗑️</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -1528,53 +1555,79 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
   },
-  historyCard: {
-    borderRadius: 12,
+  historyCardModern: {
+    borderRadius: 16,
     padding: 12,
     marginHorizontal: 16,
     marginBottom: 10,
+    borderWidth: 1,
+    gap: 8,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.04)' }
+      : { elevation: 1 }),
+  },
+  historyTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderLeftWidth: 5,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 1px 2px rgba(0,0,0,0.05)' }
-      : { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }),
-  },
-  historyInfo: {
-    flex: 1,
+    justifyContent: 'space-between',
+    gap: 8,
   },
   historyCategory: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 2,
+    fontSize: 14.5,
+    fontWeight: '800',
+    flex: 1,
+  },
+  historyScorePill: {
+    paddingHorizontal: 10,
+    paddingVertical: 3.5,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  historyScorePillText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  historyBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(128,128,128,0.1)',
+  },
+  historyMetaLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
   },
   historyDate: {
     fontSize: 11,
+    fontWeight: '500',
   },
-  historyScore: {
-    alignItems: 'flex-end',
-    marginRight: 10,
+  historyDot: {
+    fontSize: 11,
+    color: 'rgba(128,128,128,0.5)',
   },
-  scoreText: {
-    fontSize: 15,
-    fontWeight: 'bold',
+  historyStatusText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
-  percentageText: {
-    fontSize: 10,
-  },
-  actionIconBtn: {
-    padding: 6,
-    justifyContent: 'center',
+  historyActionsGroup: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
-  deleteHistoryBtn: {
-    marginLeft: 10,
+  historyMicroBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  arrowIcon: {
-    fontSize: 14,
-  },
-  deleteHistoryIcon: {
-    fontSize: 14,
+  historyMicroBtnIcon: {
+    fontSize: 13,
   },
   emptyState: {
     alignItems: 'center',
