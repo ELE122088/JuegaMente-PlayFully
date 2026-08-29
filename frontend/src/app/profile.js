@@ -1087,6 +1087,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 40,
+  },
   // Estilos de Opción C: Barra Ultra-Slim Horizontal Integrada
   optCContainer: {
     flexDirection: 'row',
