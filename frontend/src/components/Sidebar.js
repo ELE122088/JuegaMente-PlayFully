@@ -117,10 +117,12 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
             onMouseLeave: onClose
           } : {})}
         >
-          {/* Cabecera del Perfil con Marca JuegaMente (Opción 1: Horizontal Integrada) */}
+          {/* =========================================================
+              OPCIÓN 1 (Bloqueada/Comentada): Tarjeta Horizontal Integrada
+          ========================================================= */}
+          {/*
           <View style={[styles.profileHeader, { borderBottomColor: colors.border, backgroundColor: colors.inputBg || `${colors.card}` }]}>
             <View style={styles.profileRow}>
-              {/* Avatar a la izquierda */}
               <TouchableOpacity 
                 style={[styles.avatar, { backgroundColor: colors.primary }]}
                 onPress={() => handleNavigate('/profile')}
@@ -135,7 +137,6 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
                 )}
               </TouchableOpacity>
 
-              {/* Información de Usuario en el centro */}
               <View style={styles.profileInfo}>
                 <Text style={[styles.username, { color: colors.text }]} numberOfLines={1}>
                   {username}
@@ -147,7 +148,6 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
                 </View>
               </View>
 
-              {/* Insignia compacta de Marca Megamente */}
               <View style={styles.brandBadge}>
                 <Image 
                   source={require('../../assets/images/megamind_sidebar.png')} 
@@ -156,6 +156,54 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
                 />
               </View>
             </View>
+          </View>
+          */}
+
+          {/* =========================================================
+              OPCIÓN 2 (ACTIVA): Barra Slim de Marca + Perfil Compacto
+          ========================================================= */}
+          <View style={[styles.opt2Container, { borderBottomColor: colors.border }]}>
+            {/* 1. Tira Slim Superior de Marca */}
+            <View style={[styles.opt2BrandBar, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}30` }]}>
+              <Image 
+                source={require('../../assets/images/megamind_sidebar.png')} 
+                style={styles.opt2BrandIcon}
+                resizeMode="contain"
+              />
+              <Text style={[styles.opt2BrandTitle, { color: colors.primary }]}>
+                🎮 JuegaMente <Text style={{ fontSize: 9.5, fontWeight: '700', color: colors.textSecondary }}>• (PlayFully)</Text>
+              </Text>
+            </View>
+
+            {/* 2. Tarjeta Compacta de Perfil */}
+            <TouchableOpacity 
+              style={[styles.opt2UserCard, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
+              onPress={() => handleNavigate('/profile')}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.opt2Avatar, { backgroundColor: colors.primary }]}>
+                {profileImage ? (
+                  <Image source={{ uri: `${BASE_URL}${profileImage}` }} style={styles.opt2AvatarImg} />
+                ) : (
+                  <Text style={[styles.opt2AvatarTxt, { color: colors.primaryText }]}>
+                    {username?.substring(0, 2).toUpperCase()}
+                  </Text>
+                )}
+              </View>
+
+              <View style={styles.opt2UserInfo}>
+                <Text style={[styles.opt2Username, { color: colors.text }]} numberOfLines={1}>
+                  {username}
+                </Text>
+                <Text style={[styles.opt2RoleText, { color: (isAdmin || role === 'admin') ? '#D97706' : colors.primary }]}>
+                  {isAdmin || role === 'admin' ? '👑 Administrador' : '🎓 Estudiante'}
+                </Text>
+              </View>
+
+              <View style={[styles.opt2ProfileArrow, { backgroundColor: `${colors.textSecondary}15` }]}>
+                <Text style={{ fontSize: 11, color: colors.textSecondary, fontWeight: '800' }}>⚙️</Text>
+              </View>
+            </TouchableOpacity>
           </View>
 
           {/* Opciones del Menú */}
@@ -429,6 +477,78 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web'
       ? { boxShadow: '0px 2px 6px rgba(108,99,255,0.2)' }
       : { shadowColor: '#6C63FF', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 2 }),
+  },
+  // Estilos para Opción 2: Barra Slim de Marca + Perfil Compacto
+  opt2Container: {
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    gap: 8,
+  },
+  opt2BrandBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 8,
+  },
+  opt2BrandIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+  },
+  opt2BrandTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  opt2UserCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 10,
+  },
+  opt2Avatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  opt2AvatarImg: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+  },
+  opt2AvatarTxt: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  opt2UserInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  opt2Username: {
+    fontSize: 14.5,
+    fontWeight: '800',
+  },
+  opt2RoleText: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 1,
+  },
+  opt2ProfileArrow: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   menuList: {
     paddingVertical: 14,
