@@ -481,8 +481,6 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header title="" showBack={true} />
-
       <FlatList
         data={profile?.history || []}
         keyExtractor={(item, index) => index.toString()}
@@ -491,8 +489,22 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* Cabecera de Perfil */}
+            {/* Cabecera de Perfil Integrada (Opción A: Sin barra superior separada) */}
             <View style={[styles.profileHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+              {/* Barra superior integrada con botón ← Volver */}
+              <View style={styles.profileTopBar}>
+                <TouchableOpacity
+                  style={[styles.backPillBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
+                  onPress={() => {
+                    if (router.canGoBack()) router.back();
+                    else router.replace('/');
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.backPillText, { color: colors.text }]}>← Volver</Text>
+                </TouchableOpacity>
+              </View>
+
               <TouchableOpacity
                 style={[styles.avatarContainer, { backgroundColor: colors.primary }]}
                 onPress={handlePickImage}
@@ -1017,8 +1029,33 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingTop: Platform.OS === 'web' ? 16 : 48,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
+  },
+  profileTopBar: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginBottom: 8,
+  },
+  backPillBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 4,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 4px rgba(0,0,0,0.06)' }
+      : { elevation: 1 }),
+  },
+  backPillText: {
+    fontSize: 12.5,
+    fontWeight: '700',
   },
   avatarContainer: {
     width: 70,
