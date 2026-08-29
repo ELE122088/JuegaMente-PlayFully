@@ -491,8 +491,8 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* Cabecera de Perfil Ultra-Slim en 1 Sola Línea con Estilo iOS Nativo ‹ volver */}
-            <View style={[styles.profileSlimHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+            {/* Cabecera de Perfil Ultra-Slim con Sombra Flotante Suave (Opción 1) */}
+            <View style={[styles.profileSlimHeader, { backgroundColor: colors.card }]}>
               {/* Botón de Retorno Estilo iOS Nativo ‹ volver */}
               <TouchableOpacity
                 style={styles.iosBackBtn}
@@ -1170,15 +1170,18 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingBottom: 40,
   },
-  // Cabecera Ultra-Slim Definitiva en 1 Sola Fila (Estilo iOS Nativo ‹ volver + Avatar + Nombre/Rol)
+  // Cabecera Ultra-Slim con Sombra Flotante Suave (Opción 1)
   profileSlimHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingTop: Platform.OS === 'web' ? 12 : 44,
     paddingBottom: 12,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
     gap: 12,
+    zIndex: 10,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 3px 10px rgba(0, 0, 0, 0.07)' }
+      : { shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 3 }),
   },
   iosBackBtn: {
     flexDirection: 'row',
