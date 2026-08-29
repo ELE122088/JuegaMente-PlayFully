@@ -759,11 +759,52 @@ export default function ProfileScreen() {
             </View>
 
             {/* =========================================================
-                PROPUESTA B (ACTIVA): Barra de Nivel & Rango Académico (Estilo Duolingo)
+                PROPUESTA C (ACTIVA): Tira Horizontal Ultra-Compacta (Estilo Apple Analytics)
             ========================================================= */}
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Resumen de Rendimiento</Text>
+            <View style={[styles.stripContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {/* 1. Partidas */}
+              <View style={styles.stripCol}>
+                <Text style={styles.stripIcon}>🎮</Text>
+                <Text style={[styles.stripVal, { color: colors.text }]}>{total}</Text>
+                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Partidas</Text>
+              </View>
+
+              <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
+
+              {/* 2. Promedio */}
+              <View style={styles.stripCol}>
+                <Text style={styles.stripIcon}>{average >= 60 ? '🎯' : '📉'}</Text>
+                <Text style={[styles.stripVal, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
+                  {average}%
+                </Text>
+                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Promedio</Text>
+              </View>
+
+              <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
+
+              {/* 3. Mejor Récord */}
+              <View style={styles.stripCol}>
+                <Text style={styles.stripIcon}>🏆</Text>
+                <Text style={[styles.stripVal, { color: '#D97706' }]}>{bestScore}%</Text>
+                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Récord</Text>
+              </View>
+
+              <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
+
+              {/* 4. Aprobadas */}
+              <View style={styles.stripCol}>
+                <Text style={styles.stripIcon}>✅</Text>
+                <Text style={[styles.stripVal, { color: '#8B5CF6' }]}>{passed}</Text>
+                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Aprobadas</Text>
+              </View>
+            </View>
+
+            {/* =========================================================
+                PROPUESTA B (Bloqueada/Comentada): Barra de Nivel
+            ========================================================= */}
+            {/*
             <View style={[styles.levelCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              {/* Encabezado del Nivel: Rango + Porcentaje */}
               <View style={styles.levelHeader}>
                 <View style={styles.levelRankLeft}>
                   <Text style={styles.levelRankIcon}>
@@ -784,8 +825,6 @@ export default function ProfileScreen() {
                   </Text>
                 </View>
               </View>
-
-              {/* Barra de Progreso Visual */}
               <View style={[styles.progressBarTrack, { backgroundColor: colors.border }]}>
                 <View
                   style={[
@@ -797,8 +836,6 @@ export default function ProfileScreen() {
                   ]}
                 />
               </View>
-
-              {/* Tira inferior de estadísticas rápidas */}
               <View style={[styles.levelStatsRow, { borderTopColor: colors.border }]}>
                 <View style={styles.levelStatItem}>
                   <Text style={[styles.levelStatVal, { color: colors.text }]}>🎮 {total}</Text>
@@ -816,6 +853,7 @@ export default function ProfileScreen() {
                 </View>
               </View>
             </View>
+            */}
 
             {/* =========================================================
                 PROPUESTA A (Bloqueada/Comentada): Cuadrícula 2x2
@@ -1315,6 +1353,43 @@ const styles = StyleSheet.create({
   },
   themeEmoji: {
     fontSize: 18,
+  },
+  // Estilos de Propuesta C: Tira Horizontal Ultra-Compacta
+  stripContainer: {
+    marginHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 8,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.04)' }
+      : { elevation: 1 }),
+  },
+  stripCol: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  stripIcon: {
+    fontSize: 16,
+    marginBottom: 1,
+  },
+  stripVal: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  stripLbl: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  stripDivider: {
+    width: 1,
+    height: 28,
   },
   // Estilos de Propuesta B: Barra de Nivel & Rango
   levelCard: {
