@@ -484,26 +484,23 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.historyGamifiedBtnGroup}>
+            {/* Botón Ranking con texto dorado nítido y legible */}
             <TouchableOpacity
-              style={[styles.historyGamifiedActionBtn, { backgroundColor: '#F59E0B14', borderColor: '#F59E0B30' }]}
+              style={[styles.historyGamifiedActionBtn, { backgroundColor: '#F59E0B22', borderColor: '#F59E0B55' }]}
               onPress={(e) => {
                 e.stopPropagation();
                 handleOpenCategoryRanking(item.category, item.categoryName);
               }}
+              title="Ver Ranking de esta Materia"
             >
-              <Text style={styles.historyGamifiedActionTxt}>🏆 Ranking</Text>
+              <Text style={[styles.historyGamifiedActionTxt, { color: '#F59E0B' }]}>🏆 Ranking</Text>
             </TouchableOpacity>
 
+            {/* Botón Eliminar Partida */}
             <TouchableOpacity
-              style={[styles.historyGamifiedActionBtn, { backgroundColor: colors.inputBg || '#3B82F614', borderColor: colors.border }]}
-              onPress={() => handleShowGameDetail(item)}
-            >
-              <Text style={[styles.historyGamifiedActionTxt, { color: colors.text }]}>🔍 Ver</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.historyGamifiedActionBtn, { backgroundColor: '#EF444414', borderColor: '#EF444430' }]}
+              style={[styles.historyGamifiedActionBtn, { backgroundColor: '#EF444418', borderColor: '#EF444433' }]}
               onPress={(e) => handleDeleteHistory(item._id, e)}
+              title="Eliminar partida"
             >
               <Text style={styles.historyGamifiedActionTxt}>🗑️</Text>
             </TouchableOpacity>
@@ -1641,14 +1638,16 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   historyGamifiedActionBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
     borderRadius: 8,
     borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   historyGamifiedActionTxt: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 11.5,
+    fontWeight: '800',
   },
   // Estilos de Propuesta 2: Lista Compacta Minimalista
   historyCompactCard: {
