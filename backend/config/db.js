@@ -1,20 +1,44 @@
 const mongoose = require('mongoose');
 
-const ATLAS_URI = process.env.MONGO_ATLAS_URI || process.env.MONGO_URI || 'mongodb+srv://markarvar1988_db_user:Kieb2xUgmg5MOhoH@cluster0.mrvmafh.mongodb.net/Banco_preguntas?retryWrites=true&w=majority';
+// URI Directa de Replica Set (evita fallos de resolución DNS SRV en contenedores cloud)
+const ATLAS_DIRECT_URI = 'mongodb://markarvar1988_db_user:Kieb2xUgmg5MOhoH@ac-boymlpt-shard-00-00.mrvmafh.mongodb.net:27017,ac-boymlpt-shard-00-01.mrvmafh.mongodb.net:27017,ac-boymlpt-shard-00-02.mrvmafh.mongodb.net:27017/Banco_preguntas?ssl=true&replicaSet=atlas-118fuj-shard-0&authSource=admin&retryWrites=true&w=majority';
+const ATLAS_SRV_URI = 'mongodb+srv://markarvar1988_db_user:Kieb2xUgmg5MOhoH@cluster0.mrvmafh.mongodb.net/Banco_preguntas?retryWrites=true&w=majority';
+
+const ATLAS_URI = process.env.MONGO_ATLAS_URI || process.env.MONGO_URI || ATLAS_DIRECT_URI;
 
 const connectDB = async () => {
   const attemptConnect = async () => {
-    try {
-      console.log('🔌 Conectando ÚNICAMENTE a MongoDB Atlas (cluster0.mrvmafh.mongodb.net)...');
-      const conn = await mongoose.connect(ATLAS_URI, {
-        serverSelectionTimeoutMS: 20000,
-        family: 4,
-        retryWrites: true,
-        w: 'majority',
-      });
+    // Probar primero la conexión directa de réplica set, luego SRV
+    const urisToTry = [ATLAS_URI, ATLAS_DIRECT_URI, ATLAS_SRV_URI];
 
-      console.log(`✅ Conectado exitosamente a MongoDB Atlas: ${conn.connection.host}`);
-      global.lastDbError = null;
+    let connected = false;
+    for (const uri of urisToTry) {
+      try {
+        console.log('🔌 Conectando a MongoDB Atlas (cluster0 / shards directos)...');
+        const conn = await mongoose.connect(uri, {
+          serverSelectionTimeoutMS: 12000,
+          family: 4,
+          retryWrites: true,
+          w: 'majority',
+        });
+
+        console.log(`✅ Conectado exitosamente a MongoDB Atlas: ${conn.connection.host}`);
+        global.lastDbError = null;
+        connected = true;
+        break;
+      } catch (err) {
+        console.warn(`⚠️ Intento de conexión a Atlas falló: ${err.message}`);
+      }
+    }
+
+    if (!connected) {
+      global.lastDbError = 'No se pudo conectar al clúster de MongoDB Atlas';
+      console.error('❌ Reintentando conectar a MongoDB Atlas en 5 segundos...');
+      setTimeout(attemptConnect, 5000);
+      return;
+    }
+
+    try {
 
       // Migración automática de usuarios antiguos usando la colección nativa
       try {
