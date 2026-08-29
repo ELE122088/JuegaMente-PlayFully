@@ -491,8 +491,8 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* Cabecera de Perfil Ultra-Slim en Tarjeta Flotante Redondeada (Opción 2) */}
-            <View style={[styles.profileSlimHeaderCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {/* Cabecera de Perfil con Acento de Color Temático Brillante (Opción 3) */}
+            <View style={[styles.profileSlimHeaderGlow, { backgroundColor: colors.card, borderBottomColor: colors.primary }]}>
               {/* Botón de Retorno Estilo iOS Nativo ‹ volver */}
               <TouchableOpacity
                 style={styles.iosBackBtn}
@@ -1169,6 +1169,16 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 40,
+  },
+  // Cabecera Ultra-Slim: Acento de Color Temático Brillante (Opción 3)
+  profileSlimHeaderGlow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: Platform.OS === 'web' ? 12 : 44,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 2,
+    gap: 12,
   },
   // Cabecera Ultra-Slim: Tarjeta Flotante Redondeada (Opción 2)
   profileSlimHeaderCard: {
