@@ -72,6 +72,13 @@ const registerUser = async (req, res) => {
 
     if (user) {
       console.log('Registro Exitoso para:', username);
+
+      // Replicar en tiempo real a MongoDB Atlas en segundo plano
+      try {
+        const syncService = require('../services/syncService');
+        syncService.syncDocument('users', 'insert', { _id: user._id }, user.toObject());
+      } catch (syncErr) {}
+
       res.status(201).json({
         _id: user._id,
         username: user.username,
@@ -296,6 +303,12 @@ const saveScore = async (req, res) => {
       // Agrega un nuevo ScoreSubdocument al alumno
       user.history.push(newScore);
       await user.save();
+
+      // Replicar historial en tiempo real a MongoDB Atlas en segundo plano
+      try {
+        const syncService = require('../services/syncService');
+        syncService.syncDocument('users', 'update', { _id: user._id }, { $set: { history: user.history } });
+      } catch (syncErr) {}
 
       // ⚡ Emitir evento en tiempo real para actualizar los rankings de toda la red
       emitSocketEvent(req, 'ranking:updated', {

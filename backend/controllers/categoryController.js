@@ -331,6 +331,12 @@ const createCategory = async (req, res) => {
       isActive: finalIsActive,
     });
 
+    // Replicar en tiempo real a MongoDB Atlas en segundo plano
+    try {
+      const syncService = require('../services/syncService');
+      syncService.syncDocument('categories', 'insert', { _id: category._id }, category.toObject());
+    } catch (syncErr) {}
+
     emitCategoryUpdate(req, 'categories:updated', { action: 'create', categoryId: category._id });
     res.status(201).json(category);
   } catch (error) {
@@ -355,6 +361,13 @@ const deleteCategory = async (req, res) => {
     // Eliminar también las preguntas de esta categoría
     await Question.deleteMany({ category: req.params.id });
     await Category.findByIdAndDelete(req.params.id);
+
+    // Replicar eliminación en Atlas
+    try {
+      const syncService = require('../services/syncService');
+      syncService.syncDocument('categories', 'delete', { _id: req.params.id });
+      syncService.syncDocument('questions', 'deleteMany', { category: req.params.id });
+    } catch (syncErr) {}
 
     emitCategoryUpdate(req, 'categories:updated', { action: 'delete', categoryId: req.params.id });
     res.json({ message: 'Categoría y sus preguntas eliminadas correctamente' });
@@ -403,6 +416,13 @@ const updateCategory = async (req, res) => {
     }
 
     const updated = await category.save();
+
+    // Replicar actualización a Atlas
+    try {
+      const syncService = require('../services/syncService');
+      syncService.syncDocument('categories', 'update', { _id: updated._id }, { $set: updated.toObject() });
+    } catch (syncErr) {}
+
     emitCategoryUpdate(req, 'categories:updated', { action: 'update', categoryId: updated._id });
     res.json(updated);
   } catch (error) {

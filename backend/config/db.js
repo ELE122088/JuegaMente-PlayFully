@@ -157,6 +157,14 @@ const connectDB = async () => {
         console.error('⚠️ Error al ejecutar la migración automática de usuarios:', migError.message);
       }
       global.lastDbError = null;
+
+      // 🔄 Inicializar Sincronización Dual con MongoDB Atlas en paralelo
+      try {
+        const syncService = require('../services/syncService');
+        syncService.init();
+      } catch (syncErr) {
+        console.warn('⚠️ No se pudo inicializar syncService:', syncErr.message);
+      }
     } catch (error) {
       global.lastDbError = error.message;
       console.error(`❌ Error de conexión a MongoDB: ${error.message}`);

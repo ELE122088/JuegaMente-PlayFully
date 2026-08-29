@@ -69,7 +69,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Ruta de diagnóstico de salud y base de datos
+// Rutas de diagnóstico de salud y bases de datos duales
 app.get('/api/health', (req, res) => {
   const mongoose = require('mongoose');
   const state = mongoose.connection.readyState;
@@ -81,6 +81,28 @@ app.get('/api/health', (req, res) => {
     lastDbError: global.lastDbError || null,
     uptime: process.uptime(),
   });
+});
+
+// Diagnóstico en vivo de ambas bases de datos (Railway y Atlas)
+app.get('/api/admin/database-status', async (req, res) => {
+  try {
+    const syncService = require('./services/syncService');
+    const status = await syncService.getStatus();
+    res.json(status);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Sincronización forzada bidireccional entre ambas bases de datos
+app.post('/api/admin/sync-databases', async (req, res) => {
+  try {
+    const syncService = require('./services/syncService');
+    const result = await syncService.fullSyncBiDirectional();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Rutas de la API

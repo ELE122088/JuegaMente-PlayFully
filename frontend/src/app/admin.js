@@ -48,7 +48,44 @@ export default function AdminScreen() {
   const [usersLoading, setUsersLoading] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState('');
 
+  // Estados de Base de Datos Dual (Railway + Atlas)
+  const [dbStatus, setDbStatus] = useState(null);
+  const [syncingDatabases, setSyncingDatabases] = useState(false);
+
   const { colors } = useTheme();
+
+  const fetchDbStatus = async () => {
+    try {
+      const response = await api.get('/admin/database-status');
+      setDbStatus(response.data);
+    } catch (err) {
+      console.warn('No se pudo obtener estado de bases de datos duales:', err.message);
+    }
+  };
+
+  const handleSyncDatabases = async () => {
+    setSyncingDatabases(true);
+    try {
+      const response = await api.post('/admin/sync-databases');
+      if (response.data?.success) {
+        const msg = `¡Sincronización dual exitosa!\n\n👥 Usuarios: ${response.data.results.users}\n📂 Materias: ${response.data.results.categories}\n❓ Preguntas: ${response.data.results.questions}`;
+        if (Platform.OS === 'web') alert(msg);
+        else Alert.alert('✅ Sincronización Exitosa', msg);
+        fetchDbStatus();
+        fetchData();
+      } else {
+        const msg = response.data?.message || response.data?.error || 'Error al sincronizar bases de datos';
+        if (Platform.OS === 'web') alert(msg);
+        else Alert.alert('Aviso', msg);
+      }
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Error de conexión durante la sincronización';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Error', msg);
+    } finally {
+      setSyncingDatabases(false);
+    }
+  };
 
   useEffect(() => {
     // Determinar si el usuario actual es SuperAdmin
@@ -56,6 +93,7 @@ export default function AdminScreen() {
     const storedUsername = (storage.getItem('username') || '').toLowerCase();
     const isSuper = storedIsSuper || storedUsername === 'superadmin';
     setIsSuperAdmin(isSuper);
+    fetchDbStatus();
 
     // ⚡ Sincronización en tiempo real con WebSockets
     try {
@@ -730,6 +768,38 @@ export default function AdminScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title={isSuperAdmin ? '🔧 Administración (SuperAdmin)' : '🔧 Panel Docente'} showBack={true} />
+
+      {/* 🗄️ Barra de Estado de Bases de Datos Duales (Railway + MongoDB Atlas) */}
+      <View style={[styles.dualDbCard, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <View style={styles.dualDbInfo}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>🗄️ Modo Dual Activo:</Text>
+            <View style={[styles.dbBadge, { backgroundColor: '#10B98118', borderColor: '#10B981' }]}>
+              <Text style={{ fontSize: 10.5, fontWeight: '800', color: '#059669' }}>
+                🚀 Railway: {dbStatus?.primary?.connected ? '🟢 Conectado' : '🟡 Local'}
+              </Text>
+            </View>
+            <View style={[styles.dbBadge, { backgroundColor: dbStatus?.atlas?.connected ? '#10B98118' : '#F59E0B18', borderColor: dbStatus?.atlas?.connected ? '#10B981' : '#F59E0B' }]}>
+              <Text style={{ fontSize: 10.5, fontWeight: '800', color: dbStatus?.atlas?.connected ? '#059669' : '#D97706' }}>
+                ☁️ Atlas: {dbStatus?.atlas?.connected ? '🟢 Sincronizado' : '🟡 Standby'}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <TouchableOpacity 
+          style={[styles.syncDbBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
+          onPress={handleSyncDatabases}
+          disabled={syncingDatabases}
+          activeOpacity={0.7}
+        >
+          {syncingDatabases ? (
+            <ActivityIndicator size="small" color={colors.primary} />
+          ) : (
+            <Text style={[styles.syncDbBtnText, { color: colors.primary }]}>🔄 Sincronizar Ambas BD</Text>
+          )}
+        </TouchableOpacity>
+      </View>
 
       {/* Tabs */}
       <View style={[styles.tabs, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
@@ -1803,5 +1873,39 @@ const styles = StyleSheet.create({
   toggleRoleBtnText: {
     fontSize: 12,
     fontWeight: '700',
+  },
+  // Estilos de Base de Datos Dual
+  dualDbCard: {
+    flexDirection: Platform.OS === 'web' ? 'row' : 'column',
+    alignItems: Platform.OS === 'web' ? 'center' : 'flex-start',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    gap: 8,
+  },
+  dualDbInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  dbBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  syncDbBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  syncDbBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
   },
 });
