@@ -45,17 +45,6 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
 
-// Middleware de diagnóstico para depurar req.body
-app.use((req, res, next) => {
-  console.log(`\n--- 📥 Petición Recibida ---`);
-  console.log(`Método: ${req.method}`);
-  console.log(`Ruta: ${req.url}`);
-  console.log(`Content-Type: ${req.headers['content-type']}`);
-  console.log(`Body parseado:`, req.body);
-  console.log(`---------------------------\n`);
-  next();
-});
-
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.json({
@@ -69,7 +58,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Rutas de diagnóstico de salud y bases de datos duales
+// Diagnóstico de salud y conexión a MongoDB Atlas
 app.get('/api/health', (req, res) => {
   const mongoose = require('mongoose');
   const state = mongoose.connection.readyState;
