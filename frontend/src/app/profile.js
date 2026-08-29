@@ -491,7 +491,7 @@ export default function ProfileScreen() {
           <>
             {/* Cabecera de Perfil Ultra-Slim en 1 Sola Línea: [← Volver] + Avatar + Nombre/Rol (Sin Cámara) */}
             <View style={[styles.profileSlimHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-              {/* 1. Botón Pastilla [← Volver] a la izquierda */}
+              {/* 1. Botón Pastilla [← volver] con palabra pequeña y difuminada */}
               <TouchableOpacity
                 style={[styles.backPillBtn, { backgroundColor: colors.inputBg || `${colors.card}`, borderColor: colors.border }]}
                 onPress={() => {
@@ -500,7 +500,8 @@ export default function ProfileScreen() {
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.backPillText, { color: colors.text }]}>← Volver</Text>
+                <Text style={[styles.backPillArrow, { color: colors.text }]}>←</Text>
+                <Text style={[styles.backPillText, { color: colors.textSecondary }]}>volver</Text>
               </TouchableOpacity>
 
               {/* 2. Avatar circular inmediatamente al lado */}
@@ -1044,18 +1045,23 @@ const styles = StyleSheet.create({
   backPillBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5.5,
+    borderRadius: 18,
     borderWidth: 1,
     gap: 4,
     ...(Platform.OS === 'web'
       ? { boxShadow: '0px 2px 4px rgba(0,0,0,0.06)' }
       : { elevation: 1 }),
   },
+  backPillArrow: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
   backPillText: {
-    fontSize: 12.5,
-    fontWeight: '700',
+    fontSize: 10.5,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
   slimAvatar: {
     width: 44,
