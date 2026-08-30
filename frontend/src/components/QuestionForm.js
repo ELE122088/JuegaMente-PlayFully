@@ -2,6 +2,65 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, ScrollView, Alert, Platform } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
+const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, elevation = 3) => {
+  if (Platform.OS === 'web') {
+    const r = parseInt(color.slice(1, 3), 16) || 0;
+    const g = parseInt(color.slice(3, 5), 16) || 0;
+    const b = parseInt(color.slice(5, 7), 16) || 0;
+    return {
+      boxShadow: `0px ${offsetY}px ${radius}px rgba(${r},${g},${b},${opacity})`,
+    };
+  }
+  return {
+    shadowColor: color,
+    shadowOffset: { width: 0, height: offsetY },
+    shadowOpacity: opacity,
+    shadowRadius: radius,
+    elevation,
+  };
+};
+
+const InteractiveActionBtn = ({
+  style,
+  accentColor = '#6C63FF',
+  onPress,
+  disabled = false,
+  children,
+  activeOpacity = 0.75,
+  ...props
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <TouchableOpacity
+      style={[
+        style,
+        Platform.OS === 'web' && {
+          transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease, opacity 0.2s ease',
+          cursor: disabled ? 'default' : 'pointer',
+        },
+        isHovered && !disabled && {
+          transform: [{ translateY: -2 }],
+          borderColor: accentColor,
+          ...createShadow(accentColor, 4, 0.28, 10, 4),
+        },
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={activeOpacity}
+      {...(Platform.OS === 'web' && !disabled
+        ? {
+            onMouseEnter: () => setIsHovered(true),
+            onMouseLeave: () => setIsHovered(false),
+          }
+        : {})}
+      {...props}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+};
+
 export default function QuestionForm({ visible, onClose, onSave, question = null, categories = [] }) {
   const isEditing = !!question;
   const { colors } = useTheme();
@@ -152,14 +211,22 @@ export default function QuestionForm({ visible, onClose, onSave, question = null
 
           {/* Botones */}
           <View style={styles.buttons}>
-            <TouchableOpacity style={[styles.cancelButton, { backgroundColor: colors.border }]} onPress={onClose}>
+            <InteractiveActionBtn
+              style={[styles.cancelButton, { backgroundColor: colors.border }]}
+              accentColor={colors.textSecondary}
+              onPress={onClose}
+            >
               <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.primary }]} onPress={handleSave}>
-              <Text style={[styles.saveButtonText, { color: colors.primaryText }]}>
+            </InteractiveActionBtn>
+            <InteractiveActionBtn
+              style={[styles.saveButton, { backgroundColor: selectedCatColor }]}
+              accentColor={selectedCatColor}
+              onPress={handleSave}
+            >
+              <Text style={[styles.saveButtonText, { color: '#FFFFFF' }]}>
                 {isEditing ? 'Guardar Cambios' : 'Crear Pregunta'}
               </Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
           </View>
         </View>
       </View>

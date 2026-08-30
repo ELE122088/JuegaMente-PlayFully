@@ -21,6 +21,45 @@ const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, e
   };
 };
 
+const InteractiveActionBtn = ({
+  style,
+  accentColor = '#6C63FF',
+  onPress,
+  disabled = false,
+  children,
+  activeOpacity = 0.75,
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <TouchableOpacity
+      style={[
+        style,
+        Platform.OS === 'web' && {
+          transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease, opacity 0.2s ease',
+          cursor: disabled ? 'default' : 'pointer',
+        },
+        isHovered && !disabled && {
+          transform: [{ translateY: -2 }],
+          borderColor: accentColor,
+          ...createShadow(accentColor, 4, 0.28, 10, 4),
+        },
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={activeOpacity}
+      {...(Platform.OS === 'web' && !disabled
+        ? {
+            onMouseEnter: () => setIsHovered(true),
+            onMouseLeave: () => setIsHovered(false),
+          }
+        : {})}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+};
+
 export default function CategoriesScreen() {
   const [isHeroHovered, setIsHeroHovered] = useState(false);
   const [isKahootHovered, setIsKahootHovered] = useState(false);
@@ -614,16 +653,16 @@ export default function CategoriesScreen() {
               )}
             </View>
 
-            <TouchableOpacity
+            <InteractiveActionBtn
               style={[
                 styles.kahootJoinBtn,
                 {
                   backgroundColor: roomPin.trim().length >= 4 ? colors.primary : `${colors.primary}80`,
                 },
               ]}
+              accentColor={colors.primary}
               onPress={handleJoinRoom}
               disabled={pinChecking || roomPin.trim().length < 4}
-              activeOpacity={0.8}
             >
               {pinChecking ? (
                 <ActivityIndicator size="small" color={colors.primaryText} />
@@ -635,7 +674,7 @@ export default function CategoriesScreen() {
                   <Text style={[styles.kahootJoinBtnArrow, { color: colors.primaryText }]}>➜</Text>
                 </>
               )}
-            </TouchableOpacity>
+            </InteractiveActionBtn>
           </View>
         </View>
 
@@ -948,14 +987,14 @@ export default function CategoriesScreen() {
         <View style={styles.pillsOuterContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillsScrollContent}>
             {/* Todas */}
-            <TouchableOpacity
+            <InteractiveActionBtn
               style={[
                 styles.pillBtn,
                 { backgroundColor: colors.card, borderColor: colors.border },
                 selectedPill === 'all' && { backgroundColor: colors.primary, borderColor: colors.primary }
               ]}
+              accentColor={colors.primary}
               onPress={() => setSelectedPill('all')}
-              activeOpacity={0.7}
             >
               <Text style={styles.pillIconEmoji}>✨</Text>
               <Text style={[styles.pillText, { color: selectedPill === 'all' ? colors.primaryText : colors.text }]}>
@@ -978,17 +1017,17 @@ export default function CategoriesScreen() {
                   {totalCategoriesCount}
                 </Text>
               </View>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
 
             {/* Prácticas */}
-            <TouchableOpacity
+            <InteractiveActionBtn
               style={[
                 styles.pillBtn,
                 { backgroundColor: colors.card, borderColor: colors.border },
                 selectedPill === 'practice' && { backgroundColor: '#10B981', borderColor: '#10B981' }
               ]}
+              accentColor="#10B981"
               onPress={() => setSelectedPill('practice')}
-              activeOpacity={0.7}
             >
               <Text style={styles.pillIconEmoji}>💡</Text>
               <Text style={[styles.pillText, { color: selectedPill === 'practice' ? '#FFFFFF' : colors.text }]}>
@@ -1011,17 +1050,17 @@ export default function CategoriesScreen() {
                   {practiceCategoriesCount}
                 </Text>
               </View>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
 
             {/* Exámenes */}
-            <TouchableOpacity
+            <InteractiveActionBtn
               style={[
                 styles.pillBtn,
                 { backgroundColor: colors.card, borderColor: colors.border },
                 selectedPill === 'exam' && { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' }
               ]}
+              accentColor="#8B5CF6"
               onPress={() => setSelectedPill('exam')}
-              activeOpacity={0.7}
             >
               <Text style={styles.pillIconEmoji}>📝</Text>
               <Text style={[styles.pillText, { color: selectedPill === 'exam' ? '#FFFFFF' : colors.text }]}>
@@ -1044,18 +1083,18 @@ export default function CategoriesScreen() {
                   {examCategoriesCount}
                 </Text>
               </View>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
 
             {/* Con PIN */}
             {pinCategoriesCount > 0 && (
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[
                   styles.pillBtn,
                   { backgroundColor: colors.card, borderColor: colors.border },
                   selectedPill === 'pin' && { backgroundColor: '#EF4444', borderColor: '#EF4444' }
                 ]}
+                accentColor="#EF4444"
                 onPress={() => setSelectedPill('pin')}
-                activeOpacity={0.7}
               >
                 <Text style={styles.pillIconEmoji}>🔒</Text>
                 <Text style={[styles.pillText, { color: selectedPill === 'pin' ? '#FFFFFF' : colors.text }]}>
@@ -1078,7 +1117,7 @@ export default function CategoriesScreen() {
                     {pinCategoriesCount}
                   </Text>
                 </View>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             )}
 
             {/* Filtros por Docente */}
@@ -1086,15 +1125,15 @@ export default function CategoriesScreen() {
               const teacherCount = categories.filter((c) => c.createdBy?.username === teacher).length;
               const isSelected = selectedPill === teacher;
               return (
-                <TouchableOpacity
+                <InteractiveActionBtn
                   key={teacher}
                   style={[
                     styles.pillBtn,
                     { backgroundColor: colors.card, borderColor: colors.border },
                     isSelected && { backgroundColor: colors.primary, borderColor: colors.primary }
                   ]}
+                  accentColor={colors.primary}
                   onPress={() => setSelectedPill(teacher)}
-                  activeOpacity={0.7}
                 >
                   <Text style={styles.pillIconEmoji}>👨‍🏫</Text>
                   <Text style={[styles.pillText, { color: isSelected ? colors.primaryText : colors.text }]}>
@@ -1117,7 +1156,7 @@ export default function CategoriesScreen() {
                       {teacherCount}
                     </Text>
                   </View>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
               );
             })}
           </ScrollView>
@@ -1184,15 +1223,17 @@ export default function CategoriesScreen() {
             />
 
             <View style={styles.modalButtons}>
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[styles.cancelBtn, { backgroundColor: colors.border }]}
+                accentColor={colors.textSecondary}
                 onPress={() => setRoomPinModal(false)}
                 disabled={pinChecking}
               >
                 <Text style={[styles.cancelBtnText, { color: colors.text }]}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </InteractiveActionBtn>
+              <InteractiveActionBtn
                 style={[styles.confirmBtn, { backgroundColor: colors.primary }]}
+                accentColor={colors.primary}
                 onPress={handleJoinRoom}
                 disabled={pinChecking}
               >
@@ -1201,7 +1242,7 @@ export default function CategoriesScreen() {
                 ) : (
                   <Text style={[styles.confirmBtnText, { color: colors.primaryText }]}>Entrar</Text>
                 )}
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
           </View>
         </View>
@@ -1234,8 +1275,9 @@ export default function CategoriesScreen() {
             />
 
             <View style={styles.modalButtons}>
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[styles.cancelBtn, { backgroundColor: colors.border }]}
+                accentColor={colors.textSecondary}
                 onPress={() => {
                   setCategoryPinModal(false);
                   setSelectedCategoryForPin(null);
@@ -1243,13 +1285,14 @@ export default function CategoriesScreen() {
                 }}
               >
                 <Text style={[styles.cancelBtnText, { color: colors.text }]}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </InteractiveActionBtn>
+              <InteractiveActionBtn
                 style={[styles.confirmBtn, { backgroundColor: colors.primary }]}
+                accentColor={colors.primary}
                 onPress={handleValidateCategoryPin}
               >
                 <Text style={[styles.confirmBtnText, { color: colors.primaryText }]}>Desbloquear 🔓</Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
           </View>
         </View>
@@ -1325,7 +1368,7 @@ export default function CategoriesScreen() {
             </View>
 
             {/* Acceso a ranking / posiciones de la materia */}
-            <TouchableOpacity
+            <InteractiveActionBtn
               style={{
                 backgroundColor: '#F59E0B15',
                 borderColor: '#F59E0B60',
@@ -1337,34 +1380,36 @@ export default function CategoriesScreen() {
                 marginBottom: 14,
                 width: '100%',
               }}
+              accentColor="#F59E0B"
               onPress={() => {
                 setConfirmModalVisible(false);
                 router.push('/profile');
               }}
-              activeOpacity={0.7}
             >
               <Text style={{ color: '#D97706', fontWeight: '800', fontSize: 13 }}>
                 🏆 Ver Historial y Posiciones en Mi Perfil
               </Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
 
             {/* Botones de Acción */}
             <View style={styles.modalButtons}>
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[styles.cancelBtn, { backgroundColor: colors.border }]}
+                accentColor={colors.textSecondary}
                 onPress={() => {
                   setConfirmModalVisible(false);
                   setCategoryToPlay(null);
                 }}
               >
                 <Text style={[styles.cancelBtnText, { color: colors.text }]}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </InteractiveActionBtn>
+              <InteractiveActionBtn
                 style={[styles.confirmBtn, { backgroundColor: colors.primary }]}
+                accentColor={colors.primary}
                 onPress={handleConfirmStart}
               >
                 <Text style={[styles.confirmBtnText, { color: colors.primaryText }]}>¡Comenzar! 🚀</Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
           </View>
         </View>

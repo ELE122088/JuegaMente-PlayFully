@@ -70,6 +70,47 @@ const SidebarMenuItem = ({
   );
 };
 
+const InteractiveActionBtn = ({
+  style,
+  accentColor = '#6C63FF',
+  onPress,
+  disabled = false,
+  children,
+  activeOpacity = 0.75,
+  ...props
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <TouchableOpacity
+      style={[
+        style,
+        Platform.OS === 'web' && {
+          transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease, opacity 0.2s ease',
+          cursor: disabled ? 'default' : 'pointer',
+        },
+        isHovered && !disabled && {
+          transform: [{ translateY: -2 }],
+          borderColor: accentColor,
+          ...createShadow(accentColor, 4, 0.28, 10, 4),
+        },
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={activeOpacity}
+      {...(Platform.OS === 'web' && !disabled
+        ? {
+            onMouseEnter: () => setIsHovered(true),
+            onMouseLeave: () => setIsHovered(false),
+          }
+        : {})}
+      {...props}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+};
+
 export default function Sidebar({ isOpen, onClose, username, role, isAdmin, profileImage, onLogout }) {
   const router = useRouter();
   const { theme, colors, setTheme } = useTheme();
@@ -525,17 +566,18 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
                     { id: 'neon', emoji: '🌌', name: 'Neón' },
                     { id: 'midnight', emoji: '🏛️', name: 'Medianoche' },
                   ].map((t) => (
-                    <TouchableOpacity 
+                    <InteractiveActionBtn 
                       key={t.id}
                       style={[
                         styles.themeBtn,
                         theme === t.id && [styles.themeBtnActive, { borderColor: colors.primary, backgroundColor: `${colors.primary}1A` }]
                       ]}
+                      accentColor={colors.primary}
                       onPress={() => setTheme(t.id)}
                     >
                       <Text style={styles.themeEmoji}>{t.emoji}</Text>
                       <Text style={[styles.themeBtnText, { color: colors.text, fontWeight: theme === t.id ? 'bold' : 'normal' }]}>{t.name}</Text>
-                    </TouchableOpacity>
+                    </InteractiveActionBtn>
                   ))}
                 </View>
               )}
@@ -598,14 +640,16 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
             />
 
             <View style={styles.modalButtons}>
-              <TouchableOpacity 
+              <InteractiveActionBtn 
                 style={[styles.cancelBtn, { backgroundColor: colors.border }]} 
+                accentColor={colors.textSecondary}
                 onPress={() => setPinVisible(false)}
               >
                 <Text style={[styles.cancelBtnText, { color: colors.text }]}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
+              </InteractiveActionBtn>
+              <InteractiveActionBtn 
                 style={[styles.confirmBtn, { backgroundColor: colors.primary }]} 
+                accentColor={colors.primary}
                 onPress={handleVerifyPin}
                 disabled={pinLoading}
               >
@@ -614,7 +658,7 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
                 ) : (
                   <Text style={[styles.confirmBtnText, { color: colors.primaryText }]}>Verificar</Text>
                 )}
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
           </View>
         </View>
@@ -771,12 +815,13 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
             )}
 
             {/* Botón de Cerrar */}
-            <TouchableOpacity
+            <InteractiveActionBtn
               style={[styles.closeRankingBtn, { backgroundColor: colors.primary, marginTop: 12 }]}
+              accentColor={colors.primary}
               onPress={() => setRankingModalVisible(false)}
             >
               <Text style={[styles.closeRankingBtnText, { color: colors.primaryText }]}>Cerrar Tabla</Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
 
           </View>
         </View>

@@ -20,6 +20,47 @@ const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, e
   };
 };
 
+export const InteractiveActionBtn = ({
+  style,
+  accentColor = '#6C63FF',
+  onPress,
+  disabled = false,
+  children,
+  activeOpacity = 0.75,
+  ...props
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <TouchableOpacity
+      style={[
+        style,
+        Platform.OS === 'web' && {
+          transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease, opacity 0.2s ease',
+          cursor: disabled ? 'default' : 'pointer',
+        },
+        isHovered && !disabled && {
+          transform: [{ translateY: -2 }],
+          borderColor: accentColor,
+          ...createShadow(accentColor, 4, 0.28, 10, 4),
+        },
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={activeOpacity}
+      {...(Platform.OS === 'web' && !disabled
+        ? {
+            onMouseEnter: () => setIsHovered(true),
+            onMouseLeave: () => setIsHovered(false),
+          }
+        : {})}
+      {...props}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+};
+
 export const PRESET_AVATARS = [
   {
     id: 'megamind_baby_gamer',
@@ -1043,32 +1084,35 @@ export default function ProfileScreen() {
 
             {/* Grupo de Botones */}
             <View style={styles.historyActionGroup}>
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[
                   styles.historyActionBtn,
                   { backgroundColor: '#F59E0B18', borderColor: '#F59E0B44' },
                 ]}
+                accentColor="#F59E0B"
                 onPress={(e) => {
-                  e.stopPropagation();
+                  e?.stopPropagation?.();
                   onOpenRanking(item.category, item.categoryName);
                 }}
-                activeOpacity={0.7}
                 title="Ver Ranking de esta Materia"
               >
                 <Text style={[styles.historyActionBtnText, { color: '#D97706' }]}>🏆 Ranking</Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
 
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[
                   styles.historyDeleteBtn,
                   { backgroundColor: '#EF444415', borderColor: '#EF444433' },
                 ]}
-                onPress={(e) => onDelete(item._id, e)}
-                activeOpacity={0.7}
+                accentColor="#EF4444"
+                onPress={(e) => {
+                  e?.stopPropagation?.();
+                  onDelete(item._id, e);
+                }}
                 title="Eliminar partida"
               >
                 <Text style={styles.historyDeleteBtnText}>🗑️</Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
           </View>
         </View>
@@ -1265,13 +1309,13 @@ export default function ProfileScreen() {
             ========================================================= */}
             <View style={[styles.profileTabBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {/* Pestaña 1: 🎮 Historial */}
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[
                   styles.profileTabItem,
                   activeProfileTab === 'history' && [styles.profileTabItemActive, { backgroundColor: colors.primary }],
                 ]}
+                accentColor={colors.primary}
                 onPress={() => setActiveProfileTab('history')}
-                activeOpacity={0.7}
               >
                 <View style={styles.tabIconWrapper}>
                   <Text style={styles.profileTabEmoji}>🎮</Text>
@@ -1305,16 +1349,16 @@ export default function ProfileScreen() {
                 >
                   Historial
                 </Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
 
               {/* Pestaña 2: 📊 Rendimiento */}
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[
                   styles.profileTabItem,
                   activeProfileTab === 'performance' && [styles.profileTabItemActive, { backgroundColor: colors.primary }],
                 ]}
+                accentColor={colors.primary}
                 onPress={() => setActiveProfileTab('performance')}
-                activeOpacity={0.7}
               >
                 <View style={styles.tabIconWrapper}>
                   <Text style={styles.profileTabEmoji}>📊</Text>
@@ -1328,16 +1372,16 @@ export default function ProfileScreen() {
                 >
                   Rendimiento
                 </Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
 
               {/* Pestaña 3: 🏆 Logros */}
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[
                   styles.profileTabItem,
                   activeProfileTab === 'achievements' && [styles.profileTabItemActive, { backgroundColor: colors.primary }],
                 ]}
+                accentColor="#10B981"
                 onPress={() => setActiveProfileTab('achievements')}
-                activeOpacity={0.7}
               >
                 <View style={styles.tabIconWrapper}>
                   <Text style={styles.profileTabEmoji}>🏆</Text>
@@ -1371,16 +1415,16 @@ export default function ProfileScreen() {
                 >
                   Logros
                 </Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
 
               {/* Pestaña 4: ⚙️ Ajustes */}
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[
                   styles.profileTabItem,
                   activeProfileTab === 'settings' && [styles.profileTabItemActive, { backgroundColor: colors.primary }],
                 ]}
+                accentColor={colors.primary}
                 onPress={() => setActiveProfileTab('settings')}
-                activeOpacity={0.7}
               >
                 <View style={styles.tabIconWrapper}>
                   <Text style={styles.profileTabEmoji}>⚙️</Text>
@@ -1394,7 +1438,7 @@ export default function ProfileScreen() {
                 >
                   Ajustes
                 </Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
 
             {/* =========================================================
@@ -1886,11 +1930,11 @@ export default function ProfileScreen() {
                           maxLength={30}
                         />
                       </View>
-                      <TouchableOpacity
+                      <InteractiveActionBtn
                         style={[styles.savePassBtn, { backgroundColor: colors.primary }]}
+                        accentColor={colors.primary}
                         onPress={handleUpdateProfile}
                         disabled={profileEditLoading}
-                        activeOpacity={0.8}
                       >
                         {profileEditLoading ? (
                           <ActivityIndicator color={colors.primaryText} size="small" />
@@ -1899,7 +1943,7 @@ export default function ProfileScreen() {
                             Guardar Nombre
                           </Text>
                         )}
-                      </TouchableOpacity>
+                      </InteractiveActionBtn>
                     </View>
                   </View>
                 )}
@@ -1970,8 +2014,9 @@ export default function ProfileScreen() {
                         />
                       </View>
 
-                      <TouchableOpacity
+                      <InteractiveActionBtn
                         style={[styles.savePassBtn, { backgroundColor: colors.primary }]}
+                        accentColor={colors.primary}
                         onPress={handleChangePassword}
                         disabled={passLoading}
                       >
@@ -1982,7 +2027,7 @@ export default function ProfileScreen() {
                             Guardar Nueva Contraseña
                           </Text>
                         )}
-                      </TouchableOpacity>
+                      </InteractiveActionBtn>
                     </View>
                   </View>
                 )}
@@ -2027,13 +2072,13 @@ export default function ProfileScreen() {
                   </View>
 
                   {profile?.history && profile.history.length > 0 && (
-                    <TouchableOpacity
+                    <InteractiveActionBtn
                       style={[styles.clearAllHistoryBtn, { backgroundColor: '#EF444415', borderColor: '#EF444438' }]}
+                      accentColor="#EF4444"
                       onPress={handleClearAllHistory}
-                      activeOpacity={0.7}
                     >
                       <Text style={styles.clearAllHistoryBtnText}>🧹 Vaciar Todo</Text>
-                    </TouchableOpacity>
+                    </InteractiveActionBtn>
                   )}
                 </View>
 
@@ -2061,14 +2106,14 @@ export default function ProfileScreen() {
                         : {})}
                     >
                       {/* Píldora: Todas */}
-                      <TouchableOpacity
+                      <InteractiveActionBtn
                         style={[
                           styles.historyFilterPill,
                           { backgroundColor: colors.card, borderColor: colors.border },
                           historyFilter === 'all' && { backgroundColor: colors.primary, borderColor: colors.primary },
                         ]}
+                        accentColor={colors.primary}
                         onPress={() => setHistoryFilter('all')}
-                        activeOpacity={0.7}
                       >
                         <Text
                           style={[
@@ -2078,18 +2123,18 @@ export default function ProfileScreen() {
                         >
                           🌟 Todas ({profile.history.length})
                         </Text>
-                      </TouchableOpacity>
+                      </InteractiveActionBtn>
 
                       {/* Píldora: 100% Perfectas */}
                       {perfectGamesCount > 0 && (
-                        <TouchableOpacity
+                        <InteractiveActionBtn
                           style={[
                             styles.historyFilterPill,
                             { backgroundColor: colors.card, borderColor: colors.border },
                             historyFilter === 'perfect' && { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' },
                           ]}
+                          accentColor="#8B5CF6"
                           onPress={() => setHistoryFilter('perfect')}
-                          activeOpacity={0.7}
                         >
                           <Text
                             style={[
@@ -2099,19 +2144,19 @@ export default function ProfileScreen() {
                           >
                             👑 100% ({perfectGamesCount})
                           </Text>
-                        </TouchableOpacity>
+                        </InteractiveActionBtn>
                       )}
 
                       {/* Píldora: Aprobadas */}
                       {passedGamesCount > 0 && (
-                        <TouchableOpacity
+                        <InteractiveActionBtn
                           style={[
                             styles.historyFilterPill,
                             { backgroundColor: colors.card, borderColor: colors.border },
                             historyFilter === 'passed' && { backgroundColor: '#10B981', borderColor: '#10B981' },
                           ]}
+                          accentColor="#10B981"
                           onPress={() => setHistoryFilter('passed')}
-                          activeOpacity={0.7}
                         >
                           <Text
                             style={[
@@ -2121,19 +2166,19 @@ export default function ProfileScreen() {
                           >
                             ✅ Aprobadas ({passedGamesCount})
                           </Text>
-                        </TouchableOpacity>
+                        </InteractiveActionBtn>
                       )}
 
                       {/* Píldora: Reprobadas */}
                       {failedGamesCount > 0 && (
-                        <TouchableOpacity
+                        <InteractiveActionBtn
                           style={[
                             styles.historyFilterPill,
                             { backgroundColor: colors.card, borderColor: colors.border },
                             historyFilter === 'failed' && { backgroundColor: '#EF4444', borderColor: '#EF4444' },
                           ]}
+                          accentColor="#EF4444"
                           onPress={() => setHistoryFilter('failed')}
-                          activeOpacity={0.7}
                         >
                           <Text
                             style={[
@@ -2143,22 +2188,22 @@ export default function ProfileScreen() {
                           >
                             ❌ Reprobadas ({failedGamesCount})
                           </Text>
-                        </TouchableOpacity>
+                        </InteractiveActionBtn>
                       )}
 
                       {/* Píldoras por materia */}
                       {uniqueHistoryCategories.map((cat) => {
                         const isSelected = historyFilter === cat.name;
                         return (
-                          <TouchableOpacity
+                          <InteractiveActionBtn
                             key={cat.name}
                             style={[
                               styles.historyFilterPill,
                               { backgroundColor: colors.card, borderColor: colors.border },
                               isSelected && { backgroundColor: colors.primary, borderColor: colors.primary },
                             ]}
+                            accentColor={colors.primary}
                             onPress={() => setHistoryFilter(cat.name)}
-                            activeOpacity={0.7}
                           >
                             <Text
                               style={[
@@ -2168,7 +2213,7 @@ export default function ProfileScreen() {
                             >
                               {cat.icon} {cat.name} ({cat.count})
                             </Text>
-                          </TouchableOpacity>
+                          </InteractiveActionBtn>
                         );
                       })}
                     </ScrollView>

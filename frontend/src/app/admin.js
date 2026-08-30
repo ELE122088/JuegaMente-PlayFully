@@ -26,6 +26,45 @@ const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, e
   };
 };
 
+const InteractiveActionBtn = ({
+  style,
+  accentColor = '#6C63FF',
+  onPress,
+  disabled = false,
+  children,
+  activeOpacity = 0.75,
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <TouchableOpacity
+      style={[
+        style,
+        Platform.OS === 'web' && {
+          transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease, opacity 0.2s ease',
+          cursor: disabled ? 'default' : 'pointer',
+        },
+        isHovered && !disabled && {
+          transform: [{ translateY: -2 }],
+          borderColor: accentColor,
+          ...createShadow(accentColor, 4, 0.28, 10, 4),
+        },
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={activeOpacity}
+      {...(Platform.OS === 'web' && !disabled
+        ? {
+            onMouseEnter: () => setIsHovered(true),
+            onMouseLeave: () => setIsHovered(false),
+          }
+        : {})}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+};
+
 export default function AdminScreen() {
   const [activeTab, setActiveTab] = useState('categories');
   const [categories, setCategories] = useState([]);
@@ -594,9 +633,9 @@ export default function AdminScreen() {
               </Text>
 
               {/* Badge de Estado Activo/Bloqueado con 1 toque */}
-              <TouchableOpacity
+              <InteractiveActionBtn
                 onPress={() => handleToggleCategoryStatus(item)}
-                activeOpacity={0.7}
+                accentColor={item.isActive !== false ? '#4ECDC4' : '#FF6B6B'}
                 style={[
                   styles.pinBadgeCompact,
                   {
@@ -608,7 +647,7 @@ export default function AdminScreen() {
                 <Text style={[styles.pinBadgeTextCompact, { color: item.isActive !== false ? '#4ECDC4' : '#FF6B6B' }]}>
                   {item.isActive !== false ? '🟢 Abierto' : '🔴 Cerrado'}
                 </Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
 
             {/* Fila 2: Badges de Tipo/PIN, Modo de Juego y Segundero */}
@@ -645,23 +684,23 @@ export default function AdminScreen() {
         </View>
 
         <View style={styles.categoryAdminBottomRow}>
-          <TouchableOpacity
+          <InteractiveActionBtn
             style={[styles.rankingBtnCompact, { backgroundColor: `${colors.primary}14`, borderColor: colors.primary }]}
             onPress={() => handleOpenRanking(item)}
-            activeOpacity={0.8}
+            accentColor={colors.primary}
           >
             <Text style={[styles.rankingBtnTextCompact, { color: colors.primary }]}>
               📊 Ranking ({item.questionCount || 0} preg.)
             </Text>
-          </TouchableOpacity>
+          </InteractiveActionBtn>
 
           <View style={styles.cardActionsCompact}>
-            <TouchableOpacity style={styles.editBtnCompact} onPress={() => handleEditCategory(item)}>
+            <InteractiveActionBtn style={styles.editBtnCompact} accentColor="#F59E0B" onPress={() => handleEditCategory(item)}>
               <Text style={styles.editBtnTextCompact}>✏️</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteBtnCompact} onPress={() => handleDeleteCategory(item)}>
+            </InteractiveActionBtn>
+            <InteractiveActionBtn style={styles.deleteBtnCompact} accentColor="#EF4444" onPress={() => handleDeleteCategory(item)}>
               <Text style={styles.deleteBtnTextCompact}>🗑️</Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
           </View>
         </View>
       </View>
@@ -704,12 +743,12 @@ export default function AdminScreen() {
           </View>
 
           <View style={styles.cardActionsCompact}>
-            <TouchableOpacity style={styles.editBtnCompact} onPress={() => handleEditQuestion(item)}>
+            <InteractiveActionBtn style={styles.editBtnCompact} accentColor="#F59E0B" onPress={() => handleEditQuestion(item)}>
               <Text style={styles.editBtnTextCompact}>✏️</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteBtnCompact} onPress={() => handleDeleteQuestion(item)}>
+            </InteractiveActionBtn>
+            <InteractiveActionBtn style={styles.deleteBtnCompact} accentColor="#EF4444" onPress={() => handleDeleteQuestion(item)}>
               <Text style={styles.deleteBtnTextCompact}>🗑️</Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
           </View>
         </View>
 
@@ -805,16 +844,17 @@ export default function AdminScreen() {
             )}
           </View>
 
-          <TouchableOpacity
+          <InteractiveActionBtn
             style={styles.deleteUserBtn}
+            accentColor="#EF4444"
             onPress={() => handleDeleteUser(item)}
           >
             <Text style={styles.deleteUserIcon}>🗑️</Text>
-          </TouchableOpacity>
+          </InteractiveActionBtn>
         </View>
 
         <View style={[styles.userCardActions, { borderTopColor: 'rgba(128,128,128,0.1)' }]}>
-          <TouchableOpacity
+          <InteractiveActionBtn
             style={[
               styles.toggleRoleBtn,
               {
@@ -822,12 +862,13 @@ export default function AdminScreen() {
                 borderColor: isUserAdmin ? '#F59E0B' : colors.primary,
               },
             ]}
+            accentColor={isUserAdmin ? '#F59E0B' : colors.primary}
             onPress={() => handleToggleUserRole(item)}
           >
             <Text style={[styles.toggleRoleBtnText, { color: isUserAdmin ? '#D97706' : colors.primary }]}>
               {isUserAdmin ? '⬇️ Degradar a Estudiante' : '⬆️ Ascender a Docente'}
             </Text>
-          </TouchableOpacity>
+          </InteractiveActionBtn>
         </View>
       </View>
     );
@@ -923,8 +964,9 @@ export default function AdminScreen() {
             <Text style={[styles.questionsCountTitle, { color: colors.text }]}>
               {questions.length} preguntas registradas
             </Text>
-            <TouchableOpacity
+            <InteractiveActionBtn
               style={[styles.bulkImportBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
+              accentColor={colors.primary}
               onPress={() => {
                 if (categories.length === 0) {
                   Alert.alert('Aviso', 'Primero debes crear al menos una categoría');
@@ -935,7 +977,7 @@ export default function AdminScreen() {
               }}
             >
               <Text style={[styles.bulkImportBtnText, { color: colors.primary }]}>📥 Carga Masiva (JSON)</Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
           </View>
 
           <FlatList
@@ -1016,8 +1058,9 @@ export default function AdminScreen() {
 
       {/* Botón flotante + (Solo visible en Categorías y Preguntas) */}
       {activeTab !== 'users' && (
-        <TouchableOpacity
+        <InteractiveActionBtn
           style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
+          accentColor={colors.primary}
           onPress={() => {
             if (activeTab === 'categories') {
               setEditingCategory(null);
@@ -1033,7 +1076,7 @@ export default function AdminScreen() {
           }}
         >
           <Text style={[styles.fabText, { color: colors.primaryText }]}>+</Text>
-        </TouchableOpacity>
+        </InteractiveActionBtn>
       )}
 
       {/* Modales */}
