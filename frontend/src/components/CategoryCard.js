@@ -122,6 +122,7 @@ export default function CategoryCard({ category, onPress }) {
 
 const styles = StyleSheet.create({
   card: {
+    marginHorizontal: 16,
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 14,
@@ -130,6 +131,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderLeftWidth: 5,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)', cursor: 'pointer', transition: 'transform 0.15s ease' }
+      : { elevation: 2 }),
   },
   iconContainer: {
     width: 48,

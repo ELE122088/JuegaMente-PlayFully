@@ -443,29 +443,28 @@ export default function CategoriesScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="🎮 JuegaMente" rightComponent={<ProfileButton />} />
       
-      <View style={styles.content}>
-        <FlatList
-          data={filteredCategories}
-          keyExtractor={(item) => `${item._id}_${item.isPublic}_${item.roomCode || 'public'}_${item.name}`}
-          extraData={categories}
-          renderItem={({ item }) => (
-            <CategoryCard 
-              category={item} 
-              onPress={() => handleCategoryPress(item)} 
-            />
-          )}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={true}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handlePullToRefresh}
-              colors={[colors.primary]}
-              tintColor={colors.primary}
-            />
-          }
-          ListHeaderComponent={
-            <>
+      <FlatList
+        data={filteredCategories}
+        keyExtractor={(item) => `${item._id}_${item.isPublic}_${item.roomCode || 'public'}_${item.name}`}
+        extraData={categories}
+        renderItem={({ item }) => (
+          <CategoryCard 
+            category={item} 
+            onPress={() => handleCategoryPress(item)} 
+          />
+        )}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handlePullToRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
+        ListHeaderComponent={
+          <>
               {/* =========================================================
                   BANNER HERO: MEGAMENTE & RACHA DIARIA (OPCIÓN 1)
               ========================================================= */}
@@ -1103,7 +1102,6 @@ export default function CategoriesScreen() {
       </View>
     }
   />
-</View>
 
       {/* Modal para Ingresar PIN de Sala */}
       <Modal visible={roomPinModal} animationType="fade" transparent={true}>
@@ -1360,20 +1358,22 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
   },
-  content: {
-    flex: 1,
+  listContainer: {
+    paddingBottom: 40,
     width: '100%',
     maxWidth: 920,
     alignSelf: 'center',
+    paddingTop: Platform.OS === 'web' ? 12 : 6,
   },
   // Estilos de la Barra de PIN y Sala de Examen (Opción 2 - Estilo Kahoot)
   kahootPinCard: {
+    marginHorizontal: 16,
     borderRadius: 16,
     borderWidth: 1,
     padding: 14,
-    marginBottom: 12,
+    marginBottom: 10,
     ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 3px 12px rgba(0,0,0,0.06)' }
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)' }
       : { elevation: 2 }),
   },
   kahootTopRow: {
@@ -1481,7 +1481,8 @@ const styles = StyleSheet.create({
   },
   // Estilos de Carrusel de Destacados (Opción 3 - Estilo Vitrina de Logros)
   carouselSection: {
-    marginBottom: 22,
+    marginHorizontal: 16,
+    marginBottom: 12,
   },
   carouselHeaderRow: {
     flexDirection: 'row',
@@ -1608,13 +1609,14 @@ const styles = StyleSheet.create({
   },
   // Estilos de la Barra de Búsqueda
   searchContainer: {
+    marginHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: Platform.OS === 'web' ? 10 : 8,
     borderRadius: 14,
     borderWidth: 1,
-    marginBottom: 20,
+    marginBottom: 10,
     boxShadow: '0px 2px 8px rgba(0,0,0,0.04)',
     elevation: 2,
   },
@@ -1636,9 +1638,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   subtitle: {
-    fontSize: Platform.OS === 'web' ? 22 : 18,
-    fontWeight: '700',
-    marginBottom: 16,
+    marginHorizontal: 16,
+    fontSize: Platform.OS === 'web' ? 18 : 16,
+    fontWeight: '800',
+    marginTop: 4,
+    marginBottom: 10,
     fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
   },
   list: {
@@ -1823,12 +1827,14 @@ const styles = StyleSheet.create({
   },
   // Estilos del Banner Hero Megamente & Racha Diaria (Opción 1)
   heroCard: {
+    marginHorizontal: 16,
+    marginTop: 4,
     borderRadius: 16,
     borderWidth: 1,
     padding: 14,
-    marginBottom: 12,
+    marginBottom: 10,
     ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 3px 12px rgba(0,0,0,0.06)' }
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)' }
       : { elevation: 2 }),
   },
   heroTopRow: {
@@ -1954,7 +1960,8 @@ const styles = StyleSheet.create({
   },
   // Estilos de Píldoras de Filtro Rápido (Opción 4)
   pillsOuterContainer: {
-    marginBottom: 16,
+    marginHorizontal: 16,
+    marginBottom: 10,
   },
   pillsScrollContent: {
     gap: 8,
