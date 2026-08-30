@@ -209,38 +209,44 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// @desc    Actualizar perfil del usuario (cambiar nombre de usuario)
+// @desc    Actualizar perfil del usuario (cambiar nombre de usuario o avatar)
 // @route   PUT /api/auth/profile
 const updateUserProfile = async (req, res) => {
   try {
-    const { username } = req.body;
-    const cleanUsername = (username || '').trim();
-
-    if (!cleanUsername) {
-      return res.status(400).json({ message: 'El nombre de usuario es obligatorio' });
-    }
-
-    if (cleanUsername.length < 4) {
-      return res.status(400).json({ message: 'El nombre de usuario debe tener al menos 4 caracteres' });
-    }
-
+    const { username, profileImage } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    // Verificar que el nuevo nombre no esté ocupado por otra persona
-    if (cleanUsername.toLowerCase() !== user.username.toLowerCase()) {
-      const userExists = await User.findOne({ 
-        username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') }, 
-        _id: { $ne: req.user._id } 
-      });
-      if (userExists) {
-        return res.status(400).json({ message: 'Ese nombre de usuario ya está en uso por otra persona' });
+    if (username !== undefined) {
+      const cleanUsername = (username || '').trim();
+
+      if (!cleanUsername) {
+        return res.status(400).json({ message: 'El nombre de usuario es obligatorio' });
       }
-      user.username = cleanUsername;
-    } else if (cleanUsername !== user.username) {
-      user.username = cleanUsername;
+
+      if (cleanUsername.length < 4) {
+        return res.status(400).json({ message: 'El nombre de usuario debe tener al menos 4 caracteres' });
+      }
+
+      // Verificar que el nuevo nombre no esté ocupado por otra persona
+      if (cleanUsername.toLowerCase() !== user.username.toLowerCase()) {
+        const userExists = await User.findOne({ 
+          username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') }, 
+          _id: { $ne: req.user._id } 
+        });
+        if (userExists) {
+          return res.status(400).json({ message: 'Ese nombre de usuario ya está en uso por otra persona' });
+        }
+        user.username = cleanUsername;
+      } else if (cleanUsername !== user.username) {
+        user.username = cleanUsername;
+      }
+    }
+
+    if (profileImage !== undefined) {
+      user.profileImage = profileImage;
     }
 
     await user.save();

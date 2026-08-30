@@ -9,6 +9,65 @@ import Header from '../components/Header';
 import { useTheme } from '../context/ThemeContext';
 import { useSidebar } from '../context/SidebarContext';
 
+export const PRESET_AVATARS = [
+  {
+    id: 'megabot',
+    name: 'MegaBot',
+    desc: 'Robot Genio',
+    url: 'https://api.dicebear.com/7.x/bottts/png?seed=MegaBot&backgroundColor=b6e3f4,c0aede,d1d4f9',
+    badge: '🤖',
+  },
+  {
+    id: 'sabio',
+    name: 'Sabio Astral',
+    desc: 'Mago Mental',
+    url: 'https://api.dicebear.com/7.x/adventurer/png?seed=Wizard&backgroundColor=ffd5dc',
+    badge: '🧙‍♂️',
+  },
+  {
+    id: 'cuantico',
+    name: 'Dr. Cuántico',
+    desc: 'Científico',
+    url: 'https://api.dicebear.com/7.x/bottts/png?seed=Quantum&backgroundColor=b6e3f4',
+    badge: '🧬',
+  },
+  {
+    id: 'astromind',
+    name: 'Astro-Mente',
+    desc: 'Cosmonauta',
+    url: 'https://api.dicebear.com/7.x/adventurer/png?seed=Genius&backgroundColor=b6e3f4',
+    badge: '🚀',
+  },
+  {
+    id: 'cyberbrain',
+    name: 'Cyber-Brain',
+    desc: 'Cerebrito',
+    url: 'https://api.dicebear.com/7.x/bottts/png?seed=CyberBrain&backgroundColor=ffdfbf',
+    badge: '🧠',
+  },
+  {
+    id: 'buho',
+    name: 'Búho Maestro',
+    desc: 'Guardián',
+    url: 'https://api.dicebear.com/7.x/adventurer/png?seed=Scholar&backgroundColor=d1d4f9',
+    badge: '🦉',
+  },
+  {
+    id: 'campeon',
+    name: 'Megamente',
+    desc: 'Campeón',
+    url: 'https://api.dicebear.com/7.x/bottts/png?seed=Titan&backgroundColor=c0aede',
+    badge: '👑',
+  },
+  {
+    id: 'chispa',
+    name: 'Chispa Veloz',
+    desc: 'Rayos de Saber',
+    url: 'https://api.dicebear.com/7.x/adventurer/png?seed=Champion&backgroundColor=ffdfbf',
+    badge: '⚡',
+  },
+];
+
 export default function ProfileScreen() {
   // ⚡ Inicialización instantánea con datos en caché para carga a 0ms
   const [profile, setProfile] = useState(() => {
@@ -55,6 +114,10 @@ export default function ProfileScreen() {
   const { theme, colors, setTheme } = useTheme();
   const { refreshUser } = useSidebar();
   const [isThemeExpanded, setIsThemeExpanded] = useState(false);
+
+  // Estados para Galería de Avatares Prediseñados
+  const [isAvatarExpanded, setIsAvatarExpanded] = useState(false);
+  const [avatarUpdating, setAvatarUpdating] = useState(false);
 
   // Estados para Cambiar Contraseña
   const [isPasswordExpanded, setIsPasswordExpanded] = useState(false);
@@ -276,6 +339,44 @@ export default function ProfileScreen() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSelectPresetAvatar = async (avatarUrl) => {
+    if (avatarUrl === profile?.profileImage) return;
+
+    setAvatarUpdating(true);
+
+    // ⚡ Actualización optimista instantánea (0ms)
+    setProfile((prev) => {
+      const updated = {
+        ...prev,
+        profileImage: avatarUrl,
+      };
+      try {
+        storage.setItem('cached_profile', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+
+    storage.setItem('profileImage', avatarUrl);
+    refreshUser();
+
+    try {
+      await api.put('/auth/profile', {
+        profileImage: avatarUrl,
+      });
+
+      const successMsg = '¡Avatar de personaje actualizado con éxito! 🎭';
+      if (Platform.OS === 'web') alert(successMsg);
+      else Alert.alert('Avatar Actualizado', successMsg);
+    } catch (err) {
+      console.error('Error al actualizar avatar:', err);
+      const msg = err.response?.data?.message || 'No se pudo guardar el avatar';
+      if (Platform.OS === 'web') alert(`Error: ${msg}`);
+      else Alert.alert('Error', msg);
+    } finally {
+      setAvatarUpdating(false);
     }
   };
 
@@ -700,15 +801,15 @@ export default function ProfileScreen() {
                 <Text style={[styles.iosBackText, { color: colors.primary }]}>volver</Text>
               </TouchableOpacity>
 
-              {/* Avatar circular (Toca para cambiar foto) */}
+              {/* Avatar circular (Toca para cambiar foto o avatar) */}
               <TouchableOpacity
                 style={[styles.slimAvatar, { backgroundColor: colors.primary }]}
-                onPress={handlePickImage}
+                onPress={() => setIsAvatarExpanded(!isAvatarExpanded)}
                 activeOpacity={0.8}
               >
                 {profile?.profileImage ? (
                   <Image
-                    source={{ uri: `${BASE_URL}${profile.profileImage}` }}
+                    source={{ uri: profile.profileImage.startsWith('http') ? profile.profileImage : `${BASE_URL}${profile.profileImage}` }}
                     style={styles.slimAvatarImg}
                   />
                 ) : (
@@ -716,6 +817,9 @@ export default function ProfileScreen() {
                     {profile?.username?.substring(0, 2).toUpperCase()}
                   </Text>
                 )}
+                <View style={[styles.slimAvatarBadge, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <Text style={{ fontSize: 9 }}>🎭</Text>
+                </View>
               </TouchableOpacity>
 
               {/* Nombre de Usuario + Insignia de Rol en la misma fila */}
@@ -737,7 +841,90 @@ export default function ProfileScreen() {
                 <Text style={[styles.settingsCardTitle, { color: colors.textSecondary }]}>⚙️ CONFIGURACIÓN Y CUENTA</Text>
               </View>
 
-              {/* 1. Fila: Tema Visual */}
+              {/* 1. Fila: Avatar de Personaje y Galería */}
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setIsAvatarExpanded(!isAvatarExpanded)}
+                style={[styles.settingsRow, isAvatarExpanded && { backgroundColor: `${colors.primary}08` }]}
+              >
+                <View style={styles.settingsRowLeft}>
+                  <View style={[styles.settingsIconCircle, { backgroundColor: '#8B5CF618' }]}>
+                    <Text style={styles.settingsRowIcon}>🎭</Text>
+                  </View>
+                  <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Avatar de Personaje</Text>
+                </View>
+                <View style={styles.settingsRowRight}>
+                  <Text style={[styles.settingsRowValue, { color: colors.primary }]}>
+                    {profile?.profileImage ? 'Elegir / Cambiar' : 'Predeterminado'}
+                  </Text>
+                  <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
+                    {isAvatarExpanded ? '▲' : '▼'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              {isAvatarExpanded && (
+                <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
+                  {/* Botón para subir foto personalizada desde galería */}
+                  <TouchableOpacity
+                    style={[styles.uploadGalleryBtn, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}44` }]}
+                    onPress={handlePickImage}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.uploadGalleryBtnIcon}>📷</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.uploadGalleryBtnTitle, { color: colors.text }]}>
+                        Subir Foto Propia
+                      </Text>
+                      <Text style={[styles.uploadGalleryBtnSub, { color: colors.textSecondary }]}>
+                        Elige una imagen desde tu galería o cámara
+                      </Text>
+                    </View>
+                    <Text style={[styles.uploadGalleryBtnArrow, { color: colors.primary }]}>›</Text>
+                  </TouchableOpacity>
+
+                  <Text style={[styles.avatarGallerySectionTitle, { color: colors.textSecondary }]}>
+                    O elige uno de nuestros 8 personajes PlayFully:
+                  </Text>
+
+                  {/* Cuadrícula de Avatares Prediseñados */}
+                  <View style={styles.avatarGrid}>
+                    {PRESET_AVATARS.map((av) => {
+                      const isSelected = profile?.profileImage === av.url;
+                      return (
+                        <TouchableOpacity
+                          key={av.id}
+                          style={[
+                            styles.avatarCard,
+                            { backgroundColor: colors.background, borderColor: colors.border },
+                            isSelected && { borderColor: colors.primary, borderWidth: 2, backgroundColor: `${colors.primary}18` },
+                          ]}
+                          onPress={() => handleSelectPresetAvatar(av.url)}
+                          disabled={avatarUpdating}
+                          activeOpacity={0.7}
+                        >
+                          <Image source={{ uri: av.url }} style={styles.avatarCardImg} />
+                          <Text style={[styles.avatarCardName, { color: colors.text }]} numberOfLines={1}>
+                            {av.name}
+                          </Text>
+                          <Text style={[styles.avatarCardDesc, { color: colors.textSecondary }]} numberOfLines={1}>
+                            {av.desc}
+                          </Text>
+                          {isSelected && (
+                            <View style={[styles.avatarSelectedCheck, { backgroundColor: colors.primary }]}>
+                              <Text style={styles.avatarSelectedCheckText}>✓</Text>
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </View>
+              )}
+
+              <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
+
+              {/* 2. Fila: Tema Visual */}
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => setIsThemeExpanded(!isThemeExpanded)}
@@ -1563,6 +1750,17 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '800',
   },
+  slimAvatarBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   slimUserInfo: {
     flex: 1,
     justifyContent: 'center',
@@ -1700,6 +1898,84 @@ const styles = StyleSheet.create({
   },
   themeEmoji: {
     fontSize: 18,
+  },
+  // Estilos de Galería de Avatares
+  uploadGalleryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 10,
+    marginBottom: 12,
+  },
+  uploadGalleryBtnIcon: {
+    fontSize: 22,
+  },
+  uploadGalleryBtnTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  uploadGalleryBtnSub: {
+    fontSize: 11,
+  },
+  uploadGalleryBtnArrow: {
+    fontSize: 20,
+    fontWeight: '700',
+    paddingRight: 4,
+  },
+  avatarGallerySectionTitle: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    marginBottom: 10,
+  },
+  avatarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  avatarCard: {
+    width: '23%',
+    minWidth: 70,
+    padding: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  avatarCardImg: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    marginBottom: 6,
+  },
+  avatarCardName: {
+    fontSize: 11,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  avatarCardDesc: {
+    fontSize: 9,
+    textAlign: 'center',
+    marginTop: 1,
+  },
+  avatarSelectedCheck: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarSelectedCheckText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '900',
   },
   // Estilos de Propuesta C: Tira Horizontal Ultra-Compacta
   stripContainer: {

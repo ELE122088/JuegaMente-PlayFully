@@ -289,7 +289,7 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
                 activeOpacity={0.8}
               >
                 {profileImage ? (
-                  <Image source={{ uri: `${BASE_URL}${profileImage}` }} style={styles.avatarImage} />
+                  <Image source={{ uri: profileImage.startsWith('http') ? profileImage : `${BASE_URL}${profileImage}` }} style={styles.avatarImage} />
                 ) : (
                   <Text style={[styles.avatarText, { color: colors.primaryText }]}>
                     {username?.substring(0, 2).toUpperCase()}

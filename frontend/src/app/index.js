@@ -272,7 +272,7 @@ export default function CategoriesScreen() {
     >
       {profileImage ? (
         <Image 
-          source={{ uri: `${BASE_URL}${profileImage}` }} 
+          source={{ uri: profileImage.startsWith('http') ? profileImage : `${BASE_URL}${profileImage}` }} 
           style={styles.headerAvatar} 
         />
       ) : (
