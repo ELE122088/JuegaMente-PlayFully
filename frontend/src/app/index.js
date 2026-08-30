@@ -149,6 +149,12 @@ export default function CategoriesScreen() {
     (c) => c.isPublic && c.roomCode && c.isActive !== false
   ).length;
 
+  // Conteos dinámicos para las píldoras de filtro (Opción 4)
+  const totalCategoriesCount = categories.length;
+  const practiceCategoriesCount = categories.filter((c) => c.gameMode === 'practice' || c.isPublic).length;
+  const examCategoriesCount = categories.filter((c) => c.gameMode === 'exam' || (!c.isPublic && c.roomCode)).length;
+  const pinCategoriesCount = categories.filter((c) => !c.isPublic && c.roomCode).length;
+
   const getPinCardTitle = () => {
     if (activeExamsCount > 0 && activePracticePinCount === 0) return 'Unirse a Sala de Examen';
     if (activePracticePinCount > 0 && activeExamsCount === 0) return 'Unirse a Sala de Práctica';
@@ -171,9 +177,10 @@ export default function CategoriesScreen() {
 
   const filteredCategories = categories.filter((cat) => {
     // Filtro por píldoras rápidas
-    if (selectedPill === 'practice' && !cat.isPublic && cat.roomCode) return false;
-    if (selectedPill === 'exam' && (cat.isPublic || !cat.roomCode)) return false;
-    if (selectedPill !== 'all' && selectedPill !== 'practice' && selectedPill !== 'exam') {
+    if (selectedPill === 'practice' && cat.gameMode !== 'practice' && !cat.isPublic) return false;
+    if (selectedPill === 'exam' && cat.gameMode !== 'exam' && (cat.isPublic || !cat.roomCode)) return false;
+    if (selectedPill === 'pin' && (cat.isPublic || !cat.roomCode)) return false;
+    if (selectedPill !== 'all' && selectedPill !== 'practice' && selectedPill !== 'exam' && selectedPill !== 'pin') {
       if (cat.createdBy?.username !== selectedPill) return false;
     }
 
@@ -856,9 +863,12 @@ export default function CategoriesScreen() {
           )}
         </View>
 
-        {/* Píldoras de Filtro Rápido */}
+        {/* =========================================================
+            OPCIÓN 4: PÍLDORAS DE FILTROS VISUALES CON CONTEO DINÁMICO
+        ========================================================= */}
         <View style={styles.pillsOuterContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillsScrollContent}>
+            {/* Todas */}
             <TouchableOpacity
               style={[
                 styles.pillBtn,
@@ -868,55 +878,169 @@ export default function CategoriesScreen() {
               onPress={() => setSelectedPill('all')}
               activeOpacity={0.7}
             >
+              <Text style={styles.pillIconEmoji}>✨</Text>
               <Text style={[styles.pillText, { color: selectedPill === 'all' ? colors.primaryText : colors.text }]}>
-                ✨ Todas ({categories.length})
+                Todas
               </Text>
+              <View
+                style={[
+                  styles.pillCountBubble,
+                  {
+                    backgroundColor: selectedPill === 'all' ? `${colors.primaryText}30` : `${colors.textSecondary}15`,
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.pillCountText,
+                    { color: selectedPill === 'all' ? colors.primaryText : colors.textSecondary }
+                  ]}
+                >
+                  {totalCategoriesCount}
+                </Text>
+              </View>
             </TouchableOpacity>
 
+            {/* Prácticas */}
             <TouchableOpacity
               style={[
                 styles.pillBtn,
                 { backgroundColor: colors.card, borderColor: colors.border },
-                selectedPill === 'practice' && { backgroundColor: '#4ECDC4', borderColor: '#4ECDC4' }
+                selectedPill === 'practice' && { backgroundColor: '#10B981', borderColor: '#10B981' }
               ]}
               onPress={() => setSelectedPill('practice')}
               activeOpacity={0.7}
             >
+              <Text style={styles.pillIconEmoji}>💡</Text>
               <Text style={[styles.pillText, { color: selectedPill === 'practice' ? '#FFFFFF' : colors.text }]}>
-                🌐 Práctica Libre
+                Práctica
               </Text>
+              <View
+                style={[
+                  styles.pillCountBubble,
+                  {
+                    backgroundColor: selectedPill === 'practice' ? 'rgba(255,255,255,0.25)' : `${colors.textSecondary}15`,
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.pillCountText,
+                    { color: selectedPill === 'practice' ? '#FFFFFF' : colors.textSecondary }
+                  ]}
+                >
+                  {practiceCategoriesCount}
+                </Text>
+              </View>
             </TouchableOpacity>
 
+            {/* Exámenes */}
             <TouchableOpacity
               style={[
                 styles.pillBtn,
                 { backgroundColor: colors.card, borderColor: colors.border },
-                selectedPill === 'exam' && { backgroundColor: '#FF6B6B', borderColor: '#FF6B6B' }
+                selectedPill === 'exam' && { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' }
               ]}
               onPress={() => setSelectedPill('exam')}
               activeOpacity={0.7}
             >
+              <Text style={styles.pillIconEmoji}>📝</Text>
               <Text style={[styles.pillText, { color: selectedPill === 'exam' ? '#FFFFFF' : colors.text }]}>
-                🔒 Exámenes (PIN)
+                Exámenes
               </Text>
+              <View
+                style={[
+                  styles.pillCountBubble,
+                  {
+                    backgroundColor: selectedPill === 'exam' ? 'rgba(255,255,255,0.25)' : `${colors.textSecondary}15`,
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.pillCountText,
+                    { color: selectedPill === 'exam' ? '#FFFFFF' : colors.textSecondary }
+                  ]}
+                >
+                  {examCategoriesCount}
+                </Text>
+              </View>
             </TouchableOpacity>
 
-            {uniqueTeachers.map((teacher) => (
+            {/* Con PIN */}
+            {pinCategoriesCount > 0 && (
               <TouchableOpacity
-                key={teacher}
                 style={[
                   styles.pillBtn,
                   { backgroundColor: colors.card, borderColor: colors.border },
-                  selectedPill === teacher && { backgroundColor: colors.primary, borderColor: colors.primary }
+                  selectedPill === 'pin' && { backgroundColor: '#EF4444', borderColor: '#EF4444' }
                 ]}
-                onPress={() => setSelectedPill(teacher)}
+                onPress={() => setSelectedPill('pin')}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.pillText, { color: selectedPill === teacher ? colors.primaryText : colors.text }]}>
-                  👨‍🏫 {teacher}
+                <Text style={styles.pillIconEmoji}>🔒</Text>
+                <Text style={[styles.pillText, { color: selectedPill === 'pin' ? '#FFFFFF' : colors.text }]}>
+                  Con PIN
                 </Text>
+                <View
+                  style={[
+                    styles.pillCountBubble,
+                    {
+                      backgroundColor: selectedPill === 'pin' ? 'rgba(255,255,255,0.25)' : `${colors.textSecondary}15`,
+                    }
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.pillCountText,
+                      { color: selectedPill === 'pin' ? '#FFFFFF' : colors.textSecondary }
+                    ]}
+                  >
+                    {pinCategoriesCount}
+                  </Text>
+                </View>
               </TouchableOpacity>
-            ))}
+            )}
+
+            {/* Filtros por Docente */}
+            {uniqueTeachers.map((teacher) => {
+              const teacherCount = categories.filter((c) => c.createdBy?.username === teacher).length;
+              const isSelected = selectedPill === teacher;
+              return (
+                <TouchableOpacity
+                  key={teacher}
+                  style={[
+                    styles.pillBtn,
+                    { backgroundColor: colors.card, borderColor: colors.border },
+                    isSelected && { backgroundColor: colors.primary, borderColor: colors.primary }
+                  ]}
+                  onPress={() => setSelectedPill(teacher)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.pillIconEmoji}>👨‍🏫</Text>
+                  <Text style={[styles.pillText, { color: isSelected ? colors.primaryText : colors.text }]}>
+                    {teacher}
+                  </Text>
+                  <View
+                    style={[
+                      styles.pillCountBubble,
+                      {
+                        backgroundColor: isSelected ? `${colors.primaryText}30` : `${colors.textSecondary}15`,
+                      }
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.pillCountText,
+                        { color: isSelected ? colors.primaryText : colors.textSecondary }
+                      ]}
+                    >
+                      {teacherCount}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         </View>
 
@@ -1825,24 +1949,50 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: '700',
   },
-  // Estilos de Píldoras de Filtro Rápido
+  // Estilos de Píldoras de Filtro Rápido (Opción 4)
   pillsOuterContainer: {
     marginBottom: 16,
   },
   pillsScrollContent: {
     gap: 8,
     paddingRight: 16,
+    paddingVertical: 2,
   },
   pillBtn: {
-    paddingVertical: 7,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 22,
+    borderWidth: 1.5,
+    gap: 6,
+    elevation: 2,
+    boxShadow: '0px 2px 6px rgba(0,0,0,0.04)',
+    ...(Platform.OS === 'web'
+      ? {
+          cursor: 'pointer',
+          transition: 'transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease',
+          userSelect: 'none',
+        }
+      : {}),
+  },
+  pillIconEmoji: {
+    fontSize: 13,
+  },
+  pillText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  pillCountBubble: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pillText: {
-    fontSize: 13,
-    fontWeight: '700',
+  pillCountText: {
+    fontSize: 10.5,
+    fontWeight: '800',
   },
 });
