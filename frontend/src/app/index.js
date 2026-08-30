@@ -331,6 +331,45 @@ export default function CategoriesScreen() {
 
   const streakDays = getStreakDays();
 
+  // Obtener última materia jugada del historial en caché
+  const getLastPlayedGame = () => {
+    try {
+      const cachedProfile = storage.getItem('cached_profile');
+      if (cachedProfile) {
+        const parsed = JSON.parse(cachedProfile);
+        if (parsed.history && parsed.history.length > 0) {
+          const last = parsed.history[0];
+          const matchedCategory = categories.find(
+            (c) => c.name === last.category || c._id === last.categoryId
+          );
+          return {
+            categoryName: last.category || 'Materia',
+            score: last.score || 0,
+            totalQuestions: last.totalQuestions || 0,
+            percentage:
+              last.percentage ||
+              (last.totalQuestions ? Math.round((last.score / last.totalQuestions) * 100) : 0),
+            matchedCategory: matchedCategory || null,
+          };
+        }
+      }
+    } catch (e) {}
+    return null;
+  };
+
+  const lastPlayedGame = getLastPlayedGame();
+
+  const mostPopularCat = categories
+    .filter((c) => c.isActive !== false)
+    .sort((a, b) => (b.questionCount || 0) - (a.questionCount || 0))[0];
+
+  const featuredExamOrPractice =
+    categories.find((c) => !c.isPublic && c.roomCode && c.isActive !== false) ||
+    categories.find(
+      (c) => c._id !== mostPopularCat?._id && c._id !== lastPlayedGame?.matchedCategory?._id && c.isActive !== false
+    ) ||
+    categories[0];
+
   // Partida rápida aleatoria
   const handleQuickRandomGame = () => {
     const activeCats = categories.filter((c) => c.isActive !== false);
@@ -533,6 +572,177 @@ export default function CategoriesScreen() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* =========================================================
+            OPCIÓN 3: CARRUSEL DE DESTACADOS Y CONTINUAR JUGANDO
+        ========================================================= */}
+        {categories.length > 0 && (
+          <View style={styles.carouselSection}>
+            <View style={styles.carouselHeaderRow}>
+              <Text style={[styles.carouselSectionTitle, { color: colors.text }]}>
+                ⭐ Destacados y Desafíos
+              </Text>
+              <Text style={[styles.carouselSectionSubtitle, { color: colors.textSecondary }]}>
+                Desliza para descubrir ➔
+              </Text>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.carouselScrollContent}
+            >
+              {/* Card 1: Última Materia Jugada / Continuar */}
+              {lastPlayedGame && (
+                <TouchableOpacity
+                  style={[
+                    styles.featuredCard,
+                    { backgroundColor: colors.card, borderColor: '#8B5CF6' }
+                  ]}
+                  onPress={() => {
+                    if (lastPlayedGame.matchedCategory) {
+                      handleCategoryPress(lastPlayedGame.matchedCategory);
+                    } else {
+                      router.push('/profile');
+                    }
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.featuredCardTop}>
+                    <View style={[styles.featuredTag, { backgroundColor: '#8B5CF620', borderColor: '#8B5CF6' }]}>
+                      <Text style={[styles.featuredTagText, { color: '#8B5CF6' }]}>🕒 CONTINUAR</Text>
+                    </View>
+                    <Text style={styles.featuredEmoji}>{lastPlayedGame.matchedCategory?.icon || '🎯'}</Text>
+                  </View>
+
+                  <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
+                    {lastPlayedGame.categoryName}
+                  </Text>
+                  <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
+                    Última nota: {lastPlayedGame.score}/{lastPlayedGame.totalQuestions} ({lastPlayedGame.percentage}%)
+                  </Text>
+
+                  <View style={[styles.featuredActionBtn, { backgroundColor: '#8B5CF6' }]}>
+                    <Text style={styles.featuredActionBtnText}>⚡ Superar Récord</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+
+              {/* Card 2: Materia Más Popular */}
+              {mostPopularCat && (
+                <TouchableOpacity
+                  style={[
+                    styles.featuredCard,
+                    { backgroundColor: colors.card, borderColor: '#FF6B6B' }
+                  ]}
+                  onPress={() => handleCategoryPress(mostPopularCat)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.featuredCardTop}>
+                    <View style={[styles.featuredTag, { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B' }]}>
+                      <Text style={[styles.featuredTagText, { color: '#FF6B6B' }]}>🔥 POPULAR</Text>
+                    </View>
+                    <Text style={styles.featuredEmoji}>{mostPopularCat.icon || '📚'}</Text>
+                  </View>
+
+                  <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
+                    {mostPopularCat.name}
+                  </Text>
+                  <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
+                    {mostPopularCat.questionCount || 0} preguntas para entrenar
+                  </Text>
+
+                  <View style={[styles.featuredActionBtn, { backgroundColor: '#FF6B6B' }]}>
+                    <Text style={styles.featuredActionBtnText}>🚀 Jugar Ahora</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+
+              {/* Card 3: Examen Activo o Materia Recomendada */}
+              {featuredExamOrPractice && (
+                <TouchableOpacity
+                  style={[
+                    styles.featuredCard,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4'
+                    }
+                  ]}
+                  onPress={() => handleCategoryPress(featuredExamOrPractice)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.featuredCardTop}>
+                    <View
+                      style={[
+                        styles.featuredTag,
+                        {
+                          backgroundColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF444420' : '#4ECDC420',
+                          borderColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4'
+                        }
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.featuredTagText,
+                          { color: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4' }
+                        ]}
+                      >
+                        {!featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '🔴 EXAMEN SALA' : '⭐ RECOMENDADA'}
+                      </Text>
+                    </View>
+                    <Text style={styles.featuredEmoji}>{featuredExamOrPractice.icon || '💡'}</Text>
+                  </View>
+
+                  <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
+                    {featuredExamOrPractice.name}
+                  </Text>
+                  <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
+                    {!featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? `PIN: ${featuredExamOrPractice.roomCode}` : 'Acceso libre e inmediato'}
+                  </Text>
+
+                  <View
+                    style={[
+                      styles.featuredActionBtn,
+                      { backgroundColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4' }
+                    ]}
+                  >
+                    <Text style={styles.featuredActionBtnText}>
+                      {!featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '✍️ Rendir Examen' : '💡 Explorar'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+
+              {/* Card 4: Ruleta Cerebral / Partida Sorpresa */}
+              <TouchableOpacity
+                style={[
+                  styles.featuredCard,
+                  { backgroundColor: colors.card, borderColor: '#F59E0B' }
+                ]}
+                onPress={handleQuickRandomGame}
+                activeOpacity={0.8}
+              >
+                <View style={styles.featuredCardTop}>
+                  <View style={[styles.featuredTag, { backgroundColor: '#F59E0B20', borderColor: '#F59E0B' }]}>
+                    <Text style={[styles.featuredTagText, { color: '#F59E0B' }]}>🎲 ALEATORIO</Text>
+                  </View>
+                  <Text style={styles.featuredEmoji}>🎰</Text>
+                </View>
+
+                <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
+                  Ruleta Cerebral
+                </Text>
+                <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
+                  Partida sorpresa en materia al azar
+                </Text>
+
+                <View style={[styles.featuredActionBtn, { backgroundColor: '#F59E0B' }]}>
+                  <Text style={styles.featuredActionBtnText}>🎲 Girar Ruleta</Text>
+                </View>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        )}
 
         {/* Barra de Búsqueda de Categorías */}
         <View style={[styles.searchContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -1047,6 +1257,84 @@ const styles = StyleSheet.create({
   kahootJoinBtnArrow: {
     fontSize: 13.5,
     fontWeight: '900',
+  },
+  // Estilos de Carrusel de Destacados (Opción 3)
+  carouselSection: {
+    marginBottom: 22,
+  },
+  carouselHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingHorizontal: 2,
+  },
+  carouselSectionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
+  },
+  carouselSectionSubtitle: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  carouselScrollContent: {
+    paddingRight: 10,
+    gap: 12,
+  },
+  featuredCard: {
+    width: Platform.OS === 'web' ? 245 : 220,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 14,
+    justifyContent: 'space-between',
+    elevation: 3,
+    boxShadow: '0px 4px 12px rgba(0,0,0,0.06)',
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' } : {}),
+  },
+  featuredCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  featuredTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  featuredTagText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  featuredEmoji: {
+    fontSize: 24,
+  },
+  featuredCardTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 4,
+    fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
+  },
+  featuredCardDesc: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 12,
+  },
+  featuredActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
+  featuredActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
   },
   // Estilos de la Barra de Búsqueda
   searchContainer: {
