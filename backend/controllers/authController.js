@@ -369,6 +369,29 @@ const deleteHistoryItem = async (req, res) => {
   }
 };
 
+// @desc    Vaciar todo el historial de partidas del usuario autenticado
+// @route   DELETE /api/auth/history
+const clearAllHistory = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    user.history = [];
+    await user.save();
+
+    // Notificar actualización de rankings vía WebSocket
+    if (global.io) {
+      global.io.emit('ranking:updated', { userId: user._id, username: user.username });
+    }
+
+    res.json({ message: 'Todo el historial de partidas ha sido vaciado correctamente', history: [] });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al vaciar el historial', error: error.message });
+  }
+};
+
 // @desc    Subir/actualizar foto de perfil
 // @route   POST /api/auth/profile/image
 const uploadProfileImage = async (req, res) => {
@@ -555,6 +578,7 @@ module.exports = {
   saveScore,
   verifyAdminPin,
   deleteHistoryItem,
+  clearAllHistory,
   uploadProfileImage,
   changePassword,
   getAllUsers,

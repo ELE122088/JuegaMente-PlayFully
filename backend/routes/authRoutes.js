@@ -8,6 +8,7 @@ const {
   saveScore,
   verifyAdminPin,
   deleteHistoryItem,
+  clearAllHistory,
   uploadProfileImage,
   changePassword,
   getAllUsers,
@@ -24,6 +25,7 @@ router.put('/profile', protect, updateUserProfile);
 router.put('/change-password', protect, changePassword);
 router.post('/score', protect, saveScore);
 router.post('/verify-pin', protect, verifyAdminPin);
+router.delete('/history', protect, clearAllHistory);
 router.delete('/history/:scoreId', protect, deleteHistoryItem);
 
 // 👑 Rutas de Gestión de Usuarios y Docentes (EXCLUSIVO SuperAdmin)

@@ -477,6 +477,55 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleClearAllHistory = async () => {
+    if (!profile?.history || profile.history.length === 0) return;
+
+    const performClearAll = async () => {
+      const backupHistory = profile.history;
+
+      // ⚡ Actualización optimista instantánea a 0ms
+      setProfile((prev) => {
+        if (!prev) return prev;
+        const updated = { ...prev, history: [] };
+        try {
+          storage.setItem('cached_profile', JSON.stringify(updated));
+        } catch (e) {}
+        return updated;
+      });
+
+      try {
+        await api.delete('/auth/history');
+        fetchProfile(false); // Sincronizar en segundo plano
+        const successMsg = '¡Tu historial de partidas ha sido vaciado por completo!';
+        if (Platform.OS === 'web') alert(successMsg);
+        else Alert.alert('Historial Vaciado', successMsg);
+      } catch (error) {
+        // Revertir en caso de error
+        setProfile((prev) => ({ ...prev, history: backupHistory }));
+        const msg = error.response?.data?.message || 'No se pudo vaciar el historial';
+        if (Platform.OS === 'web') alert(`Error: ${msg}`);
+        else Alert.alert('Error', msg);
+      }
+    };
+
+    const confirmMsg = `¿Estás seguro de que deseas vaciar TODO tu historial (${profile.history.length} partidas)? Esta acción eliminará permanentemente tus notas registradas.`;
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(confirmMsg)) {
+        performClearAll();
+      }
+    } else {
+      Alert.alert(
+        'Vaciar Todo el Historial',
+        confirmMsg,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Vaciar Todo', style: 'destructive', onPress: performClearAll },
+        ]
+      );
+    }
+  };
+
   const renderHistoryItem = ({ item }) => {
     const isGood = item.percentage >= 80;
     const isRegular = item.percentage >= 60 && item.percentage < 80;
@@ -1013,7 +1062,31 @@ export default function ProfileScreen() {
             </View>
             */}
 
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Historial de Partidas</Text>
+            {/* Encabezado de la Sección de Historial con Contador y Botón Vaciar Todo */}
+            <View style={styles.historySectionHeaderRow}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 0, marginBottom: 0 }]}>
+                  Historial de Partidas
+                </Text>
+                {profile?.history && profile.history.length > 0 && (
+                  <View style={[styles.historyCountBadge, { backgroundColor: `${colors.primary}20` }]}>
+                    <Text style={[styles.historyCountBadgeText, { color: colors.primary }]}>
+                      {profile.history.length}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {profile?.history && profile.history.length > 0 && (
+                <TouchableOpacity
+                  style={[styles.clearAllHistoryBtn, { backgroundColor: '#EF444415', borderColor: '#EF444438' }]}
+                  onPress={handleClearAllHistory}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.clearAllHistoryBtnText}>🧹 Vaciar Todo</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </>
         }
         ListEmptyComponent={
@@ -1633,10 +1706,38 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    marginLeft: 16,
-    marginTop: 8,
-    marginBottom: 10,
     fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
+  },
+  historySectionHeaderRow: {
+    marginHorizontal: 16,
+    marginTop: 14,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  historyCountBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  historyCountBadgeText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  clearAllHistoryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 4,
+  },
+  clearAllHistoryBtnText: {
+    color: '#EF4444',
+    fontSize: 11.5,
+    fontWeight: '700',
   },
   // Estilos de Propuesta 3: Tarjeta Gamificada con Medalla
   historyGamifiedCard: {
