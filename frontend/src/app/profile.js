@@ -1446,29 +1446,31 @@ export default function ProfileScreen() {
                 />
               </View>
 
-              {/* Contenedor del Carrusel con Flechas Flotantes a Ambos Costados */}
-              <View style={styles.achieveCarouselWrapper}>
-                {/* Flecha Flotante Lateral Izquierda */}
+              {/* Fila Flanqueada: Botón Izquierdo + Carrusel Central + Botón Derecho */}
+              <View style={styles.achieveFlankedRow}>
+                {/* Botón Lateral Izquierdo Fijo */}
                 <TouchableOpacity
                   style={[
-                    styles.achieveFloatingArrow,
-                    styles.achieveFloatingArrowLeft,
-                    { backgroundColor: colors.card, borderColor: `${colors.primary}44` },
+                    styles.achieveFlankBtn,
+                    { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}33` },
                   ]}
                   onPress={() => handleScrollAchievements(-1)}
-                  activeOpacity={0.8}
+                  activeOpacity={0.7}
                   accessibilityLabel="Deslizar a la izquierda"
                 >
-                  <Text style={[styles.achieveFloatingArrowText, { color: colors.primary }]}>‹</Text>
+                  <Text style={[styles.achieveFlankBtnText, { color: colors.primary }]}>‹</Text>
                 </TouchableOpacity>
 
-                {/* Carrusel Deslizable Horizontal de Tarjetas de Logro */}
+                {/* Carrusel Deslizable en el Centro (Cero Superposición) */}
                 <ScrollView
                   ref={achievementsScrollRef}
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.achieveScrollContent}
-                  style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
+                  style={[
+                    styles.achieveFlankedScrollView,
+                    Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined,
+                  ]}
                   {...(Platform.OS === 'web'
                     ? {
                         onWheel: (e) => {
@@ -1546,18 +1548,17 @@ export default function ProfileScreen() {
                   })}
                 </ScrollView>
 
-                {/* Flecha Flotante Lateral Derecha */}
+                {/* Botón Lateral Derecho Fijo */}
                 <TouchableOpacity
                   style={[
-                    styles.achieveFloatingArrow,
-                    styles.achieveFloatingArrowRight,
-                    { backgroundColor: colors.card, borderColor: `${colors.primary}44` },
+                    styles.achieveFlankBtn,
+                    { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}33` },
                   ]}
                   onPress={() => handleScrollAchievements(1)}
-                  activeOpacity={0.8}
+                  activeOpacity={0.7}
                   accessibilityLabel="Deslizar a la derecha"
                 >
-                  <Text style={[styles.achieveFloatingArrowText, { color: colors.primary }]}>›</Text>
+                  <Text style={[styles.achieveFlankBtnText, { color: colors.primary }]}>›</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -2475,43 +2476,39 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
   },
-  achieveCarouselWrapper: {
-    position: 'relative',
+  achieveFlankedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     width: '100%',
+    gap: 8,
     marginVertical: 2,
   },
-  achieveFloatingArrow: {
-    position: 'absolute',
-    top: '50%',
-    marginTop: -19,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    borderWidth: 1.5,
+  achieveFlankBtn: {
+    width: 32,
+    height: 76,
+    borderRadius: 10,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 30,
     ...(Platform.OS === 'web'
       ? {
-          boxShadow: '0px 4px 14px rgba(0,0,0,0.22)',
           cursor: 'pointer',
           userSelect: 'none',
-          backdropFilter: 'blur(10px)',
+          boxShadow: '0px 2px 6px rgba(0,0,0,0.06)',
+          transition: 'background-color 0.2s ease, transform 0.1s ease',
         }
       : {
-          elevation: 8,
+          elevation: 2,
         }),
   },
-  achieveFloatingArrowLeft: {
-    left: -10,
-  },
-  achieveFloatingArrowRight: {
-    right: -10,
-  },
-  achieveFloatingArrowText: {
-    fontSize: 24,
+  achieveFlankBtnText: {
+    fontSize: 22,
     fontWeight: '900',
-    marginTop: -2,
+    lineHeight: 24,
+  },
+  achieveFlankedScrollView: {
+    flex: 1,
   },
   achieveGlobalProgressTrack: {
     width: '100%',
@@ -2526,7 +2523,7 @@ const styles = StyleSheet.create({
   achieveScrollContent: {
     gap: 10,
     paddingVertical: 6,
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
   },
   achieveItemCard: {
     width: 155,
