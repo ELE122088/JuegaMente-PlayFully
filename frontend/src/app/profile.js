@@ -151,6 +151,30 @@ export default function ProfileScreen() {
   const [editUsername, setEditUsername] = useState('');
   const [profileEditLoading, setProfileEditLoading] = useState(false);
 
+  // Referencia y controlador de desplazamiento horizontal para la Vitrina de Logros
+  const achievementsScrollRef = useRef(null);
+  const historyPillsScrollRef = useRef(null);
+
+  const handleScrollAchievements = (direction) => {
+    if (achievementsScrollRef.current) {
+      if (Platform.OS === 'web') {
+        const domNode = achievementsScrollRef.current?.getScrollableNode
+          ? achievementsScrollRef.current.getScrollableNode()
+          : achievementsScrollRef.current;
+        if (domNode && typeof domNode.scrollBy === 'function') {
+          domNode.scrollBy({ left: direction * 280, behavior: 'smooth' });
+          return;
+        }
+      }
+      if (achievementsScrollRef.current.scrollTo) {
+        achievementsScrollRef.current.scrollTo({
+          x: direction > 0 ? 320 : 0,
+          animated: true,
+        });
+      }
+    }
+  };
+
   // Helper para formatear fecha y hora completa con minutero y segundero
   const formatDateTimeWithSeconds = (dateStr) => {
     if (!dateStr) return '';
@@ -1401,10 +1425,33 @@ export default function ProfileScreen() {
                     </Text>
                   </View>
                 </View>
-                <View style={[styles.achieveCounterBadge, { backgroundColor: unlockedCount > 0 ? '#10B98118' : `${colors.primary}18` }]}>
-                  <Text style={[styles.achieveCounterText, { color: unlockedCount > 0 ? '#10B981' : colors.primary }]}>
-                    {unlockedCount} / {totalCount}
-                  </Text>
+
+                {/* Controles de Navegación y Contador de Logros */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  {/* Botones de flecha para deslizar en Web / PC */}
+                  <TouchableOpacity
+                    style={[styles.achieveNavBtn, { backgroundColor: `${colors.primary}15`, borderColor: `${colors.primary}33` }]}
+                    onPress={() => handleScrollAchievements(-1)}
+                    activeOpacity={0.7}
+                    accessibilityLabel="Deslizar a la izquierda"
+                  >
+                    <Text style={[styles.achieveNavBtnText, { color: colors.primary }]}>‹</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.achieveNavBtn, { backgroundColor: `${colors.primary}15`, borderColor: `${colors.primary}33` }]}
+                    onPress={() => handleScrollAchievements(1)}
+                    activeOpacity={0.7}
+                    accessibilityLabel="Deslizar a la derecha"
+                  >
+                    <Text style={[styles.achieveNavBtnText, { color: colors.primary }]}>›</Text>
+                  </TouchableOpacity>
+
+                  <View style={[styles.achieveCounterBadge, { backgroundColor: unlockedCount > 0 ? '#10B98118' : `${colors.primary}18` }]}>
+                    <Text style={[styles.achieveCounterText, { color: unlockedCount > 0 ? '#10B981' : colors.primary }]}>
+                      {unlockedCount} / {totalCount}
+                    </Text>
+                  </View>
                 </View>
               </View>
 
@@ -1423,9 +1470,25 @@ export default function ProfileScreen() {
 
               {/* Carrusel Deslizable Horizontal de Tarjetas de Logro */}
               <ScrollView
+                ref={achievementsScrollRef}
                 horizontal
-                showsHorizontalScrollIndicator={false}
+                showsHorizontalScrollIndicator={Platform.OS === 'web'}
                 contentContainerStyle={styles.achieveScrollContent}
+                style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
+                {...(Platform.OS === 'web'
+                  ? {
+                      onWheel: (e) => {
+                        if (e.deltaY !== 0) {
+                          const domNode = achievementsScrollRef.current?.getScrollableNode
+                            ? achievementsScrollRef.current.getScrollableNode()
+                            : achievementsScrollRef.current;
+                          if (domNode) {
+                            domNode.scrollLeft += e.deltaY;
+                          }
+                        }
+                      },
+                    }
+                  : {})}
               >
                 {achievementsList.map((ach) => {
                   const progressPct = Math.min(100, Math.round((ach.current / ach.target) * 100));
@@ -1643,9 +1706,25 @@ export default function ProfileScreen() {
             {profile?.history && profile.history.length > 0 && (
               <View style={styles.historyPillsContainer}>
                 <ScrollView
+                  ref={historyPillsScrollRef}
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.historyPillsContent}
+                  style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
+                  {...(Platform.OS === 'web'
+                    ? {
+                        onWheel: (e) => {
+                          if (e.deltaY !== 0) {
+                            const domNode = historyPillsScrollRef.current?.getScrollableNode
+                              ? historyPillsScrollRef.current.getScrollableNode()
+                              : historyPillsScrollRef.current;
+                            if (domNode) {
+                              domNode.scrollLeft += e.deltaY;
+                            }
+                          }
+                        },
+                      }
+                    : {})}
                 >
                   {/* Píldora: Todas */}
                   <TouchableOpacity
@@ -2386,6 +2465,20 @@ const styles = StyleSheet.create({
   achieveCounterText: {
     fontSize: 11,
     fontWeight: '800',
+  },
+  achieveNavBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', userSelect: 'none' } : {}),
+  },
+  achieveNavBtnText: {
+    fontSize: 16,
+    fontWeight: '900',
+    lineHeight: 18,
   },
   achieveGlobalProgressTrack: {
     width: '100%',
