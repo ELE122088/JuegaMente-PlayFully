@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator,
 import { useRouter } from 'expo-router';
 import api from '../services/api';
 import storage from '../services/storage';
+import { identifySocketUser } from '../services/socket';
 import { useTheme } from '../context/ThemeContext';
 
 export default function LoginScreen() {
@@ -80,6 +81,12 @@ export default function LoginScreen() {
       storage.setItem('isAdmin', String(response.data.isAdmin));
       storage.setItem('isSuperAdmin', String(response.data.isSuperAdmin || false));
       storage.setItem('profileImage', response.data.profileImage || '');
+
+      // ⚡ Identificar socket inmediatamente en el servidor
+      identifySocketUser({
+        username: response.data.username,
+        isAdmin: response.data.isAdmin,
+      });
 
       // Redirigir al inicio
       router.replace('/');
