@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, ScrollView, Alert, Platform } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
 export default function QuestionForm({ visible, onClose, onSave, question = null, categories = [] }) {
