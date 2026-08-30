@@ -371,13 +371,26 @@ export default function CategoriesScreen() {
     categories[0];
 
   const carouselRef = useRef(null);
-  const [carouselScrollX, setCarouselScrollX] = useState(0);
+  const [isCarouselHovered, setIsCarouselHovered] = useState(false);
 
-  const scrollCarousel = (direction) => {
-    const step = 260;
-    const newX = direction === 'left' ? Math.max(0, carouselScrollX - step) : carouselScrollX + step;
-    carouselRef.current?.scrollTo({ x: newX, animated: true });
-    setCarouselScrollX(newX);
+  const handleScrollCarousel = (direction) => {
+    if (carouselRef.current) {
+      if (Platform.OS === 'web') {
+        const domNode = carouselRef.current?.getScrollableNode
+          ? carouselRef.current.getScrollableNode()
+          : carouselRef.current;
+        if (domNode && typeof domNode.scrollBy === 'function') {
+          domNode.scrollBy({ left: direction * 280, behavior: 'smooth' });
+          return;
+        }
+      }
+      if (carouselRef.current.scrollTo) {
+        carouselRef.current.scrollTo({
+          x: direction > 0 ? 320 : 0,
+          animated: true,
+        });
+      }
+    }
   };
 
   // Partida rápida aleatoria
@@ -587,200 +600,242 @@ export default function CategoriesScreen() {
             OPCIÓN 3: CARRUSEL DE DESTACADOS Y CONTINUAR JUGANDO
         ========================================================= */}
         {categories.length > 0 && (
-          <View style={styles.carouselSection}>
+          <View
+            style={styles.carouselSection}
+            {...(Platform.OS === 'web'
+              ? {
+                  onMouseEnter: () => setIsCarouselHovered(true),
+                  onMouseLeave: () => setIsCarouselHovered(false),
+                }
+              : {})}
+          >
             <View style={styles.carouselHeaderRow}>
-              <View>
-                <Text style={[styles.carouselSectionTitle, { color: colors.text }]}>
-                  ⭐ Destacados y Desafíos
-                </Text>
-                <Text style={[styles.carouselSectionSubtitle, { color: colors.textSecondary }]}>
-                  Desliza o navega con las flechas ➔
-                </Text>
-              </View>
-
-              {/* Botones de Desplazamiento Web/Móvil */}
-              <View style={styles.carouselNavButtons}>
-                <TouchableOpacity
-                  style={[
-                    styles.carouselArrowBtn,
-                    { backgroundColor: colors.card, borderColor: colors.border }
-                  ]}
-                  onPress={() => scrollCarousel('left')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.carouselArrowText, { color: colors.text }]}>◀</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.carouselArrowBtn,
-                    { backgroundColor: colors.card, borderColor: colors.border }
-                  ]}
-                  onPress={() => scrollCarousel('right')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.carouselArrowText, { color: colors.text }]}>▶</Text>
-                </TouchableOpacity>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={[styles.carouselIconCircle, { backgroundColor: '#F59E0B18' }]}>
+                  <Text style={styles.carouselHeaderIcon}>⭐</Text>
+                </View>
+                <View>
+                  <Text style={[styles.carouselSectionTitle, { color: colors.text }]}>
+                    Destacados y Desafíos
+                  </Text>
+                  <Text style={[styles.carouselSectionSubtitle, { color: colors.textSecondary }]}>
+                    Explora materias populares o continúa tu última partida
+                  </Text>
+                </View>
               </View>
             </View>
 
-            <ScrollView
-              ref={carouselRef}
-              horizontal
-              showsHorizontalScrollIndicator={Platform.OS === 'web'}
-              onScroll={(e) => setCarouselScrollX(e.nativeEvent.contentOffset.x)}
-              scrollEventThrottle={16}
-              contentContainerStyle={styles.carouselScrollContent}
-              style={styles.carouselScrollView}
-            >
-              {/* Card 1: Última Materia Jugada / Continuar */}
-              {lastPlayedGame && (
+            {/* Contenedor del Carrusel con Flechas Flotantes Inteligentes (Idéntico a Vitrina de Logros) */}
+            <View style={styles.carouselHoverWrapper}>
+              {Platform.OS === 'web' && (
                 <TouchableOpacity
                   style={[
-                    styles.featuredCard,
-                    { backgroundColor: colors.card, borderColor: '#8B5CF6' }
-                  ]}
-                  onPress={() => {
-                    if (lastPlayedGame.matchedCategory) {
-                      handleCategoryPress(lastPlayedGame.matchedCategory);
-                    } else {
-                      router.push('/profile');
-                    }
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.featuredCardTop}>
-                    <View style={[styles.featuredTag, { backgroundColor: '#8B5CF620', borderColor: '#8B5CF6' }]}>
-                      <Text style={[styles.featuredTagText, { color: '#8B5CF6' }]}>🕒 CONTINUAR</Text>
-                    </View>
-                    <Text style={styles.featuredEmoji}>{lastPlayedGame.matchedCategory?.icon || '🎯'}</Text>
-                  </View>
-
-                  <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
-                    {lastPlayedGame.categoryName}
-                  </Text>
-                  <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
-                    Última nota: {lastPlayedGame.score}/{lastPlayedGame.totalQuestions} ({lastPlayedGame.percentage}%)
-                  </Text>
-
-                  <View style={[styles.featuredActionBtn, { backgroundColor: '#8B5CF6' }]}>
-                    <Text style={styles.featuredActionBtnText}>⚡ Superar Récord</Text>
-                  </View>
-                </TouchableOpacity>
-              )}
-
-              {/* Card 2: Materia Más Popular */}
-              {mostPopularCat && (
-                <TouchableOpacity
-                  style={[
-                    styles.featuredCard,
-                    { backgroundColor: colors.card, borderColor: '#FF6B6B' }
-                  ]}
-                  onPress={() => handleCategoryPress(mostPopularCat)}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.featuredCardTop}>
-                    <View style={[styles.featuredTag, { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B' }]}>
-                      <Text style={[styles.featuredTagText, { color: '#FF6B6B' }]}>🔥 POPULAR</Text>
-                    </View>
-                    <Text style={styles.featuredEmoji}>{mostPopularCat.icon || '📚'}</Text>
-                  </View>
-
-                  <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
-                    {mostPopularCat.name}
-                  </Text>
-                  <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
-                    {mostPopularCat.questionCount || 0} preguntas para entrenar
-                  </Text>
-
-                  <View style={[styles.featuredActionBtn, { backgroundColor: '#FF6B6B' }]}>
-                    <Text style={styles.featuredActionBtnText}>🚀 Jugar Ahora</Text>
-                  </View>
-                </TouchableOpacity>
-              )}
-
-              {/* Card 3: Examen Activo o Materia Recomendada */}
-              {featuredExamOrPractice && (
-                <TouchableOpacity
-                  style={[
-                    styles.featuredCard,
+                    styles.carouselHoverArrow,
+                    styles.carouselHoverArrowLeft,
                     {
                       backgroundColor: colors.card,
-                      borderColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4'
-                    }
+                      borderColor: colors.primary,
+                      opacity: isCarouselHovered ? 1 : 0,
+                      transform: [
+                        { translateY: -19 },
+                        { scale: isCarouselHovered ? 1 : 0.85 },
+                      ],
+                    },
                   ]}
-                  onPress={() => handleCategoryPress(featuredExamOrPractice)}
+                  onPress={() => handleScrollCarousel(-1)}
                   activeOpacity={0.8}
+                  accessibilityLabel="Deslizar a la izquierda"
                 >
-                  <View style={styles.featuredCardTop}>
-                    <View
-                      style={[
-                        styles.featuredTag,
-                        {
-                          backgroundColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF444420' : '#4ECDC420',
-                          borderColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4'
-                        }
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.featuredTagText,
-                          { color: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4' }
-                        ]}
-                      >
-                        {!featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '🔴 EXAMEN SALA' : '⭐ RECOMENDADA'}
-                      </Text>
-                    </View>
-                    <Text style={styles.featuredEmoji}>{featuredExamOrPractice.icon || '💡'}</Text>
-                  </View>
-
-                  <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
-                    {featuredExamOrPractice.name}
-                  </Text>
-                  <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
-                    {!featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? `PIN: ${featuredExamOrPractice.roomCode}` : 'Acceso libre e inmediato'}
-                  </Text>
-
-                  <View
-                    style={[
-                      styles.featuredActionBtn,
-                      { backgroundColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4' }
-                    ]}
-                  >
-                    <Text style={styles.featuredActionBtnText}>
-                      {!featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '✍️ Rendir Examen' : '💡 Explorar'}
-                    </Text>
-                  </View>
+                  <Text style={[styles.carouselHoverArrowText, { color: colors.primary }]}>‹</Text>
                 </TouchableOpacity>
               )}
 
-              {/* Card 4: Ruleta Cerebral / Partida Sorpresa */}
-              <TouchableOpacity
-                style={[
-                  styles.featuredCard,
-                  { backgroundColor: colors.card, borderColor: '#F59E0B' }
-                ]}
-                onPress={handleQuickRandomGame}
-                activeOpacity={0.8}
+              <ScrollView
+                ref={carouselRef}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.carouselScrollContent}
+                style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
+                {...(Platform.OS === 'web'
+                  ? {
+                      onMouseEnter: () => setIsCarouselHovered(true),
+                      onMouseLeave: () => setIsCarouselHovered(false),
+                    }
+                  : {})}
               >
-                <View style={styles.featuredCardTop}>
-                  <View style={[styles.featuredTag, { backgroundColor: '#F59E0B20', borderColor: '#F59E0B' }]}>
-                    <Text style={[styles.featuredTagText, { color: '#F59E0B' }]}>🎲 ALEATORIO</Text>
+                {/* Card 1: Última Materia Jugada / Continuar */}
+                {lastPlayedGame && (
+                  <TouchableOpacity
+                    style={[
+                      styles.featuredCard,
+                      { backgroundColor: colors.card, borderColor: '#8B5CF6' }
+                    ]}
+                    onPress={() => {
+                      if (lastPlayedGame.matchedCategory) {
+                        handleCategoryPress(lastPlayedGame.matchedCategory);
+                      } else {
+                        router.push('/profile');
+                      }
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.featuredCardTop}>
+                      <View style={[styles.featuredTag, { backgroundColor: '#8B5CF620', borderColor: '#8B5CF6' }]}>
+                        <Text style={[styles.featuredTagText, { color: '#8B5CF6' }]}>🕒 CONTINUAR</Text>
+                      </View>
+                      <Text style={styles.featuredEmoji}>{lastPlayedGame.matchedCategory?.icon || '🎯'}</Text>
+                    </View>
+
+                    <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
+                      {lastPlayedGame.categoryName}
+                    </Text>
+                    <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
+                      Última nota: {lastPlayedGame.score}/{lastPlayedGame.totalQuestions} ({lastPlayedGame.percentage}%)
+                    </Text>
+
+                    <View style={[styles.featuredActionBtn, { backgroundColor: '#8B5CF6' }]}>
+                      <Text style={styles.featuredActionBtnText}>⚡ Superar Récord</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+
+                {/* Card 2: Materia Más Popular */}
+                {mostPopularCat && (
+                  <TouchableOpacity
+                    style={[
+                      styles.featuredCard,
+                      { backgroundColor: colors.card, borderColor: '#FF6B6B' }
+                    ]}
+                    onPress={() => handleCategoryPress(mostPopularCat)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.featuredCardTop}>
+                      <View style={[styles.featuredTag, { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B' }]}>
+                        <Text style={[styles.featuredTagText, { color: '#FF6B6B' }]}>🔥 POPULAR</Text>
+                      </View>
+                      <Text style={styles.featuredEmoji}>{mostPopularCat.icon || '📚'}</Text>
+                    </View>
+
+                    <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
+                      {mostPopularCat.name}
+                    </Text>
+                    <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
+                      {mostPopularCat.questionCount || 0} preguntas para entrenar
+                    </Text>
+
+                    <View style={[styles.featuredActionBtn, { backgroundColor: '#FF6B6B' }]}>
+                      <Text style={styles.featuredActionBtnText}>🚀 Jugar Ahora</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+
+                {/* Card 3: Examen Activo o Materia Recomendada */}
+                {featuredExamOrPractice && (
+                  <TouchableOpacity
+                    style={[
+                      styles.featuredCard,
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4'
+                      }
+                    ]}
+                    onPress={() => handleCategoryPress(featuredExamOrPractice)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.featuredCardTop}>
+                      <View
+                        style={[
+                          styles.featuredTag,
+                          {
+                            backgroundColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF444420' : '#4ECDC420',
+                            borderColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4'
+                          }
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.featuredTagText,
+                            { color: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4' }
+                          ]}
+                        >
+                          {!featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '🔴 EXAMEN SALA' : '⭐ RECOMENDADA'}
+                        </Text>
+                      </View>
+                      <Text style={styles.featuredEmoji}>{featuredExamOrPractice.icon || '💡'}</Text>
+                    </View>
+
+                    <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
+                      {featuredExamOrPractice.name}
+                    </Text>
+                    <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
+                      {!featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? `PIN: ${featuredExamOrPractice.roomCode}` : 'Acceso libre e inmediato'}
+                    </Text>
+
+                    <View
+                      style={[
+                        styles.featuredActionBtn,
+                        { backgroundColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4' }
+                      ]}
+                    >
+                      <Text style={styles.featuredActionBtnText}>
+                        {!featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '✍️ Rendir Examen' : '💡 Explorar'}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+
+                {/* Card 4: Ruleta Cerebral / Partida Sorpresa */}
+                <TouchableOpacity
+                  style={[
+                    styles.featuredCard,
+                    { backgroundColor: colors.card, borderColor: '#F59E0B' }
+                  ]}
+                  onPress={handleQuickRandomGame}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.featuredCardTop}>
+                    <View style={[styles.featuredTag, { backgroundColor: '#F59E0B20', borderColor: '#F59E0B' }]}>
+                      <Text style={[styles.featuredTagText, { color: '#F59E0B' }]}>🎲 ALEATORIO</Text>
+                    </View>
+                    <Text style={styles.featuredEmoji}>🎰</Text>
                   </View>
-                  <Text style={styles.featuredEmoji}>🎰</Text>
-                </View>
 
-                <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
-                  Ruleta Cerebral
-                </Text>
-                <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
-                  Partida sorpresa en materia al azar
-                </Text>
+                  <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
+                    Ruleta Cerebral
+                  </Text>
+                  <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
+                    Partida sorpresa en materia al azar
+                  </Text>
 
-                <View style={[styles.featuredActionBtn, { backgroundColor: '#F59E0B' }]}>
-                  <Text style={styles.featuredActionBtnText}>🎲 Girar Ruleta</Text>
-                </View>
-              </TouchableOpacity>
-            </ScrollView>
+                  <View style={[styles.featuredActionBtn, { backgroundColor: '#F59E0B' }]}>
+                    <Text style={styles.featuredActionBtnText}>🎲 Girar Ruleta</Text>
+                  </View>
+                </TouchableOpacity>
+              </ScrollView>
+
+              {Platform.OS === 'web' && (
+                <TouchableOpacity
+                  style={[
+                    styles.carouselHoverArrow,
+                    styles.carouselHoverArrowRight,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.primary,
+                      opacity: isCarouselHovered ? 1 : 0,
+                      transform: [
+                        { translateY: -19 },
+                        { scale: isCarouselHovered ? 1 : 0.85 },
+                      ],
+                    },
+                  ]}
+                  onPress={() => handleScrollCarousel(1)}
+                  activeOpacity={0.8}
+                  accessibilityLabel="Deslizar a la derecha"
+                >
+                  <Text style={[styles.carouselHoverArrowText, { color: colors.primary }]}>›</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         )}
 
@@ -1298,7 +1353,7 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     fontWeight: '900',
   },
-  // Estilos de Carrusel de Destacados (Opción 3)
+  // Estilos de Carrusel de Destacados (Opción 3 - Estilo Vitrina de Logros)
   carouselSection: {
     marginBottom: 22,
   },
@@ -1309,46 +1364,67 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 2,
   },
+  carouselIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  carouselHeaderIcon: {
+    fontSize: 16,
+  },
   carouselSectionTitle: {
     fontSize: 16,
     fontWeight: '800',
     fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
   },
   carouselSectionSubtitle: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11.5,
+    fontWeight: '500',
   },
-  carouselNavButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  carouselHoverWrapper: {
+    position: 'relative',
+    width: '100%',
+    marginVertical: 2,
   },
-  carouselArrowBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  carouselHoverArrow: {
+    position: 'absolute',
+    top: '50%',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 2,
-    boxShadow: '0px 2px 6px rgba(0,0,0,0.06)',
-    ...(Platform.OS === 'web' ? { cursor: 'pointer', transition: 'transform 0.15s ease' } : {}),
-  },
-  carouselArrowText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  carouselScrollView: {
+    zIndex: 30,
     ...(Platform.OS === 'web'
       ? {
-          overflowX: 'auto',
-          scrollBehavior: 'smooth',
+          boxShadow: '0px 4px 14px rgba(0,0,0,0.22)',
+          cursor: 'pointer',
+          userSelect: 'none',
+          backdropFilter: 'blur(10px)',
+          transition: 'opacity 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease',
         }
-      : {}),
+      : {
+          elevation: 8,
+        }),
+  },
+  carouselHoverArrowLeft: {
+    left: -10,
+  },
+  carouselHoverArrowRight: {
+    right: -10,
+  },
+  carouselHoverArrowText: {
+    fontSize: 24,
+    fontWeight: '900',
+    marginTop: -2,
   },
   carouselScrollContent: {
     paddingRight: 10,
     gap: 12,
+    paddingVertical: 4,
   },
   featuredCard: {
     width: Platform.OS === 'web' ? 245 : 220,
