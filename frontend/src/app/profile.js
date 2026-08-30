@@ -1059,13 +1059,11 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Fecha */}
-          <Text style={[styles.historyDate, { color: colors.textSecondary }]}>
-            📅 {formattedDate}
-          </Text>
-
-          {/* Fila de Badges y Botones de Acción */}
-          <View style={styles.historyFooterRow}>
+          {/* Fila 2: Fecha y Badges */}
+          <View style={styles.historyMetaRow}>
+            <Text style={[styles.historyDate, { color: colors.textSecondary }]}>
+              📅 {formattedDate}
+            </Text>
             <View style={styles.historyBadgesGroup}>
               {/* Puntos obtenidos */}
               <View style={[styles.historyBadge, { backgroundColor: `${statusColor}15`, borderColor: `${statusColor}30` }]}>
@@ -1081,39 +1079,39 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             </View>
+          </View>
 
-            {/* Grupo de Botones */}
-            <View style={styles.historyActionGroup}>
-              <InteractiveActionBtn
-                style={[
-                  styles.historyActionBtn,
-                  { backgroundColor: '#F59E0B18', borderColor: '#F59E0B44' },
-                ]}
-                accentColor="#F59E0B"
-                onPress={(e) => {
-                  e?.stopPropagation?.();
-                  onOpenRanking(item.category, item.categoryName);
-                }}
-                title="Ver Ranking de esta Materia"
-              >
-                <Text style={[styles.historyActionBtnText, { color: '#D97706' }]}>🏆 Ranking</Text>
-              </InteractiveActionBtn>
+          {/* Fila 3: Botones de Acción (Espaciados y totalmente visibles) */}
+          <View style={styles.historyActionGroup}>
+            <InteractiveActionBtn
+              style={[
+                styles.historyActionBtn,
+                { backgroundColor: '#F59E0B18', borderColor: '#F59E0B55' },
+              ]}
+              accentColor="#F59E0B"
+              onPress={(e) => {
+                e?.stopPropagation?.();
+                onOpenRanking(item.category, item.categoryName);
+              }}
+              title="Ver Ranking de esta Materia"
+            >
+              <Text style={[styles.historyActionBtnText, { color: '#D97706' }]}>🏆 Ranking</Text>
+            </InteractiveActionBtn>
 
-              <InteractiveActionBtn
-                style={[
-                  styles.historyDeleteBtn,
-                  { backgroundColor: '#EF444415', borderColor: '#EF444433' },
-                ]}
-                accentColor="#EF4444"
-                onPress={(e) => {
-                  e?.stopPropagation?.();
-                  onDelete(item._id, e);
-                }}
-                title="Eliminar partida"
-              >
-                <Text style={styles.historyDeleteBtnText}>🗑️</Text>
-              </InteractiveActionBtn>
-            </View>
+            <InteractiveActionBtn
+              style={[
+                styles.historyDeleteBtn,
+                { backgroundColor: '#EF444415', borderColor: '#EF444444' },
+              ]}
+              accentColor="#EF4444"
+              onPress={(e) => {
+                e?.stopPropagation?.();
+                onDelete(item._id, e);
+              }}
+              title="Eliminar partida"
+            >
+              <Text style={styles.historyDeleteBtnText}>🗑️</Text>
+            </InteractiveActionBtn>
           </View>
         </View>
 
@@ -3219,21 +3217,26 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   // Píldoras de Filtro Rápido de Historial
+  // Píldoras de Filtro Rápido de Historial
   historyPillsContainer: {
     marginBottom: 12,
+    marginTop: 4,
+    paddingVertical: 4,
   },
   historyPillsContent: {
     paddingHorizontal: 16,
+    paddingVertical: 6,
     gap: 8,
     alignItems: 'center',
   },
   historyFilterPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
     borderRadius: 20,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 32,
     ...(Platform.OS === 'web'
       ? { boxShadow: '0px 1px 4px rgba(0,0,0,0.04)' }
       : { elevation: 1 }),
@@ -3241,6 +3244,7 @@ const styles = StyleSheet.create({
   historyFilterPillText: {
     fontSize: 12,
     fontWeight: '700',
+    lineHeight: 16,
   },
   // Estado cuando el filtro no arroja resultados
   emptyFilterState: {
@@ -3304,7 +3308,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 8,
-    marginBottom: 3,
+    marginBottom: 4,
   },
   historyTitle: {
     flex: 1,
@@ -3322,17 +3326,16 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     fontWeight: '900',
   },
+  historyMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+  },
   historyDate: {
     fontSize: 11.5,
     fontWeight: '500',
-    marginBottom: 8,
-  },
-  historyFooterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 6,
-    flexWrap: 'wrap',
   },
   historyBadgesGroup: {
     flexDirection: 'row',
@@ -3354,32 +3357,40 @@ const styles = StyleSheet.create({
   historyActionGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    marginTop: 2,
+    paddingTop: 2,
   },
   historyActionBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 3.5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 1,
-    alignItems: 'center',
+    minHeight: 30,
     justifyContent: 'center',
     ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}),
   },
   historyActionBtnText: {
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '800',
+    lineHeight: 15,
   },
   historyDeleteBtn: {
-    paddingHorizontal: 6,
-    paddingVertical: 3.5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 1,
-    alignItems: 'center',
+    minHeight: 30,
     justifyContent: 'center',
     ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}),
   },
   historyDeleteBtnText: {
-    fontSize: 11,
+    fontSize: 12,
+    lineHeight: 15,
   },
   historyArrowCircle: {
     width: 34,

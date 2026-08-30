@@ -2066,11 +2066,12 @@ const styles = StyleSheet.create({
   pillsOuterContainer: {
     marginHorizontal: 16,
     marginBottom: 10,
+    marginTop: 2,
   },
   pillsScrollContent: {
     gap: 8,
     paddingRight: 16,
-    paddingVertical: 2,
+    paddingVertical: 6,
   },
   pillBtn: {
     flexDirection: 'row',
