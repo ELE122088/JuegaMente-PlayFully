@@ -43,7 +43,6 @@ const SidebarMenuItem = ({
         {
           backgroundColor: isHovered ? `${color}14` : colors.inputBg || `${colors.card}`,
           borderColor: isHovered ? color : colors.border,
-          borderLeftColor: color,
           transform: isHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
           ...(isHovered
             ? createShadow(color, 4, 0.22, 10, 4)
@@ -354,7 +353,6 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
               { 
                 backgroundColor: colors.inputBg || `${colors.card}`,
                 borderColor: isHeaderHovered ? userAccent : colors.border,
-                borderLeftColor: userAccent,
                 transform: isHeaderHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
                 ...(isHeaderHovered
                   ? createShadow(userAccent, 6, 0.22, 14, 6)
@@ -469,7 +467,6 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
                 { 
                   borderColor: isThemeSecHovered ? colors.primary : colors.border, 
                   backgroundColor: colors.inputBg || `${colors.card}`, 
-                  borderLeftColor: colors.primary,
                   transform: isThemeSecHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
                   ...(isThemeSecHovered
                     ? createShadow(colors.primary, 4, 0.2, 12, 4)
@@ -813,8 +810,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     marginTop: 8,
     borderRadius: 16,
-    borderWidth: 1.5,
-    borderLeftWidth: 5,
+    borderWidth: 1,
   },
   profileRow: {
     flexDirection: 'row',
@@ -883,8 +879,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginVertical: 4,
     paddingHorizontal: 14,
-    borderWidth: 1.5,
-    borderLeftWidth: 5,
+    borderWidth: 1,
   },
   menuIcon: {
     fontSize: 20,
@@ -899,8 +894,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 14,
     padding: 12,
-    borderWidth: 1.5,
-    borderLeftWidth: 5,
+    borderWidth: 1,
   },
   themeTitle: {
     fontSize: 13,
@@ -955,10 +949,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 14,
-    borderWidth: 1.5,
-    borderLeftWidth: 5,
-    borderLeftColor: '#EF4444',
-    borderColor: '#FF6B6B',
     justifyContent: 'center',
     width: '100%',
   },
