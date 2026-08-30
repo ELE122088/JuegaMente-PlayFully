@@ -96,9 +96,10 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                   isActive && { backgroundColor: '#4ECDC420', borderColor: '#4ECDC4' }
                 ]}
                 onPress={() => setIsActive(true)}
+                activeOpacity={0.7}
               >
-                <Text style={[styles.segmentBtnText, { color: isActive ? '#4ECDC4' : colors.textSecondary }]}>
-                  🟢 Abierto (Activo)
+                <Text style={[styles.segmentBtnText, { color: isActive ? '#4ECDC4' : colors.textSecondary }]} numberOfLines={1}>
+                  🟢 Abierto
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -108,9 +109,10 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                   !isActive && { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B' }
                 ]}
                 onPress={() => setIsActive(false)}
+                activeOpacity={0.7}
               >
-                <Text style={[styles.segmentBtnText, { color: !isActive ? '#FF6B6B' : colors.textSecondary }]}>
-                  🔴 Cerrado (Bloqueado)
+                <Text style={[styles.segmentBtnText, { color: !isActive ? '#FF6B6B' : colors.textSecondary }]} numberOfLines={1}>
+                  🔴 Cerrado
                 </Text>
               </TouchableOpacity>
             </View>
@@ -125,9 +127,10 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                   !isPublic && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
                 ]}
                 onPress={() => setIsPublic(false)}
+                activeOpacity={0.7}
               >
-                <Text style={[styles.segmentBtnText, { color: !isPublic ? colors.primary : colors.textSecondary }]}>
-                  🔒 Privado (Con PIN)
+                <Text style={[styles.segmentBtnText, { color: !isPublic ? colors.primary : colors.textSecondary }]} numberOfLines={1}>
+                  🔒 Con PIN
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -137,9 +140,10 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                   isPublic && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
                 ]}
                 onPress={() => setIsPublic(true)}
+                activeOpacity={0.7}
               >
-                <Text style={[styles.segmentBtnText, { color: isPublic ? colors.primary : colors.textSecondary }]}>
-                  🌐 Público (Sin PIN)
+                <Text style={[styles.segmentBtnText, { color: isPublic ? colors.primary : colors.textSecondary }]} numberOfLines={1}>
+                  🌐 Público
                 </Text>
               </TouchableOpacity>
             </View>
@@ -151,24 +155,26 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                 style={[
                   styles.segmentBtn,
                   { backgroundColor: colors.background, borderColor: colors.border },
-                  gameMode === 'exam' && { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B' }
+                  gameMode === 'exam' && { backgroundColor: '#8B5CF620', borderColor: '#8B5CF6' }
                 ]}
                 onPress={() => setGameMode('exam')}
+                activeOpacity={0.7}
               >
-                <Text style={[styles.segmentBtnText, { color: gameMode === 'exam' ? '#FF6B6B' : colors.textSecondary }]}>
-                  📝 Modo Examen
+                <Text style={[styles.segmentBtnText, { color: gameMode === 'exam' ? '#8B5CF6' : colors.textSecondary }]} numberOfLines={1}>
+                  📝 Examen
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.segmentBtn,
                   { backgroundColor: colors.background, borderColor: colors.border },
-                  gameMode === 'practice' && { backgroundColor: '#4ECDC420', borderColor: '#4ECDC4' }
+                  gameMode === 'practice' && { backgroundColor: '#10B98120', borderColor: '#10B981' }
                 ]}
                 onPress={() => setGameMode('practice')}
+                activeOpacity={0.7}
               >
-                <Text style={[styles.segmentBtnText, { color: gameMode === 'practice' ? '#4ECDC4' : colors.textSecondary }]}>
-                  💡 Modo Práctica
+                <Text style={[styles.segmentBtnText, { color: gameMode === 'practice' ? '#10B981' : colors.textSecondary }]} numberOfLines={1}>
+                  💡 Práctica
                 </Text>
               </TouchableOpacity>
             </View>
@@ -177,21 +183,22 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
             <Text style={[styles.label, { color: colors.text }]}>❤️ Cantidad de Vidas</Text>
             <View style={styles.segmentedControl}>
               {[
-                { label: '1 ❤️ Muerte Súbita', value: 1 },
-                { label: '3 ❤️ Estándar', value: 3 },
-                { label: '5 ❤️ Extendido', value: 5 },
-                { label: '10 ❤️ Libre', value: 10 },
+                { label: '1 ❤️', value: 1 },
+                { label: '3 ❤️', value: 3 },
+                { label: '5 ❤️', value: 5 },
+                { label: '10 ❤️', value: 10 },
               ].map((item) => (
                 <TouchableOpacity
                   key={item.value}
                   style={[
                     styles.segmentBtn,
-                    { backgroundColor: colors.background, borderColor: colors.border, paddingVertical: 8, paddingHorizontal: 4 },
+                    { backgroundColor: colors.background, borderColor: colors.border, paddingVertical: 8, paddingHorizontal: 2 },
                     initialLives === item.value && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
                   ]}
                   onPress={() => setInitialLives(item.value)}
+                  activeOpacity={0.7}
                 >
-                  <Text style={[styles.segmentBtnText, { fontSize: 11, color: initialLives === item.value ? colors.primary : colors.textSecondary }]}>
+                  <Text style={[styles.segmentBtnText, { fontSize: 12.5, color: initialLives === item.value ? colors.primary : colors.textSecondary }]} numberOfLines={1}>
                     {item.label}
                   </Text>
                 </TouchableOpacity>
@@ -212,12 +219,13 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                   key={item.value}
                   style={[
                     styles.segmentBtn,
-                    { backgroundColor: colors.background, borderColor: colors.border, paddingVertical: 8, paddingHorizontal: 6 },
+                    { backgroundColor: colors.background, borderColor: colors.border, paddingVertical: 8, paddingHorizontal: 2 },
                     timePerQuestion === item.value && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
                   ]}
                   onPress={() => setTimePerQuestion(item.value)}
+                  activeOpacity={0.7}
                 >
-                  <Text style={[styles.segmentBtnText, { fontSize: 12, color: timePerQuestion === item.value ? colors.primary : colors.textSecondary }]}>
+                  <Text style={[styles.segmentBtnText, { fontSize: 12, color: timePerQuestion === item.value ? colors.primary : colors.textSecondary }]} numberOfLines={1}>
                     {item.label}
                   </Text>
                 </TouchableOpacity>
@@ -348,19 +356,19 @@ const styles = StyleSheet.create({
   },
   segmentedControl: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 6,
   },
   segmentBtn: {
     flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 9,
+    paddingHorizontal: 6,
     borderRadius: 10,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   segmentBtnText: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '700',
   },
   input: {
