@@ -650,6 +650,109 @@ export default function ProfileScreen() {
   const topSubject = subjectPerformance.length > 0 ? subjectPerformance[0] : null;
   const lowestSubject = subjectPerformance.length > 1 ? subjectPerformance[subjectPerformance.length - 1] : null;
 
+  // Calcular logros e insignias desbloqueadas
+  const getAchievements = () => {
+    const history = profile?.history || [];
+    const totalGames = history.length;
+    const perfectGames = history.filter((h) => h.percentage === 100).length;
+
+    // Calcular racha máxima de partidas consecutivas aprobadas
+    let currentStreak = 0;
+    let maxStreak = 0;
+    const sortedChronological = [...history].sort((a, b) => new Date(a.date) - new Date(b.date));
+    sortedChronological.forEach((h) => {
+      if ((h.percentage || 0) >= 60) {
+        currentStreak += 1;
+        if (currentStreak > maxStreak) maxStreak = currentStreak;
+      } else {
+        currentStreak = 0;
+      }
+    });
+
+    // Contar materias distintas aprobadas (>=60%)
+    const passedSubjectSet = new Set(
+      history.filter((h) => (h.percentage || 0) >= 60).map((h) => h.categoryName || 'Materia')
+    );
+    const passedSubjectCount = passedSubjectSet.size;
+
+    // Partida con vidas intactas (3 vidas y nota >= 80%)
+    const hasFullLivesWin = history.some((h) => (h.lives === 3 || h.lives === undefined) && (h.percentage || 0) >= 80);
+
+    const achievementsList = [
+      {
+        id: 'perfect_sniper',
+        icon: '🎯',
+        name: 'Francotirador 100%',
+        desc: 'Completa al menos 1 partida con 100% de efectividad.',
+        current: perfectGames,
+        target: 1,
+        unlocked: perfectGames >= 1,
+        color: '#8B5CF6',
+        badge: '👑 Épico',
+      },
+      {
+        id: 'streak_fire',
+        icon: '🔥',
+        name: 'Racha Imparable',
+        desc: 'Alcanza una racha de 3 partidas seguidas aprobadas.',
+        current: Math.min(maxStreak, 3),
+        target: 3,
+        unlocked: maxStreak >= 3,
+        color: '#F59E0B',
+        badge: '⚡ Racha',
+      },
+      {
+        id: 'megamind_brain',
+        icon: '🧠',
+        name: 'Cerebro Titánico',
+        desc: 'Completa 5 partidas en total demostrando constancia.',
+        current: Math.min(totalGames, 5),
+        target: 5,
+        unlocked: totalGames >= 5,
+        color: '#3B82F6',
+        badge: '🤖 Genio',
+      },
+      {
+        id: 'multidisciplinary',
+        icon: '📚',
+        name: 'Mente Políglota',
+        desc: 'Aprueba al menos 3 materias o categorías diferentes.',
+        current: Math.min(passedSubjectCount, 3),
+        target: 3,
+        unlocked: passedSubjectCount >= 3,
+        color: '#10B981',
+        badge: '🎓 Académico',
+      },
+      {
+        id: 'untouchable',
+        icon: '🛡️',
+        name: 'Superviviente Intocable',
+        desc: 'Gana una partida con excelente nota sin perder vidas.',
+        current: hasFullLivesWin ? 1 : 0,
+        target: 1,
+        unlocked: hasFullLivesWin,
+        color: '#EC4899',
+        badge: '❤️ Campeón',
+      },
+      {
+        id: 'golden_legend',
+        icon: '🏆',
+        name: 'Leyenda de Metro City',
+        desc: 'Mantén un promedio general de 85% o más con 3+ partidas.',
+        current: totalGames >= 3 && average >= 85 ? 1 : 0,
+        target: 1,
+        unlocked: totalGames >= 3 && average >= 85,
+        color: '#EAB308',
+        badge: '🌟 Oro',
+      },
+    ];
+
+    const unlockedCount = achievementsList.filter((a) => a.unlocked).length;
+    return { achievementsList, unlockedCount, totalCount: achievementsList.length };
+  };
+
+  const { achievementsList, unlockedCount, totalCount } = getAchievements();
+
   const getFilteredHistory = () => {
     if (!profile?.history) return [];
     if (historyFilter === 'all') return profile.history;
@@ -1277,6 +1380,114 @@ export default function ProfileScreen() {
                 <Text style={[styles.stripVal, { color: '#8B5CF6' }]}>{passed}</Text>
                 <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Aprobadas</Text>
               </View>
+            </View>
+
+            {/* =========================================================
+                PROPUESTA 1: Vitrina de Logros e Insignias Desbloqueables
+            ========================================================= */}
+            <View style={[styles.achievementsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {/* Cabecera de la Vitrina */}
+              <View style={styles.achievementsHeader}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={[styles.achieveIconCircle, { backgroundColor: '#F59E0B18' }]}>
+                    <Text style={styles.achieveHeaderIcon}>🏆</Text>
+                  </View>
+                  <View>
+                    <Text style={[styles.achieveTitle, { color: colors.text }]}>
+                      Vitrina de Logros e Insignias
+                    </Text>
+                    <Text style={[styles.achieveSubtitle, { color: colors.textSecondary }]}>
+                      Desbloquea trofeos jugando y mejorando tus notas
+                    </Text>
+                  </View>
+                </View>
+                <View style={[styles.achieveCounterBadge, { backgroundColor: unlockedCount > 0 ? '#10B98118' : `${colors.primary}18` }]}>
+                  <Text style={[styles.achieveCounterText, { color: unlockedCount > 0 ? '#10B981' : colors.primary }]}>
+                    {unlockedCount} / {totalCount}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Barra de progreso global de logros */}
+              <View style={[styles.achieveGlobalProgressTrack, { backgroundColor: colors.border }]}>
+                <View
+                  style={[
+                    styles.achieveGlobalProgressFill,
+                    {
+                      width: `${Math.max(6, Math.round((unlockedCount / totalCount) * 100))}%`,
+                      backgroundColor: unlockedCount === totalCount ? '#F59E0B' : colors.primary,
+                    },
+                  ]}
+                />
+              </View>
+
+              {/* Carrusel Deslizable Horizontal de Tarjetas de Logro */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.achieveScrollContent}
+              >
+                {achievementsList.map((ach) => {
+                  const progressPct = Math.min(100, Math.round((ach.current / ach.target) * 100));
+                  return (
+                    <View
+                      key={ach.id}
+                      style={[
+                        styles.achieveItemCard,
+                        {
+                          backgroundColor: ach.unlocked ? `${ach.color}10` : colors.background,
+                          borderColor: ach.unlocked ? `${ach.color}55` : colors.border,
+                        },
+                      ]}
+                    >
+                      {/* Insignia / Estado */}
+                      <View style={styles.achieveTopRow}>
+                        <View style={[styles.achieveBadgePill, { backgroundColor: ach.unlocked ? `${ach.color}25` : colors.border }]}>
+                          <Text style={[styles.achieveBadgePillText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
+                            {ach.badge}
+                          </Text>
+                        </View>
+                        <Text style={{ fontSize: 13 }}>
+                          {ach.unlocked ? '✨' : '🔒'}
+                        </Text>
+                      </View>
+
+                      {/* Icono central */}
+                      <View style={[styles.achieveItemIconWrapper, { backgroundColor: ach.unlocked ? `${ach.color}20` : `${colors.border}55` }]}>
+                        <Text style={[styles.achieveItemIcon, !ach.unlocked && { opacity: 0.5 }]}>
+                          {ach.icon}
+                        </Text>
+                      </View>
+
+                      {/* Título y Descripción */}
+                      <Text style={[styles.achieveItemName, { color: colors.text }]} numberOfLines={1}>
+                        {ach.name}
+                      </Text>
+                      <Text style={[styles.achieveItemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
+                        {ach.desc}
+                      </Text>
+
+                      {/* Barra de progreso individual */}
+                      <View style={styles.achieveMiniProgressContainer}>
+                        <View style={[styles.achieveMiniTrack, { backgroundColor: colors.border }]}>
+                          <View
+                            style={[
+                              styles.achieveMiniFill,
+                              {
+                                width: `${ach.unlocked ? 100 : Math.max(8, progressPct)}%`,
+                                backgroundColor: ach.unlocked ? ach.color : colors.primary,
+                              },
+                            ]}
+                          />
+                        </View>
+                        <Text style={[styles.achieveMiniProgressText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
+                          {ach.unlocked ? '✓ Desbloqueado' : `${ach.current} / ${ach.target}`}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })}
+              </ScrollView>
             </View>
 
             {/* =========================================================
@@ -2130,6 +2341,130 @@ const styles = StyleSheet.create({
   stripDivider: {
     width: 1,
     height: 28,
+  },
+  // Estilos de Vitrina de Logros e Insignias (Propuesta 1)
+  achievementsCard: {
+    marginHorizontal: 16,
+    marginTop: 4,
+    marginBottom: 8,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 10,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)' }
+      : { elevation: 2 }),
+  },
+  achievementsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  achieveIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  achieveHeaderIcon: {
+    fontSize: 16,
+  },
+  achieveTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  achieveSubtitle: {
+    fontSize: 10.5,
+    marginTop: 1,
+  },
+  achieveCounterBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  achieveCounterText: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  achieveGlobalProgressTrack: {
+    width: '100%',
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  achieveGlobalProgressFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  achieveScrollContent: {
+    gap: 10,
+    paddingVertical: 4,
+    paddingRight: 6,
+  },
+  achieveItemCard: {
+    width: 155,
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    gap: 6,
+    justifyContent: 'space-between',
+  },
+  achieveTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  achieveBadgePill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  achieveBadgePillText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+  },
+  achieveItemIconWrapper: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginVertical: 2,
+  },
+  achieveItemIcon: {
+    fontSize: 22,
+  },
+  achieveItemName: {
+    fontSize: 12,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  achieveItemDesc: {
+    fontSize: 10,
+    textAlign: 'center',
+    lineHeight: 13,
+    minHeight: 26,
+  },
+  achieveMiniProgressContainer: {
+    gap: 3,
+    marginTop: 2,
+  },
+  achieveMiniTrack: {
+    width: '100%',
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  achieveMiniFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  achieveMiniProgressText: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   // Estilos de Rendimiento por Materia (Propuesta 2)
   subjectPerformanceCard: {
