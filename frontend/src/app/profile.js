@@ -154,6 +154,7 @@ export default function ProfileScreen() {
   // Referencia y controlador de desplazamiento horizontal para la Vitrina de Logros
   const achievementsScrollRef = useRef(null);
   const historyPillsScrollRef = useRef(null);
+  const [isAchieveHovered, setIsAchieveHovered] = useState(false);
 
   const handleScrollAchievements = (direction) => {
     if (achievementsScrollRef.current) {
@@ -1407,9 +1408,17 @@ export default function ProfileScreen() {
             </View>
 
             {/* =========================================================
-                PROPUESTA 1: Vitrina de Logros e Insignias Desbloqueables
+                PROPUESTA 1 (OPCIÓN 3): Vitrina de Logros con Flechas Hover Inteligentes
             ========================================================= */}
-            <View style={[styles.achievementsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View
+              style={[styles.achievementsCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+              {...(Platform.OS === 'web'
+                ? {
+                    onMouseEnter: () => setIsAchieveHovered(true),
+                    onMouseLeave: () => setIsAchieveHovered(false),
+                  }
+                : {})}
+            >
               {/* Cabecera de la Vitrina */}
               <View style={styles.achievementsHeader}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -1446,31 +1455,37 @@ export default function ProfileScreen() {
                 />
               </View>
 
-              {/* Fila Flanqueada: Botón Izquierdo + Carrusel Central + Botón Derecho */}
-              <View style={styles.achieveFlankedRow}>
-                {/* Botón Lateral Izquierdo Fijo */}
+              {/* Contenedor del Carrusel con Flechas Flotantes Inteligentes (Hover) */}
+              <View style={styles.achieveHoverWrapper}>
+                {/* Flecha Flotante Lateral Izquierda (Hover) */}
                 <TouchableOpacity
                   style={[
-                    styles.achieveFlankBtn,
-                    { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}33` },
+                    styles.achieveHoverArrow,
+                    styles.achieveHoverArrowLeft,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.primary,
+                      opacity: Platform.OS === 'web' ? (isAchieveHovered ? 1 : 0) : 1,
+                      transform: [
+                        { translateY: -19 },
+                        { scale: Platform.OS === 'web' && isAchieveHovered ? 1 : 0.85 },
+                      ],
+                    },
                   ]}
                   onPress={() => handleScrollAchievements(-1)}
-                  activeOpacity={0.7}
+                  activeOpacity={0.8}
                   accessibilityLabel="Deslizar a la izquierda"
                 >
-                  <Text style={[styles.achieveFlankBtnText, { color: colors.primary }]}>‹</Text>
+                  <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>‹</Text>
                 </TouchableOpacity>
 
-                {/* Carrusel Deslizable en el Centro (Cero Superposición) */}
+                {/* Carrusel Deslizable Horizontal de Tarjetas de Logro */}
                 <ScrollView
                   ref={achievementsScrollRef}
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.achieveScrollContent}
-                  style={[
-                    styles.achieveFlankedScrollView,
-                    Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined,
-                  ]}
+                  style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
                   {...(Platform.OS === 'web'
                     ? {
                         onWheel: (e) => {
@@ -1548,17 +1563,26 @@ export default function ProfileScreen() {
                   })}
                 </ScrollView>
 
-                {/* Botón Lateral Derecho Fijo */}
+                {/* Flecha Flotante Lateral Derecha (Hover) */}
                 <TouchableOpacity
                   style={[
-                    styles.achieveFlankBtn,
-                    { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}33` },
+                    styles.achieveHoverArrow,
+                    styles.achieveHoverArrowRight,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.primary,
+                      opacity: Platform.OS === 'web' ? (isAchieveHovered ? 1 : 0) : 1,
+                      transform: [
+                        { translateY: -19 },
+                        { scale: Platform.OS === 'web' && isAchieveHovered ? 1 : 0.85 },
+                      ],
+                    },
                   ]}
                   onPress={() => handleScrollAchievements(1)}
-                  activeOpacity={0.7}
+                  activeOpacity={0.8}
                   accessibilityLabel="Deslizar a la derecha"
                 >
-                  <Text style={[styles.achieveFlankBtnText, { color: colors.primary }]}>›</Text>
+                  <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>›</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -2476,39 +2500,43 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
   },
-  achieveFlankedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  achieveHoverWrapper: {
+    position: 'relative',
     width: '100%',
-    gap: 8,
     marginVertical: 2,
   },
-  achieveFlankBtn: {
-    width: 32,
-    height: 76,
-    borderRadius: 10,
-    borderWidth: 1,
+  achieveHoverArrow: {
+    position: 'absolute',
+    top: '50%',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 30,
     ...(Platform.OS === 'web'
       ? {
+          boxShadow: '0px 4px 14px rgba(0,0,0,0.22)',
           cursor: 'pointer',
           userSelect: 'none',
-          boxShadow: '0px 2px 6px rgba(0,0,0,0.06)',
-          transition: 'background-color 0.2s ease, transform 0.1s ease',
+          backdropFilter: 'blur(10px)',
+          transition: 'opacity 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease',
         }
       : {
-          elevation: 2,
+          elevation: 8,
         }),
   },
-  achieveFlankBtnText: {
-    fontSize: 22,
-    fontWeight: '900',
-    lineHeight: 24,
+  achieveHoverArrowLeft: {
+    left: -10,
   },
-  achieveFlankedScrollView: {
-    flex: 1,
+  achieveHoverArrowRight: {
+    right: -10,
+  },
+  achieveHoverArrowText: {
+    fontSize: 24,
+    fontWeight: '900',
+    marginTop: -2,
   },
   achieveGlobalProgressTrack: {
     width: '100%',
@@ -2523,7 +2551,7 @@ const styles = StyleSheet.create({
   achieveScrollContent: {
     gap: 10,
     paddingVertical: 6,
-    paddingHorizontal: 4,
+    paddingHorizontal: 8,
   },
   achieveItemCard: {
     width: 155,
