@@ -17,92 +17,129 @@ export default function CategoryCard({ category, onPress }) {
   const { colors } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
 
-  const catColor = category.color || '#6C63FF';
-  const iconBg = `${catColor}16`; // Suave 10%
-  const badgeBg = `${catColor}18`; // Suave
+  const catColor = category.color || colors.primary;
+  const iconBg = `${catColor}16`;
+  const isClosed = category.isActive === false;
+  const isExam = category.gameMode === 'exam';
+  const hasPin = !category.isPublic && category.roomCode;
+  const livesCount = category.initialLives || (isExam ? 3 : 5);
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[
-        styles.card, 
-        { 
-          backgroundColor: colors.card, 
-          borderColor: colors.border,
-          borderLeftColor: catColor,
-          transform: isHovered ? [{ translateY: -3 }] : [{ translateY: 0 }],
-          ...(isHovered ? createShadow(catColor, 6, 0.2, 12, 6) : createShadow('#000', 1, 0.04, 3, 2)),
+        styles.card,
+        {
+          backgroundColor: colors.card,
+          borderColor: isHovered ? catColor : colors.border,
+          borderLeftColor: isClosed ? colors.textSecondary : catColor,
+          opacity: isClosed ? 0.75 : 1,
+          transform: isHovered && !isClosed ? [{ translateY: -3 }] : [{ translateY: 0 }],
+          ...(isHovered && !isClosed
+            ? createShadow(catColor, 6, 0.22, 14, 6)
+            : createShadow('#000', 1, 0.04, 3, 2)),
         },
         Platform.OS === 'web' && {
-          transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease',
-          cursor: 'pointer',
-        }
-      ]} 
+          transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
+          cursor: isClosed ? 'not-allowed' : 'pointer',
+        },
+      ]}
       onPress={onPress}
       activeOpacity={0.75}
-      {...(Platform.OS === 'web' ? {
-        onMouseEnter: () => setIsHovered(true),
-        onMouseLeave: () => setIsHovered(false),
-      } : {})}
+      {...(Platform.OS === 'web'
+        ? {
+            onMouseEnter: () => setIsHovered(true),
+            onMouseLeave: () => setIsHovered(false),
+          }
+        : {})}
     >
-      <View style={[styles.iconContainer, { backgroundColor: iconBg, borderColor: `${catColor}35` }]}>
-        <Text style={styles.icon}>{category.icon}</Text>
+      {/* Icono de la Materia */}
+      <View
+        style={[
+          styles.iconContainer,
+          {
+            backgroundColor: isClosed ? `${colors.textSecondary}15` : iconBg,
+            borderColor: isClosed ? `${colors.textSecondary}30` : `${catColor}35`,
+          },
+        ]}
+      >
+        <Text style={styles.icon}>{category.icon || '📚'}</Text>
       </View>
+
+      {/* Información Central */}
       <View style={styles.infoContainer}>
-        <Text style={[styles.title, { color: colors.text, fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined }]}>
-          {category.name}
-        </Text>
-        <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={1}>
-          {category.description}
-        </Text>
+        {/* Título y Badge de Estado */}
+        <View style={styles.titleRow}>
+          <Text
+            style={[
+              styles.title,
+              {
+                color: colors.text,
+                fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
+              },
+            ]}
+            numberOfLines={1}
+          >
+            {category.name}
+          </Text>
+
+          {isClosed ? (
+            <View style={[styles.statusBadge, { backgroundColor: '#EF444418', borderColor: '#EF444450' }]}>
+              <Text style={[styles.statusBadgeText, { color: '#EF4444' }]}>🚫 Cerrado</Text>
+            </View>
+          ) : hasPin ? (
+            <View style={[styles.statusBadge, { backgroundColor: '#EF444415', borderColor: '#EF444445' }]}>
+              <Text style={[styles.statusBadgeText, { color: '#EF4444' }]}>🔒 Con PIN</Text>
+            </View>
+          ) : (
+            <View style={[styles.statusBadge, { backgroundColor: '#10B98115', borderColor: '#10B98145' }]}>
+              <Text style={[styles.statusBadgeText, { color: '#10B981' }]}>🌐 Libre</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Descripción */}
+        {category.description ? (
+          <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={2}>
+            {category.description}
+          </Text>
+        ) : null}
+
+        {/* Fila de Badges Informativos */}
         <View style={styles.badgesRow}>
-          <View style={[styles.badge, { backgroundColor: badgeBg, borderColor: `${catColor}30`, borderWidth: 1 }]}>
+          {/* Conteo de preguntas */}
+          <View style={[styles.badge, { backgroundColor: `${catColor}15`, borderColor: `${catColor}30` }]}>
             <Text style={[styles.badgeText, { color: catColor }]}>
-              {(category.questionCount || 0) === 1 ? '1 pregunta' : `${category.questionCount || 0} preguntas`}
+              📚 {category.questionCount || 0} {(category.questionCount || 0) === 1 ? 'pregunta' : 'preguntas'}
             </Text>
           </View>
 
-          {category.isActive === false ? (
-            <View style={[styles.badge, { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B60', borderWidth: 1 }]}>
-              <Text style={[styles.badgeText, { color: '#FF6B6B', fontWeight: '800' }]}>
-                🚫 Cerrado
-              </Text>
-            </View>
-          ) : (
-            <>
-              {/* Badge de Acceso: Público vs Con PIN */}
-              {category.isPublic || !category.roomCode ? (
-                <View style={[styles.badge, { backgroundColor: '#4ECDC415', borderColor: '#4ECDC445', borderWidth: 1 }]}>
-                  <Text style={[styles.badgeText, { color: '#4ECDC4', fontWeight: '700' }]}>
-                    🌐 Público
-                  </Text>
-                </View>
-              ) : (
-                <View style={[styles.badge, { backgroundColor: '#FF6B6B15', borderColor: '#FF6B6B45', borderWidth: 1 }]}>
-                  <Text style={[styles.badgeText, { color: '#FF6B6B', fontWeight: '700' }]}>
-                    🔒 PIN
-                  </Text>
-                </View>
-              )}
+          {/* Modalidad de Juego */}
+          <View
+            style={[
+              styles.badge,
+              {
+                backgroundColor: isExam ? '#8B5CF615' : '#10B98115',
+                borderColor: isExam ? '#8B5CF635' : '#10B98135',
+              },
+            ]}
+          >
+            <Text style={[styles.badgeText, { color: isExam ? '#8B5CF6' : '#10B981' }]}>
+              {isExam ? '📝 Examen' : '💡 Práctica'} ({livesCount} ❤️)
+            </Text>
+          </View>
 
-              {/* Badge de Modo y Vidas */}
-              <View style={[styles.badge, { backgroundColor: category.gameMode === 'exam' ? '#8B5CF615' : '#10B98115', borderColor: category.gameMode === 'exam' ? '#8B5CF645' : '#10B98145', borderWidth: 1 }]}>
-                <Text style={[styles.badgeText, { color: category.gameMode === 'exam' ? '#8B5CF6' : '#10B981', fontWeight: '700' }]}>
-                  {category.gameMode === 'exam' ? '📝 Examen' : '💡 Práctica'} ({category.initialLives || (category.gameMode === 'exam' ? 3 : 5)} ❤️)
-                </Text>
-              </View>
-            </>
-          )}
-
+          {/* Tiempo por Pregunta */}
           {category.timePerQuestion !== undefined && (
-            <View style={[styles.badge, { backgroundColor: `${colors.textSecondary}10`, borderColor: `${colors.textSecondary}25`, borderWidth: 1 }]}>
+            <View style={[styles.badge, { backgroundColor: `${colors.textSecondary}10`, borderColor: `${colors.textSecondary}25` }]}>
               <Text style={[styles.badgeText, { color: colors.textSecondary }]}>
                 ⏱️ {category.timePerQuestion === 0 ? 'Sin límite' : `${category.timePerQuestion}s`}
               </Text>
             </View>
           )}
 
+          {/* Docente / Creador */}
           {category.createdBy?.username ? (
-            <View style={[styles.badge, { backgroundColor: `${colors.textSecondary}12`, borderColor: `${colors.textSecondary}25`, borderWidth: 1 }]}>
+            <View style={[styles.badge, { backgroundColor: `${colors.textSecondary}12`, borderColor: `${colors.textSecondary}25` }]}>
               <Text style={[styles.badgeText, { color: colors.textSecondary }]}>
                 👨‍🏫 {category.createdBy.username}
               </Text>
@@ -111,9 +148,37 @@ export default function CategoryCard({ category, onPress }) {
         </View>
       </View>
 
-      <View style={[styles.arrowContainer, { backgroundColor: category.isActive === false ? `${colors.textSecondary}15` : `${catColor}12` }]}>
-        <Text style={[styles.arrowText, { color: category.isActive === false ? colors.textSecondary : catColor }]}>
-          {category.isActive === false ? '🔒' : '➜'}
+      {/* Botón de Acción Circular a la Derecha */}
+      <View
+        style={[
+          styles.actionBtnCircle,
+          {
+            backgroundColor: isClosed
+              ? `${colors.textSecondary}15`
+              : isHovered
+              ? catColor
+              : `${catColor}15`,
+            borderColor: isClosed ? `${colors.textSecondary}30` : `${catColor}40`,
+            transform: isHovered && !isClosed ? [{ scale: 1.08 }] : [{ scale: 1 }],
+          },
+          Platform.OS === 'web' && {
+            transition: 'all 0.2s ease',
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.actionBtnIcon,
+            {
+              color: isClosed
+                ? colors.textSecondary
+                : isHovered
+                ? '#FFFFFF'
+                : catColor,
+            },
+          ]}
+        >
+          {isClosed ? '🔒' : '➜'}
         </Text>
       </View>
     </TouchableOpacity>
@@ -123,21 +188,18 @@ export default function CategoryCard({ category, onPress }) {
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
-    borderRadius: 14,
-    paddingVertical: 12,
+    borderRadius: 16,
+    paddingVertical: 14,
     paddingHorizontal: 14,
-    marginBottom: 10,
+    marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderLeftWidth: 5,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)', cursor: 'pointer', transition: 'transform 0.15s ease' }
-      : { elevation: 2 }),
   },
   iconContainer: {
-    width: 48,
-    height: 48,
+    width: 50,
+    height: 50,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
@@ -149,18 +211,36 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     flex: 1,
-    marginRight: 8,
+    marginRight: 10,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 3,
   },
   title: {
-    fontSize: 16,
+    flex: 1,
+    fontSize: 15.5,
     fontWeight: '800',
-    marginBottom: 2,
     letterSpacing: 0.2,
   },
+  statusBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  statusBadgeText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+  },
   description: {
-    fontSize: 12.5,
-    lineHeight: 17,
-    marginBottom: 6,
+    fontSize: 12,
+    lineHeight: 16.5,
+    marginBottom: 8,
+    fontWeight: '500',
   },
   badgesRow: {
     flexDirection: 'row',
@@ -173,20 +253,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2.5,
     borderRadius: 7,
+    borderWidth: 1,
   },
   badgeText: {
     fontSize: 11,
     fontWeight: '700',
   },
-  arrowContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+  actionBtnCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  arrowText: {
-    fontSize: 13,
-    fontWeight: '800',
+  actionBtnIcon: {
+    fontSize: 14,
+    fontWeight: '900',
   },
 });
