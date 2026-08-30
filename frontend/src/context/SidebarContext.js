@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { Alert, Platform } from 'react-native';
 import Sidebar from '../components/Sidebar';
 import storage from '../services/storage';
+import { identifySocketUser } from '../services/socket';
 
 const SidebarContext = createContext({
   sidebarOpen: false,
@@ -29,6 +30,9 @@ export function SidebarProvider({ children }) {
       setUsername(storedUser);
       setIsAdmin(storedAdmin);
       setProfileImage(storedImage);
+      if (storedUser) {
+        identifySocketUser({ username: storedUser, isAdmin: storedAdmin });
+      }
     } catch (e) {
       console.warn('Error al leer storage:', e);
     }
@@ -49,6 +53,7 @@ export function SidebarProvider({ children }) {
         setUsername('');
         setIsAdmin(false);
         setProfileImage('');
+        identifySocketUser({ username: 'Invitado/Anónimo', isAdmin: false });
         router.replace('/login');
       } catch (e) {
         console.error('Error al cerrar sesión:', e);

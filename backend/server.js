@@ -28,15 +28,47 @@ const io = new Server(server, {
   },
 });
 
+// Helper para formatear fecha y hora exacta con segundos [DD/MM/YYYY HH:mm:ss]
+const getSocketTimestamp = () => {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const day = pad(now.getDate());
+  const month = pad(now.getMonth() + 1);
+  const year = now.getFullYear();
+  const hours = pad(now.getHours());
+  const minutes = pad(now.getMinutes());
+  const seconds = pad(now.getSeconds());
+  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+};
+
 // Hacer la instancia de io accesible en todos los controladores de Express
 app.set('io', io);
 global.io = io;
 
 io.on('connection', (socket) => {
-  console.log(`⚡ Cliente conectado a WebSockets: ${socket.id}`);
+  // Extraer datos de usuario enviados en el handshake
+  const rawUser = socket.handshake.auth?.username || socket.handshake.query?.username;
+  const rawRole = socket.handshake.auth?.role || socket.handshake.query?.role;
 
-  socket.on('disconnect', () => {
-    console.log(`🔌 Cliente desconectado: ${socket.id}`);
+  socket.username = (rawUser && rawUser !== 'undefined' && rawUser !== 'null') ? rawUser : 'Invitado/Anónimo';
+  socket.role = (rawRole && rawRole !== 'undefined' && rawRole !== 'null') ? rawRole : 'Estudiante';
+
+  console.log(`[${getSocketTimestamp()}] ⚡ [CONECTADO] 👤 ${socket.username} (${socket.role}) | Socket ID: ${socket.id}`);
+
+  // Evento cuando el cliente inicia sesión o cambia de nombre
+  socket.on('user:identify', (userData) => {
+    if (userData?.username) {
+      const prevName = socket.username;
+      socket.username = userData.username;
+      socket.role = userData.isAdmin || userData.role === 'admin' || userData.role === 'Administrador' ? 'Administrador' : 'Estudiante';
+      if (prevName !== socket.username) {
+        console.log(`[${getSocketTimestamp()}] 🆔 [IDENTIFICADO] ${prevName} -> 👤 ${socket.username} (${socket.role}) | Socket ID: ${socket.id}`);
+      }
+    }
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log(`[${getSocketTimestamp()}] 🔌 [DESCONECTADO] 👤 ${socket.username} (${socket.role}) | Socket ID: ${socket.id} (Motivo: ${reason})`);
   });
 });
 
