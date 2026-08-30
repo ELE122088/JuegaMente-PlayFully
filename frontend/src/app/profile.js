@@ -1426,32 +1426,10 @@ export default function ProfileScreen() {
                   </View>
                 </View>
 
-                {/* Controles de Navegación y Contador de Logros */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  {/* Botones de flecha para deslizar en Web / PC */}
-                  <TouchableOpacity
-                    style={[styles.achieveNavBtn, { backgroundColor: `${colors.primary}15`, borderColor: `${colors.primary}33` }]}
-                    onPress={() => handleScrollAchievements(-1)}
-                    activeOpacity={0.7}
-                    accessibilityLabel="Deslizar a la izquierda"
-                  >
-                    <Text style={[styles.achieveNavBtnText, { color: colors.primary }]}>‹</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.achieveNavBtn, { backgroundColor: `${colors.primary}15`, borderColor: `${colors.primary}33` }]}
-                    onPress={() => handleScrollAchievements(1)}
-                    activeOpacity={0.7}
-                    accessibilityLabel="Deslizar a la derecha"
-                  >
-                    <Text style={[styles.achieveNavBtnText, { color: colors.primary }]}>›</Text>
-                  </TouchableOpacity>
-
-                  <View style={[styles.achieveCounterBadge, { backgroundColor: unlockedCount > 0 ? '#10B98118' : `${colors.primary}18` }]}>
-                    <Text style={[styles.achieveCounterText, { color: unlockedCount > 0 ? '#10B981' : colors.primary }]}>
-                      {unlockedCount} / {totalCount}
-                    </Text>
-                  </View>
+                <View style={[styles.achieveCounterBadge, { backgroundColor: unlockedCount > 0 ? '#10B98118' : `${colors.primary}18` }]}>
+                  <Text style={[styles.achieveCounterText, { color: unlockedCount > 0 ? '#10B981' : colors.primary }]}>
+                    {unlockedCount} / {totalCount}
+                  </Text>
                 </View>
               </View>
 
@@ -1468,89 +1446,120 @@ export default function ProfileScreen() {
                 />
               </View>
 
-              {/* Carrusel Deslizable Horizontal de Tarjetas de Logro */}
-              <ScrollView
-                ref={achievementsScrollRef}
-                horizontal
-                showsHorizontalScrollIndicator={Platform.OS === 'web'}
-                contentContainerStyle={styles.achieveScrollContent}
-                style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
-                {...(Platform.OS === 'web'
-                  ? {
-                      onWheel: (e) => {
-                        if (e.deltaY !== 0) {
-                          const domNode = achievementsScrollRef.current?.getScrollableNode
-                            ? achievementsScrollRef.current.getScrollableNode()
-                            : achievementsScrollRef.current;
-                          if (domNode) {
-                            domNode.scrollLeft += e.deltaY;
+              {/* Contenedor del Carrusel con Flechas Flotantes a Ambos Costados */}
+              <View style={styles.achieveCarouselWrapper}>
+                {/* Flecha Flotante Lateral Izquierda */}
+                <TouchableOpacity
+                  style={[
+                    styles.achieveFloatingArrow,
+                    styles.achieveFloatingArrowLeft,
+                    { backgroundColor: colors.card, borderColor: `${colors.primary}44` },
+                  ]}
+                  onPress={() => handleScrollAchievements(-1)}
+                  activeOpacity={0.8}
+                  accessibilityLabel="Deslizar a la izquierda"
+                >
+                  <Text style={[styles.achieveFloatingArrowText, { color: colors.primary }]}>‹</Text>
+                </TouchableOpacity>
+
+                {/* Carrusel Deslizable Horizontal de Tarjetas de Logro */}
+                <ScrollView
+                  ref={achievementsScrollRef}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.achieveScrollContent}
+                  style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
+                  {...(Platform.OS === 'web'
+                    ? {
+                        onWheel: (e) => {
+                          if (e.deltaY !== 0) {
+                            const domNode = achievementsScrollRef.current?.getScrollableNode
+                              ? achievementsScrollRef.current.getScrollableNode()
+                              : achievementsScrollRef.current;
+                            if (domNode) {
+                              domNode.scrollLeft += e.deltaY;
+                            }
                           }
-                        }
-                      },
-                    }
-                  : {})}
-              >
-                {achievementsList.map((ach) => {
-                  const progressPct = Math.min(100, Math.round((ach.current / ach.target) * 100));
-                  return (
-                    <View
-                      key={ach.id}
-                      style={[
-                        styles.achieveItemCard,
-                        {
-                          backgroundColor: ach.unlocked ? `${ach.color}10` : colors.background,
-                          borderColor: ach.unlocked ? `${ach.color}55` : colors.border,
                         },
-                      ]}
-                    >
-                      {/* Insignia / Estado */}
-                      <View style={styles.achieveTopRow}>
-                        <View style={[styles.achieveBadgePill, { backgroundColor: ach.unlocked ? `${ach.color}25` : colors.border }]}>
-                          <Text style={[styles.achieveBadgePillText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
-                            {ach.badge}
+                      }
+                    : {})}
+                >
+                  {achievementsList.map((ach) => {
+                    const progressPct = Math.min(100, Math.round((ach.current / ach.target) * 100));
+                    return (
+                      <View
+                        key={ach.id}
+                        style={[
+                          styles.achieveItemCard,
+                          {
+                            backgroundColor: ach.unlocked ? `${ach.color}10` : colors.background,
+                            borderColor: ach.unlocked ? `${ach.color}55` : colors.border,
+                          },
+                        ]}
+                      >
+                        {/* Insignia / Estado */}
+                        <View style={styles.achieveTopRow}>
+                          <View style={[styles.achieveBadgePill, { backgroundColor: ach.unlocked ? `${ach.color}25` : colors.border }]}>
+                            <Text style={[styles.achieveBadgePillText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
+                              {ach.badge}
+                            </Text>
+                          </View>
+                          <Text style={{ fontSize: 13 }}>
+                            {ach.unlocked ? '✨' : '🔒'}
                           </Text>
                         </View>
-                        <Text style={{ fontSize: 13 }}>
-                          {ach.unlocked ? '✨' : '🔒'}
-                        </Text>
-                      </View>
 
-                      {/* Icono central */}
-                      <View style={[styles.achieveItemIconWrapper, { backgroundColor: ach.unlocked ? `${ach.color}20` : `${colors.border}55` }]}>
-                        <Text style={[styles.achieveItemIcon, !ach.unlocked && { opacity: 0.5 }]}>
-                          {ach.icon}
-                        </Text>
-                      </View>
-
-                      {/* Título y Descripción */}
-                      <Text style={[styles.achieveItemName, { color: colors.text }]} numberOfLines={1}>
-                        {ach.name}
-                      </Text>
-                      <Text style={[styles.achieveItemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
-                        {ach.desc}
-                      </Text>
-
-                      {/* Barra de progreso individual */}
-                      <View style={styles.achieveMiniProgressContainer}>
-                        <View style={[styles.achieveMiniTrack, { backgroundColor: colors.border }]}>
-                          <View
-                            style={[
-                              styles.achieveMiniFill,
-                              {
-                                width: `${ach.unlocked ? 100 : Math.max(8, progressPct)}%`,
-                                backgroundColor: ach.unlocked ? ach.color : colors.primary,
-                              },
-                            ]}
-                          />
+                        {/* Icono central */}
+                        <View style={[styles.achieveItemIconWrapper, { backgroundColor: ach.unlocked ? `${ach.color}20` : `${colors.border}55` }]}>
+                          <Text style={[styles.achieveItemIcon, !ach.unlocked && { opacity: 0.5 }]}>
+                            {ach.icon}
+                          </Text>
                         </View>
-                        <Text style={[styles.achieveMiniProgressText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
-                          {ach.unlocked ? '✓ Desbloqueado' : `${ach.current} / ${ach.target}`}
+
+                        {/* Título y Descripción */}
+                        <Text style={[styles.achieveItemName, { color: colors.text }]} numberOfLines={1}>
+                          {ach.name}
                         </Text>
+                        <Text style={[styles.achieveItemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
+                          {ach.desc}
+                        </Text>
+
+                        {/* Barra de progreso individual */}
+                        <View style={styles.achieveMiniProgressContainer}>
+                          <View style={[styles.achieveMiniTrack, { backgroundColor: colors.border }]}>
+                            <View
+                              style={[
+                                styles.achieveMiniFill,
+                                {
+                                  width: `${ach.unlocked ? 100 : Math.max(8, progressPct)}%`,
+                                  backgroundColor: ach.unlocked ? ach.color : colors.primary,
+                                },
+                              ]}
+                            />
+                          </View>
+                          <Text style={[styles.achieveMiniProgressText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
+                            {ach.unlocked ? '✓ Desbloqueado' : `${ach.current} / ${ach.target}`}
+                          </Text>
+                        </View>
                       </View>
-                    </View>
-                  );
-                })}
-              </ScrollView>
+                    );
+                  })}
+                </ScrollView>
+
+                {/* Flecha Flotante Lateral Derecha */}
+                <TouchableOpacity
+                  style={[
+                    styles.achieveFloatingArrow,
+                    styles.achieveFloatingArrowRight,
+                    { backgroundColor: colors.card, borderColor: `${colors.primary}44` },
+                  ]}
+                  onPress={() => handleScrollAchievements(1)}
+                  activeOpacity={0.8}
+                  accessibilityLabel="Deslizar a la derecha"
+                >
+                  <Text style={[styles.achieveFloatingArrowText, { color: colors.primary }]}>›</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* =========================================================
@@ -2466,19 +2475,43 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
   },
-  achieveNavBtn: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1,
+  achieveCarouselWrapper: {
+    position: 'relative',
+    width: '100%',
+    marginVertical: 2,
+  },
+  achieveFloatingArrow: {
+    position: 'absolute',
+    top: '50%',
+    marginTop: -19,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-    ...(Platform.OS === 'web' ? { cursor: 'pointer', userSelect: 'none' } : {}),
+    zIndex: 30,
+    ...(Platform.OS === 'web'
+      ? {
+          boxShadow: '0px 4px 14px rgba(0,0,0,0.22)',
+          cursor: 'pointer',
+          userSelect: 'none',
+          backdropFilter: 'blur(10px)',
+        }
+      : {
+          elevation: 8,
+        }),
   },
-  achieveNavBtnText: {
-    fontSize: 16,
+  achieveFloatingArrowLeft: {
+    left: -10,
+  },
+  achieveFloatingArrowRight: {
+    right: -10,
+  },
+  achieveFloatingArrowText: {
+    fontSize: 24,
     fontWeight: '900',
-    lineHeight: 18,
+    marginTop: -2,
   },
   achieveGlobalProgressTrack: {
     width: '100%',
@@ -2492,8 +2525,8 @@ const styles = StyleSheet.create({
   },
   achieveScrollContent: {
     gap: 10,
-    paddingVertical: 4,
-    paddingRight: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
   },
   achieveItemCard: {
     width: 155,
