@@ -76,6 +76,19 @@ export const PRESET_AVATARS = [
   },
 ];
 
+export const AVAILABLE_THEMES = [
+  { id: 'light', name: 'Claro', emoji: '☀️', color: '#5B52E0', bgPreview: '#EAECEF' },
+  { id: 'dark', name: 'Oscuro', emoji: '🌙', color: '#6366F1', bgPreview: '#1A1D24' },
+  { id: 'neon', name: 'Neón', emoji: '🌌', color: '#06B6D4', bgPreview: '#111322' },
+  { id: 'midnight', name: 'Medianoche', emoji: '🏛️', color: '#38BDF8', bgPreview: '#0F172A' },
+  { id: 'emerald', name: 'Esmeralda', emoji: '🍃', color: '#15803D', bgPreview: '#DFEBE3' },
+  { id: 'sunset', name: 'Atardecer', emoji: '🌅', color: '#EA580C', bgPreview: '#F3E8DE' },
+  { id: 'sakura', name: 'Sakura', emoji: '🌸', color: '#BE185D', bgPreview: '#F2E4EC' },
+  { id: 'ocean', name: 'Océano', emoji: '🌊', color: '#0EA5E9', bgPreview: '#0C1929' },
+  { id: 'gold', name: 'Dorado', emoji: '👑', color: '#D97706', bgPreview: '#1C1917' },
+  { id: 'cyber', name: 'Púrpura', emoji: '🍇', color: '#8B5CF6', bgPreview: '#1E1B2E' },
+];
+
 export const getAvatarSource = (profileImage) => {
   if (!profileImage) return null;
   const match = PRESET_AVATARS.find((a) => a.serverPath === profileImage || a.id === profileImage);
@@ -1554,7 +1567,7 @@ export default function ProfileScreen() {
                     </View>
                     <View style={styles.settingsRowRight}>
                       <Text style={[styles.settingsRowValue, { color: colors.primary }]}>
-                        {availableThemes.find(t => t.id === theme)?.name || 'Cyber Dark'}
+                        {AVAILABLE_THEMES.find(t => t.id === theme)?.name || 'Cyber Dark'}
                       </Text>
                       <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
                         {isThemeExpanded ? '▲' : '▼'}
@@ -1564,31 +1577,24 @@ export default function ProfileScreen() {
 
                   {isThemeExpanded && (
                     <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
-                      <View style={styles.themesUnifiedGrid}>
-                        {availableThemes.map((item) => {
+                      <View style={styles.themeOptionsGrid}>
+                        {AVAILABLE_THEMES.map((item) => {
                           const isSelected = theme === item.id;
                           return (
                             <TouchableOpacity
                               key={item.id}
                               style={[
-                                styles.themeUnifiedCard,
+                                styles.themeOption,
                                 { backgroundColor: colors.background, borderColor: colors.border },
-                                isSelected && { borderColor: item.color, borderWidth: 2, backgroundColor: `${item.color}15` }
+                                isSelected && [styles.themeOptionActive, { borderColor: item.color, borderWidth: 1.5, backgroundColor: `${item.color}15` }]
                               ]}
                               onPress={() => setTheme(item.id)}
                               activeOpacity={0.7}
                             >
-                              <View style={[styles.themeUnifiedPreview, { backgroundColor: item.bgPreview }]}>
-                                <View style={[styles.themeUnifiedDot, { backgroundColor: item.color }]} />
-                              </View>
-                              <Text style={[styles.themeUnifiedName, { color: colors.text }]} numberOfLines={1}>
+                              <Text style={styles.themeEmoji}>{item.emoji}</Text>
+                              <Text style={[styles.themeText, { color: isSelected ? item.color : colors.text, fontWeight: isSelected ? '700' : '500' }]}>
                                 {item.name}
                               </Text>
-                              {isSelected && (
-                                <View style={[styles.themeSelectedCheck, { backgroundColor: item.color }]}>
-                                  <Text style={styles.themeSelectedCheckText}>✓</Text>
-                                </View>
-                              )}
                             </TouchableOpacity>
                           );
                         })}
@@ -1627,15 +1633,12 @@ export default function ProfileScreen() {
 
                   {isProfileEditExpanded && (
                     <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
-                      <View style={styles.editProfileForm}>
-                        <Text style={[styles.editProfileInputLabel, { color: colors.textSecondary }]}>
-                          Nuevo Nombre de Usuario:
-                        </Text>
-                        <View style={[styles.editProfileInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                          <Text style={styles.editProfileInputIcon}>👤</Text>
+                      <View style={styles.passwordFormContainer}>
+                        <Text style={[styles.passInputLabel, { color: colors.text }]}>Nuevo Nombre de Usuario</Text>
+                        <View style={[styles.passInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
                           <TextInput
-                            style={[styles.editProfileInput, { color: colors.text }]}
-                            placeholder="Ingresa tu nuevo nombre"
+                            style={[styles.passInput, { color: colors.text }]}
+                            placeholder="Mínimo 4 caracteres"
                             placeholderTextColor={colors.textSecondary}
                             value={editUsername}
                             onChangeText={setEditUsername}
@@ -1645,15 +1648,15 @@ export default function ProfileScreen() {
                           />
                         </View>
                         <TouchableOpacity
-                          style={[styles.saveProfileBtn, { backgroundColor: colors.primary }]}
-                          onPress={handleUpdateUsername}
+                          style={[styles.savePassBtn, { backgroundColor: colors.primary }]}
+                          onPress={handleUpdateProfile}
                           disabled={profileEditLoading}
                           activeOpacity={0.8}
                         >
                           {profileEditLoading ? (
                             <ActivityIndicator color={colors.primaryText} size="small" />
                           ) : (
-                            <Text style={[styles.saveProfileBtnText, { color: colors.primaryText }]}>
+                            <Text style={[styles.savePassBtnText, { color: colors.primaryText }]}>
                               Guardar Nombre
                             </Text>
                           )}
@@ -1685,35 +1688,38 @@ export default function ProfileScreen() {
 
                   {isPasswordExpanded && (
                     <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
-                      <View style={styles.passFormContainer}>
+                      <View style={styles.passwordFormContainer}>
+                        <Text style={[styles.passInputLabel, { color: colors.text }]}>Contraseña Actual</Text>
                         <View style={[styles.passInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
                           <TextInput
                             style={[styles.passInput, { color: colors.text }]}
-                            placeholder="Contraseña actual"
+                            placeholder="Ingresa tu clave actual"
                             placeholderTextColor={colors.textSecondary}
                             secureTextEntry={!showCurrentPass}
                             value={currentPassword}
                             onChangeText={setCurrentPassword}
                           />
-                          <TouchableOpacity onPress={() => setShowCurrentPass(!showCurrentPass)} style={styles.passEyeBtn}>
-                            <Text style={{ fontSize: 13 }}>{showCurrentPass ? '👁️' : '🙈'}</Text>
+                          <TouchableOpacity onPress={() => setShowCurrentPass(!showCurrentPass)} style={styles.eyeBtn}>
+                            <Text style={styles.eyeIcon}>{showCurrentPass ? '👁️' : '🙈'}</Text>
                           </TouchableOpacity>
                         </View>
 
+                        <Text style={[styles.passInputLabel, { color: colors.text }]}>Nueva Contraseña</Text>
                         <View style={[styles.passInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
                           <TextInput
                             style={[styles.passInput, { color: colors.text }]}
-                            placeholder="Nueva contraseña (mín. 6 caracteres)"
+                            placeholder="Nueva contraseña (mín. 4 caracteres)"
                             placeholderTextColor={colors.textSecondary}
                             secureTextEntry={!showNewPass}
                             value={newPassword}
                             onChangeText={setNewPassword}
                           />
-                          <TouchableOpacity onPress={() => setShowNewPass(!showNewPass)} style={styles.passEyeBtn}>
-                            <Text style={{ fontSize: 13 }}>{showNewPass ? '👁️' : '🙈'}</Text>
+                          <TouchableOpacity onPress={() => setShowNewPass(!showNewPass)} style={styles.eyeBtn}>
+                            <Text style={styles.eyeIcon}>{showNewPass ? '👁️' : '🙈'}</Text>
                           </TouchableOpacity>
                         </View>
 
+                        <Text style={[styles.passInputLabel, { color: colors.text }]}>Confirmar Nueva Contraseña</Text>
                         <View style={[styles.passInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
                           <TextInput
                             style={[styles.passInput, { color: colors.text }]}
@@ -2451,6 +2457,10 @@ const styles = StyleSheet.create({
   },
   themeEmoji: {
     fontSize: 18,
+  },
+  themeText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   // Estilos de Galería de Avatares
   uploadGalleryBtn: {
