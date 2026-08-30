@@ -1135,7 +1135,7 @@ export default function ProfileScreen() {
       {/* 🏆 Modal de Ranking en Tiempo Real para la Materia Seleccionada */}
       <Modal
         visible={rankingModalVisible}
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         onRequestClose={() => setRankingModalVisible(false)}
       >
@@ -1175,7 +1175,7 @@ export default function ProfileScreen() {
             )}
 
             {/* Contenido del Ranking */}
-            {rankingLoading ? (
+            {rankingLoading && (!rankingData?.ranking || rankingData.ranking.length === 0) ? (
               <View style={{ paddingVertical: 40, alignItems: 'center' }}>
                 <ActivityIndicator size="large" color={colors.primary} />
                 <Text style={{ marginTop: 12, color: colors.textSecondary, fontSize: 13 }}>

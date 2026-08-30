@@ -1060,7 +1060,7 @@ export default function AdminScreen() {
       </Modal>
 
       {/* Modal de Ranking de Alumnos */}
-      <Modal visible={rankingModalVisible} animationType="slide" transparent={true}>
+      <Modal visible={rankingModalVisible} animationType="fade" transparent={true}>
         <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
           <View style={[styles.rankingModalCard, { backgroundColor: colors.card }]}>
             {/* Header del Modal */}
@@ -1128,7 +1128,7 @@ export default function AdminScreen() {
             )}
 
             {/* Contenido del Ranking */}
-            {rankingLoading ? (
+            {rankingLoading && (!rankingData?.ranking || rankingData.ranking.length === 0) ? (
               <View style={styles.rankingLoadingContainer}>
                 <ActivityIndicator size="large" color={colors.primary} />
                 <Text style={[styles.rankingLoadingText, { color: colors.textSecondary }]}>Cargando calificaciones...</Text>

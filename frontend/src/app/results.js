@@ -48,6 +48,18 @@ export default function ResultsScreen() {
     setCurrentUsername(storage.getItem('username') || '');
     saveGameScore();
 
+    // ⚡ Pre-cargar ranking en memoria de fondo para apertura instantánea (0ms)
+    if (categoryId) {
+      api.get(`/categories/${categoryId}/ranking`)
+        .then((res) => {
+          setRankingData(res.data);
+          try {
+            storage.setItem(`cached_ranking_${categoryId}`, JSON.stringify(res.data));
+          } catch (e) {}
+        })
+        .catch(() => {});
+    }
+
     // ⚡ Escuchar actualizaciones de ranking en tiempo real vía WebSockets
     try {
       const socket = getSocket();
@@ -331,7 +343,7 @@ export default function ResultsScreen() {
       </View>
 
       {/* Modal de Ranking de Alumnos en Tiempo Real */}
-      <Modal visible={rankingModalVisible} animationType="slide" transparent={true}>
+      <Modal visible={rankingModalVisible} animationType="fade" transparent={true}>
         <View style={[styles.modalOverlay, { backgroundColor: colors.overlay || 'rgba(0,0,0,0.6)' }]}>
           <View style={[styles.rankingModalCard, { backgroundColor: colors.card }]}>
             {/* Header del Modal */}
@@ -365,7 +377,7 @@ export default function ResultsScreen() {
             </View>
 
             {/* Contenido del Ranking */}
-            {rankingLoading ? (
+            {rankingLoading && (!rankingData?.ranking || rankingData.ranking.length === 0) ? (
               <View style={styles.rankingLoadingContainer}>
                 <ActivityIndicator size="large" color={colors.primary} />
                 <Text style={[styles.rankingLoadingText, { color: colors.textSecondary }]}>Cargando posiciones...</Text>

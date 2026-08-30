@@ -167,15 +167,33 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true);
+
+      // ⚡ Pre-cargar materias y ranking en memoria para apertura a 0ms
+      try {
+        const cachedCats = storage.getItem('cached_categories');
+        if (cachedCats) {
+          const parsed = JSON.parse(cachedCats);
+          if (parsed && parsed.length > 0) {
+            setRankingCategories(parsed);
+            const first = selectedRankingCat || parsed[0];
+            setSelectedRankingCat(first);
+            const cachedRank = storage.getItem(`cached_ranking_${first._id}`);
+            if (cachedRank) {
+              setRankingData(JSON.parse(cachedRank));
+            }
+          }
+        }
+      } catch (e) {}
+
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 0,
-          duration: 300,
+          duration: 200,
           useNativeDriver: true,
         }),
         Animated.timing(backdropAnim, {
           toValue: 1,
-          duration: 300,
+          duration: 200,
           useNativeDriver: true,
         }),
       ]).start();
@@ -183,12 +201,12 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: -DRAWER_WIDTH,
-          duration: 250,
+          duration: 180,
           useNativeDriver: true,
         }),
         Animated.timing(backdropAnim, {
           toValue: 0,
-          duration: 250,
+          duration: 180,
           useNativeDriver: true,
         }),
       ]).start(() => {
@@ -494,7 +512,7 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
       {/* 🏆 Modal Directo de Tabla de Posiciones en Tiempo Real */}
       <Modal
         visible={rankingModalVisible}
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         onRequestClose={() => setRankingModalVisible(false)}
       >
@@ -564,7 +582,7 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
             )}
 
             {/* Contenido del Ranking */}
-            {rankingLoading ? (
+            {rankingLoading && (!rankingData?.ranking || rankingData.ranking.length === 0) ? (
               <View style={{ paddingVertical: 40, alignItems: 'center' }}>
                 <ActivityIndicator size="large" color={colors.primary} />
                 <Text style={{ marginTop: 12, color: colors.textSecondary, fontSize: 13 }}>
