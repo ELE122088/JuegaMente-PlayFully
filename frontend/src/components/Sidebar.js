@@ -5,7 +5,69 @@ import { useTheme } from '../context/ThemeContext';
 import api, { BASE_URL } from '../services/api';
 import { getSocket } from '../services/socket';
 
-const DRAWER_WIDTH = 295;
+const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, elevation = 3) => {
+  if (Platform.OS === 'web') {
+    const r = parseInt(color.slice(1, 3), 16) || 0;
+    const g = parseInt(color.slice(3, 5), 16) || 0;
+    const b = parseInt(color.slice(5, 7), 16) || 0;
+    return {
+      boxShadow: `0px ${offsetY}px ${radius}px rgba(${r},${g},${b},${opacity})`,
+    };
+  }
+  return {
+    shadowColor: color,
+    shadowOffset: { width: 0, height: offsetY },
+    shadowOpacity: opacity,
+    shadowRadius: radius,
+    elevation,
+  };
+};
+
+const SidebarMenuItem = ({
+  icon,
+  label,
+  accentColor,
+  onPress,
+  colors,
+  styles,
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const color = accentColor || colors.primary;
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.menuItem,
+        {
+          backgroundColor: isHovered ? `${color}14` : colors.inputBg || `${colors.card}`,
+          borderColor: isHovered ? color : colors.border,
+          borderLeftColor: color,
+          transform: isHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
+          ...(isHovered
+            ? createShadow(color, 4, 0.22, 10, 4)
+            : createShadow('#000', 1, 0.03, 3, 1)),
+        },
+        Platform.OS === 'web' && {
+          transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease, background-color 0.2s ease',
+          cursor: 'pointer',
+        },
+      ]}
+      onPress={onPress}
+      activeOpacity={0.75}
+      {...(Platform.OS === 'web'
+        ? {
+            onMouseEnter: () => setIsHovered(true),
+            onMouseLeave: () => setIsHovered(false),
+          }
+        : {})}
+    >
+      <Text style={styles.menuIcon}>{icon}</Text>
+      <Text style={[styles.menuText, { color: isHovered ? color : colors.text }]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+};
 
 export default function Sidebar({ isOpen, onClose, username, role, isAdmin, profileImage, onLogout }) {
   const router = useRouter();
@@ -15,6 +77,10 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
   const backdropAnim = useRef(new Animated.Value(0)).current;
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [isThemeExpanded, setIsThemeExpanded] = useState(false);
+  const [isHeaderHovered, setIsHeaderHovered] = useState(false);
+  const [isLogoutHovered, setIsLogoutHovered] = useState(false);
+  const [isThemeSecHovered, setIsThemeSecHovered] = useState(false);
+  const userAccent = (isAdmin || role === 'admin') ? '#F59E0B' : colors.primary;
 
   // Estados para el Modal de PIN
   const [pinVisible, setPinVisible] = useState(false);
@@ -280,13 +346,36 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
           } : {})}
         >
           {/* Cabecera del Perfil con Marca JuegaMente Integrada Horizontal */}
-          <View style={[styles.profileHeader, { borderBottomColor: colors.border, backgroundColor: colors.inputBg || `${colors.card}` }]}>
+          <TouchableOpacity 
+            style={[
+              styles.profileHeader, 
+              { 
+                backgroundColor: colors.inputBg || `${colors.card}`,
+                borderColor: isHeaderHovered ? userAccent : colors.border,
+                borderLeftColor: userAccent,
+                transform: isHeaderHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
+                ...(isHeaderHovered
+                  ? createShadow(userAccent, 6, 0.22, 14, 6)
+                  : createShadow('#000', 1, 0.04, 3, 2)),
+              },
+              Platform.OS === 'web' && {
+                transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
+                cursor: 'pointer',
+              },
+            ]}
+            onPress={() => handleNavigate('/profile')}
+            activeOpacity={0.85}
+            {...(Platform.OS === 'web'
+              ? {
+                  onMouseEnter: () => setIsHeaderHovered(true),
+                  onMouseLeave: () => setIsHeaderHovered(false),
+                }
+              : {})}
+          >
             <View style={styles.profileRow}>
               {/* Avatar a la izquierda */}
-              <TouchableOpacity 
-                style={[styles.avatar, { backgroundColor: colors.primary }]}
-                onPress={() => handleNavigate('/profile')}
-                activeOpacity={0.8}
+              <View 
+                style={[styles.avatar, { backgroundColor: userAccent }]}
               >
                 {profileImage ? (
                   <Image source={{ uri: profileImage.startsWith('http') ? profileImage : `${BASE_URL}${profileImage}` }} style={styles.avatarImage} />
@@ -295,14 +384,21 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
                     {username?.substring(0, 2).toUpperCase()}
                   </Text>
                 )}
-              </TouchableOpacity>
+              </View>
 
               {/* Información de Usuario en el centro */}
               <View style={styles.profileInfo}>
                 <Text style={[styles.username, { color: colors.text }]} numberOfLines={1}>
                   {username}
                 </Text>
-                <View style={[styles.roleBadge, { backgroundColor: (isAdmin || role === 'admin') ? '#F59E0B20' : `${colors.primary}20` }]}>
+                <View style={[
+                  styles.roleBadge, 
+                  { 
+                    backgroundColor: (isAdmin || role === 'admin') ? '#F59E0B20' : `${colors.primary}20`,
+                    borderColor: (isAdmin || role === 'admin') ? '#F59E0B' : colors.primary,
+                    borderWidth: 1,
+                  }
+                ]}>
                   <Text style={[styles.role, { color: (isAdmin || role === 'admin') ? '#D97706' : colors.primary }]} numberOfLines={1}>
                     {isAdmin || role === 'admin' ? '👑 Admin' : '🎓 Estudiante'}
                   </Text>
@@ -318,82 +414,76 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
                 />
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
 
           {/* Opciones del Menú */}
           <ScrollView contentContainerStyle={styles.menuList} showsVerticalScrollIndicator={false}>
-            <TouchableOpacity 
-              style={[
-                styles.menuItem, 
-                { 
-                  backgroundColor: colors.inputBg || `${colors.card}`, 
-                  borderColor: colors.border,
-                  borderWidth: 1.5 
-                }
-              ]} 
+            <SidebarMenuItem
+              icon="🏠"
+              label="Inicio"
+              accentColor={colors.primary}
               onPress={onClose}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.menuIcon}>🏠</Text>
-              <Text style={[styles.menuText, { color: colors.text }]}>Inicio</Text>
-            </TouchableOpacity>
+              colors={colors}
+              styles={styles}
+            />
 
-            <TouchableOpacity 
-              style={[
-                styles.menuItem, 
-                { 
-                  backgroundColor: colors.inputBg || `${colors.card}`, 
-                  borderColor: colors.border,
-                  borderWidth: 1.5 
-                }
-              ]} 
+            <SidebarMenuItem
+              icon="👤"
+              label="Mi Perfil"
+              accentColor="#8B5CF6"
               onPress={() => handleNavigate('/profile')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.menuIcon}>👤</Text>
-              <Text style={[styles.menuText, { color: colors.text }]}>Mi Perfil</Text>
-            </TouchableOpacity>
+              colors={colors}
+              styles={styles}
+            />
 
-            <TouchableOpacity 
-              style={[
-                styles.menuItem, 
-                { 
-                  backgroundColor: '#F59E0B12', 
-                  borderColor: '#F59E0B50',
-                  borderWidth: 1.5 
-                }
-              ]} 
+            <SidebarMenuItem
+              icon="🏆"
+              label="Rankings en Vivo"
+              accentColor="#F59E0B"
               onPress={handleOpenRankingModal}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.menuIcon}>🏆</Text>
-              <Text style={[styles.menuText, { color: '#D97706' }]}>Rankings en Vivo</Text>
-            </TouchableOpacity>
+              colors={colors}
+              styles={styles}
+            />
 
             {(isAdmin || role === 'admin') && (
-              <TouchableOpacity 
-                style={[
-                  styles.menuItem, 
-                  { 
-                    backgroundColor: colors.inputBg || `${colors.card}`, 
-                    borderColor: colors.border,
-                    borderWidth: 1.5 
-                  }
-                ]} 
+              <SidebarMenuItem
+                icon="⚙️"
+                label="Panel Admin"
+                accentColor="#EC4899"
                 onPress={() => {
                   onClose();
                   setPin('');
                   setPinVisible(true);
                 }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.menuIcon}>⚙️</Text>
-                <Text style={[styles.menuText, { color: colors.text }]}>Panel Admin</Text>
-              </TouchableOpacity>
+                colors={colors}
+                styles={styles}
+              />
             )}
 
             {/* Selector de Temas Colapsable (Acordeón por Clic) */}
-            <View style={[styles.themeSection, { borderColor: colors.border, backgroundColor: colors.inputBg || `${colors.card}`, borderWidth: 1.5 }]}>
+            <View 
+              style={[
+                styles.themeSection, 
+                { 
+                  borderColor: isThemeSecHovered ? colors.primary : colors.border, 
+                  backgroundColor: colors.inputBg || `${colors.card}`, 
+                  borderLeftColor: colors.primary,
+                  transform: isThemeSecHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
+                  ...(isThemeSecHovered
+                    ? createShadow(colors.primary, 4, 0.2, 12, 4)
+                    : createShadow('#000', 1, 0.03, 3, 1)),
+                },
+                Platform.OS === 'web' && {
+                  transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
+                },
+              ]}
+              {...(Platform.OS === 'web'
+                ? {
+                    onMouseEnter: () => setIsThemeSecHovered(true),
+                    onMouseLeave: () => setIsThemeSecHovered(false),
+                  }
+                : {})}
+            >
               <TouchableOpacity 
                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 6 }}
                 onPress={() => setIsThemeExpanded(!isThemeExpanded)}
@@ -455,7 +545,29 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
 
           {/* Footer con Cierre de Sesión y Versión Compacta */}
           <View style={[styles.footer, { borderTopColor: colors.border }]}>
-            <TouchableOpacity style={styles.logoutBtn} onPress={onLogout} activeOpacity={0.85}>
+            <TouchableOpacity 
+              style={[
+                styles.logoutBtn,
+                {
+                  transform: isLogoutHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
+                  ...(isLogoutHovered
+                    ? createShadow('#FF6B6B', 6, 0.35, 14, 6)
+                    : createShadow('#000', 2, 0.08, 4, 2)),
+                },
+                Platform.OS === 'web' && {
+                  transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease',
+                  cursor: 'pointer',
+                },
+              ]} 
+              onPress={onLogout} 
+              activeOpacity={0.85}
+              {...(Platform.OS === 'web'
+                ? {
+                    onMouseEnter: () => setIsLogoutHovered(true),
+                    onMouseLeave: () => setIsLogoutHovered(false),
+                  }
+                : {})}
+            >
               <Text style={styles.logoutIcon}>🚪</Text>
               <Text style={styles.logoutText}>Cerrar Sesión</Text>
             </TouchableOpacity>
@@ -696,7 +808,11 @@ const styles = StyleSheet.create({
   profileHeader: {
     paddingVertical: 12,
     paddingHorizontal: 14,
-    borderBottomWidth: 1,
+    marginHorizontal: 12,
+    marginTop: 8,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderLeftWidth: 5,
   },
   profileRow: {
     flexDirection: 'row',
@@ -705,9 +821,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   avatar: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
     ...(Platform.OS === 'web'
@@ -715,9 +831,9 @@ const styles = StyleSheet.create({
       : { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 3, elevation: 3 }),
   },
   avatarImage: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   avatarText: {
     fontSize: 17,
@@ -755,31 +871,34 @@ const styles = StyleSheet.create({
       : { shadowColor: '#6C63FF', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 2 }),
   },
   menuList: {
-    paddingVertical: 14,
-    paddingHorizontal: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: 12,
+    borderRadius: 14,
     marginVertical: 4,
     paddingHorizontal: 14,
+    borderWidth: 1.5,
+    borderLeftWidth: 5,
   },
   menuIcon: {
-    fontSize: 22,
-    marginRight: 14,
+    fontSize: 20,
+    marginRight: 12,
   },
   menuText: {
-    fontSize: 16.5,
+    fontSize: 15.5,
     fontWeight: '800',
     letterSpacing: 0.3,
   },
   themeSection: {
-    marginTop: 16,
+    marginTop: 12,
     borderRadius: 14,
     padding: 12,
-    borderWidth: 1,
+    borderWidth: 1.5,
+    borderLeftWidth: 5,
   },
   themeTitle: {
     fontSize: 13,
@@ -815,7 +934,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     borderTopWidth: 1,
-    padding: 16,
+    padding: 14,
     paddingBottom: Platform.OS === 'ios' ? 24 : 14,
     alignItems: 'center',
     gap: 8,
@@ -831,9 +950,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FF6B6B',
-    paddingVertical: 13,
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderLeftWidth: 5,
+    borderLeftColor: '#EF4444',
+    borderColor: '#FF6B6B',
     justifyContent: 'center',
     width: '100%',
   },
