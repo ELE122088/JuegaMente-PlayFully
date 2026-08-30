@@ -412,6 +412,8 @@ export default function ProfileScreen() {
     }
   };
 
+  const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'perfect', 'passed', o nombre de materia
+
   const getStats = () => {
     if (!profile || !profile.history || profile.history.length === 0) {
       return { total: 0, average: 0, bestScore: 0, passed: 0 };
@@ -425,6 +427,39 @@ export default function ProfileScreen() {
   };
 
   const { total, average, bestScore, passed } = getStats();
+
+  // Obtener materias únicas presentes en el historial
+  const getUniqueHistoryCategories = () => {
+    if (!profile?.history) return [];
+    const map = new Map();
+    profile.history.forEach((item) => {
+      const name = item.categoryName || 'Materia';
+      if (!map.has(name)) {
+        map.set(name, {
+          name,
+          count: 1,
+          icon: item.categoryIcon || '📚',
+        });
+      } else {
+        map.get(name).count += 1;
+      }
+    });
+    return Array.from(map.values());
+  };
+
+  const uniqueHistoryCategories = getUniqueHistoryCategories();
+  const perfectGamesCount = (profile?.history || []).filter((h) => h.percentage === 100).length;
+  const passedGamesCount = (profile?.history || []).filter((h) => h.percentage >= 60).length;
+
+  const getFilteredHistory = () => {
+    if (!profile?.history) return [];
+    if (historyFilter === 'all') return profile.history;
+    if (historyFilter === 'perfect') return profile.history.filter((h) => h.percentage === 100);
+    if (historyFilter === 'passed') return profile.history.filter((h) => h.percentage >= 60);
+    return profile.history.filter((h) => h.categoryName === historyFilter);
+  };
+
+  const filteredHistory = getFilteredHistory();
 
   const handleShowGameDetail = (game) => {
     setSelectedGame(game);
@@ -643,8 +678,8 @@ export default function ProfileScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
-        data={profile?.history || []}
-        keyExtractor={(item, index) => index.toString()}
+        data={filteredHistory}
+        keyExtractor={(item, index) => item._id || index.toString()}
         renderItem={renderHistoryItem}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
@@ -1071,7 +1106,8 @@ export default function ProfileScreen() {
                 {profile?.history && profile.history.length > 0 && (
                   <View style={[styles.historyCountBadge, { backgroundColor: `${colors.primary}20` }]}>
                     <Text style={[styles.historyCountBadgeText, { color: colors.primary }]}>
-                      {profile.history.length}
+                      {filteredHistory.length}
+                      {filteredHistory.length !== profile.history.length ? ` / ${profile.history.length}` : ''}
                     </Text>
                   </View>
                 )}
@@ -1087,18 +1123,140 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               )}
             </View>
+
+            {/* Píldoras de Filtro Rápido (Todas, 100% Perfectas, Aprobadas, Por Materia) */}
+            {profile?.history && profile.history.length > 0 && (
+              <View style={styles.historyPillsContainer}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.historyPillsContent}
+                >
+                  {/* Píldora: Todas */}
+                  <TouchableOpacity
+                    style={[
+                      styles.historyFilterPill,
+                      { backgroundColor: colors.card, borderColor: colors.border },
+                      historyFilter === 'all' && { backgroundColor: colors.primary, borderColor: colors.primary },
+                    ]}
+                    onPress={() => setHistoryFilter('all')}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.historyFilterPillText,
+                        { color: historyFilter === 'all' ? colors.primaryText : colors.text },
+                      ]}
+                    >
+                      🌟 Todas ({profile.history.length})
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Píldora: 100% Perfectas (si existen) */}
+                  {perfectGamesCount > 0 && (
+                    <TouchableOpacity
+                      style={[
+                        styles.historyFilterPill,
+                        { backgroundColor: colors.card, borderColor: colors.border },
+                        historyFilter === 'perfect' && { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' },
+                      ]}
+                      onPress={() => setHistoryFilter('perfect')}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          styles.historyFilterPillText,
+                          { color: historyFilter === 'perfect' ? '#FFFFFF' : colors.text },
+                        ]}
+                      >
+                        👑 100% ({perfectGamesCount})
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+
+                  {/* Píldora: Aprobadas (si existen) */}
+                  {passedGamesCount > 0 && (
+                    <TouchableOpacity
+                      style={[
+                        styles.historyFilterPill,
+                        { backgroundColor: colors.card, borderColor: colors.border },
+                        historyFilter === 'passed' && { backgroundColor: '#10B981', borderColor: '#10B981' },
+                      ]}
+                      onPress={() => setHistoryFilter('passed')}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          styles.historyFilterPillText,
+                          { color: historyFilter === 'passed' ? '#FFFFFF' : colors.text },
+                        ]}
+                      >
+                        ✅ Aprobadas ({passedGamesCount})
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+
+                  {/* Píldoras por cada materia registrada */}
+                  {uniqueHistoryCategories.map((cat) => {
+                    const isSelected = historyFilter === cat.name;
+                    return (
+                      <TouchableOpacity
+                        key={cat.name}
+                        style={[
+                          styles.historyFilterPill,
+                          { backgroundColor: colors.card, borderColor: colors.border },
+                          isSelected && { backgroundColor: colors.primary, borderColor: colors.primary },
+                        ]}
+                        onPress={() => setHistoryFilter(cat.name)}
+                        activeOpacity={0.7}
+                      >
+                        <Text
+                          style={[
+                            styles.historyFilterPillText,
+                            { color: isSelected ? colors.primaryText : colors.text },
+                          ]}
+                        >
+                          {cat.icon} {cat.name} ({cat.count})
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            )}
           </>
         }
         ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Image
-              source={require('../../assets/images/empty_history_illustration1_1787436082611.jpg')}
-              style={styles.emptyIllustration}
-              resizeMode="contain"
-            />
-            <Text style={[styles.emptyText, { color: colors.text }]}>Aún no has jugado ninguna partida</Text>
-            <Text style={[styles.emptySub, { color: colors.textSecondary }]}>Las puntuaciones que guardes aparecerán aquí.</Text>
-          </View>
+          profile?.history && profile.history.length > 0 ? (
+            <View style={styles.emptyFilterState}>
+              <Text style={{ fontSize: 32, marginBottom: 8 }}>🔍</Text>
+              <Text style={[styles.emptyFilterTitle, { color: colors.text }]}>
+                No hay partidas con este filtro
+              </Text>
+              <Text style={[styles.emptyFilterSub, { color: colors.textSecondary }]}>
+                Prueba seleccionando otra categoría o restablece el filtro.
+              </Text>
+              <TouchableOpacity
+                style={[styles.resetFilterBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
+                onPress={() => setHistoryFilter('all')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.resetFilterBtnText, { color: colors.primary }]}>
+                  🌟 Ver Todas las Partidas ({profile.history.length})
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.emptyState}>
+              <Image
+                source={require('../../assets/images/empty_history_illustration1_1787436082611.jpg')}
+                style={styles.emptyIllustration}
+                resizeMode="contain"
+              />
+              <Text style={[styles.emptyText, { color: colors.text }]}>Aún no has jugado ninguna partida</Text>
+              <Text style={[styles.emptySub, { color: colors.textSecondary }]}>Las puntuaciones que guardes aparecerán aquí.</Text>
+            </View>
+          )
         }
       />
 
@@ -1737,6 +1895,59 @@ const styles = StyleSheet.create({
   clearAllHistoryBtnText: {
     color: '#EF4444',
     fontSize: 11.5,
+    fontWeight: '700',
+  },
+  // Píldoras de Filtro Rápido de Historial
+  historyPillsContainer: {
+    marginBottom: 12,
+  },
+  historyPillsContent: {
+    paddingHorizontal: 16,
+    gap: 8,
+    alignItems: 'center',
+  },
+  historyFilterPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 1px 4px rgba(0,0,0,0.04)' }
+      : { elevation: 1 }),
+  },
+  historyFilterPillText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  // Estado cuando el filtro no arroja resultados
+  emptyFilterState: {
+    paddingVertical: 36,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyFilterTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  emptyFilterSub: {
+    fontSize: 12.5,
+    textAlign: 'center',
+    marginBottom: 14,
+  },
+  resetFilterBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  resetFilterBtnText: {
+    fontSize: 12.5,
     fontWeight: '700',
   },
   // Estilos de Propuesta 3: Tarjeta Gamificada con Medalla
