@@ -140,6 +140,10 @@ export default function CategoriesScreen() {
     )
   );
 
+  const activeExamsCount = categories.filter(
+    (c) => !c.isPublic && c.roomCode && c.isActive !== false
+  ).length;
+
   const filteredCategories = categories.filter((cat) => {
     // Filtro por píldoras rápidas
     if (selectedPill === 'practice' && !cat.isPublic && cat.roomCode) return false;
@@ -418,30 +422,81 @@ export default function CategoriesScreen() {
           </View>
         </View>
         
-        {/* Banner Slim para unirse con PIN de sala */}
-        <TouchableOpacity
-          style={[styles.joinRoomBanner, { backgroundColor: colors.card, borderColor: colors.border }]}
-          onPress={() => {
-            setRoomPin('');
-            setRoomPinModal(true);
-          }}
-          activeOpacity={0.85}
-        >
-          <View style={styles.joinRoomLeft}>
-            <Text style={styles.joinRoomIcon}>🎮</Text>
-            <View style={styles.joinRoomTextContainer}>
-              <Text style={[styles.joinRoomTitle, { color: colors.text }]}>
-                ¿Tienes un PIN de clase?
-              </Text>
-              <Text style={[styles.joinRoomSubtitle, { color: colors.textSecondary }]}>
-                Ingresa el código de tu profesor para rendir tu examen
-              </Text>
+        {/* =========================================================
+            OPCIÓN 2: BARRA DE PIN & SALA DE EXAMEN EN VIVO (ESTILO KAHOOT)
+        ========================================================= */}
+        <View style={[styles.kahootPinCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.kahootTopRow}>
+            <View style={styles.kahootTitleRow}>
+              <View style={[styles.kahootIconCircle, { backgroundColor: `${colors.primary}20` }]}>
+                <Text style={styles.kahootIconEmoji}>⚡</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.kahootTitle, { color: colors.text }]}>
+                  Unirse a Sala de Examen
+                </Text>
+                <Text style={[styles.kahootSubtitle, { color: colors.textSecondary }]}>
+                  Ingresa el código PIN proporcionado por tu docente
+                </Text>
+              </View>
             </View>
+
+            {activeExamsCount > 0 && (
+              <View style={styles.kahootLiveBadge}>
+                <View style={styles.kahootLiveDot} />
+                <Text style={styles.kahootLiveBadgeText}>
+                  {activeExamsCount} {activeExamsCount === 1 ? 'Examen Activo' : 'Exámenes Activos'}
+                </Text>
+              </View>
+            )}
           </View>
-          <View style={[styles.joinRoomBtnBadge, { backgroundColor: colors.primary }]}>
-            <Text style={[styles.joinRoomBtnBadgeText, { color: colors.primaryText }]}>Ingresar PIN ➜</Text>
+
+          {/* Formulario Rápido de PIN Integrado */}
+          <View style={styles.kahootInputRow}>
+            <View style={[styles.kahootInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
+              <Text style={styles.kahootInputIcon}>🔒</Text>
+              <TextInput
+                style={[styles.kahootTextInput, { color: colors.text }]}
+                placeholder="PIN DE SALA (ej. 8492)"
+                placeholderTextColor={colors.textSecondary}
+                value={roomPin}
+                onChangeText={(val) => setRoomPin(val.toUpperCase())}
+                autoCapitalize="characters"
+                maxLength={8}
+                onSubmitEditing={handleJoinRoom}
+                returnKeyType="go"
+              />
+              {roomPin.length > 0 && (
+                <TouchableOpacity onPress={() => setRoomPin('')} style={styles.kahootClearBtn}>
+                  <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '700' }}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.kahootJoinBtn,
+                {
+                  backgroundColor: roomPin.trim().length >= 4 ? colors.primary : `${colors.primary}80`,
+                },
+              ]}
+              onPress={handleJoinRoom}
+              disabled={pinChecking || roomPin.trim().length < 4}
+              activeOpacity={0.8}
+            >
+              {pinChecking ? (
+                <ActivityIndicator size="small" color={colors.primaryText} />
+              ) : (
+                <>
+                  <Text style={[styles.kahootJoinBtnText, { color: colors.primaryText }]}>
+                    ¡Entrar!
+                  </Text>
+                  <Text style={[styles.kahootJoinBtnArrow, { color: colors.primaryText }]}>➜</Text>
+                </>
+              )}
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+        </View>
 
         {/* Barra de Búsqueda de Categorías */}
         <View style={[styles.searchContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -838,54 +893,116 @@ const styles = StyleSheet.create({
     maxWidth: 920,
     alignSelf: 'center',
   },
-  welcomeText: {
-    fontSize: 17,
-    fontWeight: '500',
-    marginBottom: 16,
+  // Estilos de la Barra de PIN y Sala de Examen (Opción 2 - Estilo Kahoot)
+  kahootPinCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 12,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 3px 12px rgba(0,0,0,0.06)' }
+      : { elevation: 2 }),
   },
-  joinRoomBanner: {
+  kahootTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 16,
-    boxShadow: '0px 2px 6px rgba(0,0,0,0.04)',
-    elevation: 2,
+    marginBottom: 10,
+    gap: 8,
+    flexWrap: 'wrap',
   },
-  joinRoomLeft: {
+  kahootTitleRow: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
     gap: 10,
-    marginRight: 10,
+    minWidth: 180,
   },
-  joinRoomIcon: {
-    fontSize: 20,
-  },
-  joinRoomTextContainer: {
-    flex: 1,
-  },
-  joinRoomTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  joinRoomSubtitle: {
-    fontSize: 11,
-    marginTop: 1,
-  },
-  joinRoomBtnBadge: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+  kahootIconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  joinRoomBtnBadgeText: {
+  kahootIconEmoji: {
+    fontSize: 18,
+  },
+  kahootTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
+  },
+  kahootSubtitle: {
     fontSize: 11,
-    fontWeight: '700',
+  },
+  kahootLiveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EF444415',
+    borderColor: '#EF444444',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    gap: 5,
+  },
+  kahootLiveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#EF4444',
+  },
+  kahootLiveBadgeText: {
+    color: '#EF4444',
+    fontSize: 10.5,
+    fontWeight: '800',
+  },
+  kahootInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  kahootInputWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    paddingHorizontal: 12,
+    height: 42,
+    gap: 8,
+  },
+  kahootInputIcon: {
+    fontSize: 15,
+  },
+  kahootTextInput: {
+    flex: 1,
+    fontSize: 13.5,
+    fontWeight: '800',
+    letterSpacing: 2,
+    paddingVertical: 0,
+  },
+  kahootClearBtn: {
+    padding: 4,
+  },
+  kahootJoinBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    height: 42,
+    borderRadius: 12,
+    gap: 6,
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', transition: 'transform 0.15s ease' } : {}),
+  },
+  kahootJoinBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  kahootJoinBtnArrow: {
+    fontSize: 13.5,
+    fontWeight: '900',
   },
   // Estilos de la Barra de Búsqueda
   searchContainer: {
