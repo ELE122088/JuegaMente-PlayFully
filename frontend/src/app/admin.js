@@ -1114,7 +1114,12 @@ export default function AdminScreen() {
 
             <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
               <Text style={[styles.bulkSectionLabel, { color: colors.text }]}>1. Selecciona la Materia de Destino:</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsScroll}>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                style={styles.chipsScroll}
+                contentContainerStyle={styles.chipsScrollContent}
+              >
                 {categories.map((cat) => (
                   <InteractiveActionBtn
                     key={cat._id}
@@ -1136,7 +1141,16 @@ export default function AdminScreen() {
 
               <View style={styles.bulkJsonHeaderRow}>
                 <Text style={[styles.bulkSectionLabel, { color: colors.text, marginBottom: 0 }]}>2. Pega el JSON de Preguntas:</Text>
-                <TouchableOpacity
+                <InteractiveActionBtn
+                  style={{
+                    backgroundColor: `${colors.primary}15`,
+                    borderColor: `${colors.primary}40`,
+                    borderWidth: 1,
+                    borderRadius: 8,
+                    paddingVertical: 5,
+                    paddingHorizontal: 10,
+                  }}
+                  accentColor={colors.primary}
                   onPress={() => {
                     const sample = JSON.stringify([
                       {
@@ -1158,8 +1172,8 @@ export default function AdminScreen() {
                     setBulkJsonText(sample);
                   }}
                 >
-                  <Text style={{ fontSize: 13, color: colors.primary, fontWeight: '700' }}>📋 Cargar Plantilla</Text>
-                </TouchableOpacity>
+                  <Text style={{ fontSize: 12.5, color: colors.primary, fontWeight: '800' }}>📋 Cargar Plantilla</Text>
+                </InteractiveActionBtn>
               </View>
 
               <TextInput
@@ -1176,7 +1190,7 @@ export default function AdminScreen() {
               />
             </ScrollView>
 
-            <View style={styles.bulkModalFooter}>
+            <View style={[styles.bulkModalFooter, { borderTopColor: colors.border }]}>
               <InteractiveActionBtn
                 style={[styles.cancelBtn, { borderColor: colors.border }]}
                 accentColor={colors.textSecondary}
@@ -1185,7 +1199,7 @@ export default function AdminScreen() {
                 <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancelar</Text>
               </InteractiveActionBtn>
               <InteractiveActionBtn
-                style={[styles.confirmBulkBtn, { backgroundColor: colors.primary }]}
+                style={[styles.confirmBulkBtn, { backgroundColor: colors.primary, borderColor: colors.primary }]}
                 accentColor={colors.primary}
                 onPress={handleExecuteBulkImport}
                 disabled={bulkLoading}
@@ -1779,6 +1793,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     borderRadius: 20,
     padding: 18,
+    borderWidth: 1,
     boxShadow: '0px 8px 24px rgba(0,0,0,0.15)',
     elevation: 8,
   },
@@ -1801,17 +1816,22 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   chipsScroll: {
-    marginBottom: 14,
+    marginBottom: 10,
+    paddingVertical: 2,
+  },
+  chipsScrollContent: {
+    paddingVertical: 6,
+    paddingHorizontal: 2,
+    gap: 8,
   },
   categoryPickerChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 6,
+    paddingVertical: 7,
     paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 1.5,
-    marginRight: 8,
   },
   chipEmoji: {
     fontSize: 16,
@@ -1823,7 +1843,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
+    marginTop: 4,
   },
   bulkTextInput: {
     borderRadius: 12,
@@ -1837,11 +1858,12 @@ const styles = StyleSheet.create({
   bulkModalFooter: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    alignItems: 'center',
     gap: 10,
     marginTop: 14,
-    paddingTop: 12,
+    paddingTop: 16,
+    paddingBottom: 4,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.06)',
   },
   cancelBtn: {
     paddingVertical: 10,
@@ -1850,21 +1872,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 42,
   },
   cancelBtnText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   confirmBulkBtn: {
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 10,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 42,
   },
   confirmBulkBtnText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   // Estilos de la Pestaña de Usuarios y Docentes
   usersTopContainer: {
