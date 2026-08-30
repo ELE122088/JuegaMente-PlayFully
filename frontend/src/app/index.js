@@ -525,10 +525,10 @@ export default function CategoriesScreen() {
               <View style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.heroTopRow}>
             {/* Avatar de Megamente */}
-            <TouchableOpacity
+            <InteractiveActionBtn
               style={[styles.heroAvatarWrapper, { borderColor: colors.primary }]}
+              accentColor={colors.primary}
               onPress={() => router.push('/profile')}
-              activeOpacity={0.8}
             >
               {profileImage ? (
                 <Image
@@ -545,7 +545,7 @@ export default function CategoriesScreen() {
               <View style={[styles.heroAvatarMiniBadge, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <Text style={{ fontSize: 10 }}>🧠</Text>
               </View>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
 
             {/* Saludo y Racha */}
             <View style={styles.heroUserTextCol}>
@@ -566,28 +566,28 @@ export default function CategoriesScreen() {
           {/* Botones de Acción Rápida Hero */}
           <View style={[styles.heroActionsRow, { borderTopColor: `${colors.border}66` }]}>
             {/* 1. Botón: Partida Rápida */}
-            <TouchableOpacity
+            <InteractiveActionBtn
               style={[styles.heroQuickPlayBtn, { backgroundColor: colors.primary }]}
+              accentColor={colors.primary}
               onPress={handleQuickRandomGame}
-              activeOpacity={0.8}
             >
               <Text style={styles.heroQuickPlayIcon}>🎲</Text>
               <Text style={[styles.heroQuickPlayText, { color: colors.primaryText }]}>
                 Partida Rápida
               </Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
 
             {/* 2. Botón: Mi Perfil / Ranking */}
-            <TouchableOpacity
+            <InteractiveActionBtn
               style={[styles.heroProfileBtn, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}33` }]}
+              accentColor={colors.primary}
               onPress={() => router.push('/profile')}
-              activeOpacity={0.7}
             >
               <Text style={styles.heroProfileIcon}>🏆</Text>
               <Text style={[styles.heroProfileText, { color: colors.primary }]}>
                 Mi Perfil
               </Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
           </View>
         </View>
         
@@ -647,9 +647,9 @@ export default function CategoriesScreen() {
                 returnKeyType="go"
               />
               {roomPin.length > 0 && (
-                <TouchableOpacity onPress={() => setRoomPin('')} style={styles.kahootClearBtn}>
+                <InteractiveActionBtn onPress={() => setRoomPin('')} style={styles.kahootClearBtn} accentColor={colors.primary}>
                   <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '700' }}>✕</Text>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
               )}
             </View>
 
@@ -707,10 +707,8 @@ export default function CategoriesScreen() {
               </View>
             </View>
 
-            {/* Contenedor del Carrusel con Flechas Flotantes Inteligentes (Idéntico a Vitrina de Logros) */}
-            <View style={styles.carouselHoverWrapper}>
-              {Platform.OS === 'web' && (
-                <TouchableOpacity
+            {/* Contenedo              {Platform.OS === 'web' && (
+                <InteractiveActionBtn
                   style={[
                     styles.carouselHoverArrow,
                     styles.carouselHoverArrowLeft,
@@ -724,12 +722,12 @@ export default function CategoriesScreen() {
                       ],
                     },
                   ]}
+                  accentColor={colors.primary}
                   onPress={() => handleScrollCarousel(-1)}
-                  activeOpacity={0.8}
                   accessibilityLabel="Deslizar a la izquierda"
                 >
                   <Text style={[styles.carouselHoverArrowText, { color: colors.primary }]}>‹</Text>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
               )}
 
               <ScrollView
@@ -747,18 +745,15 @@ export default function CategoriesScreen() {
               >
                 {/* Card 1: Última Materia Jugada / Continuar */}
                 {lastPlayedGame && (
-                  <TouchableOpacity
+                  <InteractiveActionBtn
                     style={[
                       styles.featuredCard,
                       {
                         backgroundColor: colors.card,
                         borderColor: '#8B5CF6',
-                        transform: hoveredCarouselIndex === 0 ? [{ translateY: -3 }] : [{ translateY: 0 }],
-                        ...(hoveredCarouselIndex === 0
-                          ? createShadow('#8B5CF6', 6, 0.22, 14, 6)
-                          : createShadow('#000', 1, 0.04, 3, 2)),
                       },
                     ]}
+                    accentColor="#8B5CF6"
                     onPress={() => {
                       if (lastPlayedGame.matchedCategory) {
                         handleCategoryPress(lastPlayedGame.matchedCategory);
@@ -766,13 +761,6 @@ export default function CategoriesScreen() {
                         router.push('/profile');
                       }
                     }}
-                    activeOpacity={0.8}
-                    {...(Platform.OS === 'web'
-                      ? {
-                          onMouseEnter: () => setHoveredCarouselIndex(0),
-                          onMouseLeave: () => setHoveredCarouselIndex(null),
-                        }
-                      : {})}
                   >
                     <View style={styles.featuredCardTop}>
                       <View style={[styles.featuredTag, { backgroundColor: '#8B5CF620', borderColor: '#8B5CF6' }]}>
@@ -791,31 +779,21 @@ export default function CategoriesScreen() {
                     <View style={[styles.featuredActionBtn, { backgroundColor: '#8B5CF6' }]}>
                       <Text style={styles.featuredActionBtnText}>⚡ Superar Récord</Text>
                     </View>
-                  </TouchableOpacity>
+                  </InteractiveActionBtn>
                 )}
 
                 {/* Card 2: Materia Más Popular */}
                 {mostPopularCat && (
-                  <TouchableOpacity
+                  <InteractiveActionBtn
                     style={[
                       styles.featuredCard,
                       {
                         backgroundColor: colors.card,
                         borderColor: '#FF6B6B',
-                        transform: hoveredCarouselIndex === 1 ? [{ translateY: -3 }] : [{ translateY: 0 }],
-                        ...(hoveredCarouselIndex === 1
-                          ? createShadow('#FF6B6B', 6, 0.22, 14, 6)
-                          : createShadow('#000', 1, 0.04, 3, 2)),
                       },
                     ]}
+                    accentColor="#FF6B6B"
                     onPress={() => handleCategoryPress(mostPopularCat)}
-                    activeOpacity={0.8}
-                    {...(Platform.OS === 'web'
-                      ? {
-                          onMouseEnter: () => setHoveredCarouselIndex(1),
-                          onMouseLeave: () => setHoveredCarouselIndex(null),
-                        }
-                      : {})}
                   >
                     <View style={styles.featuredCardTop}>
                       <View style={[styles.featuredTag, { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B' }]}>
@@ -834,7 +812,7 @@ export default function CategoriesScreen() {
                     <View style={[styles.featuredActionBtn, { backgroundColor: '#FF6B6B' }]}>
                       <Text style={styles.featuredActionBtnText}>🚀 Jugar Ahora</Text>
                     </View>
-                  </TouchableOpacity>
+                  </InteractiveActionBtn>
                 )}
 
                 {/* Card 3: Examen Activo o Materia Recomendada */}
@@ -842,26 +820,16 @@ export default function CategoriesScreen() {
                   const isExam = !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode;
                   const accent = isExam ? '#EF4444' : '#4ECDC4';
                   return (
-                    <TouchableOpacity
+                    <InteractiveActionBtn
                       style={[
                         styles.featuredCard,
                         {
                           backgroundColor: colors.card,
                           borderColor: accent,
-                          transform: hoveredCarouselIndex === 2 ? [{ translateY: -3 }] : [{ translateY: 0 }],
-                          ...(hoveredCarouselIndex === 2
-                            ? createShadow(accent, 6, 0.22, 14, 6)
-                            : createShadow('#000', 1, 0.04, 3, 2)),
                         },
                       ]}
+                      accentColor={accent}
                       onPress={() => handleCategoryPress(featuredExamOrPractice)}
-                      activeOpacity={0.8}
-                      {...(Platform.OS === 'web'
-                        ? {
-                            onMouseEnter: () => setHoveredCarouselIndex(2),
-                            onMouseLeave: () => setHoveredCarouselIndex(null),
-                          }
-                        : {})}
                     >
                       <View style={styles.featuredCardTop}>
                         <View
@@ -892,31 +860,21 @@ export default function CategoriesScreen() {
                           {isExam ? '✍️ Rendir Examen' : '💡 Explorar'}
                         </Text>
                       </View>
-                    </TouchableOpacity>
+                    </InteractiveActionBtn>
                   );
                 })()}
 
                 {/* Card 4: Ruleta Cerebral / Partida Sorpresa */}
-                <TouchableOpacity
+                <InteractiveActionBtn
                   style={[
                     styles.featuredCard,
                     {
                       backgroundColor: colors.card,
                       borderColor: '#F59E0B',
-                      transform: hoveredCarouselIndex === 3 ? [{ translateY: -3 }] : [{ translateY: 0 }],
-                      ...(hoveredCarouselIndex === 3
-                        ? createShadow('#F59E0B', 6, 0.22, 14, 6)
-                        : createShadow('#000', 1, 0.04, 3, 2)),
                     },
                   ]}
+                  accentColor="#F59E0B"
                   onPress={handleQuickRandomGame}
-                  activeOpacity={0.8}
-                  {...(Platform.OS === 'web'
-                    ? {
-                        onMouseEnter: () => setHoveredCarouselIndex(3),
-                        onMouseLeave: () => setHoveredCarouselIndex(null),
-                      }
-                    : {})}
                 >
                   <View style={styles.featuredCardTop}>
                     <View style={[styles.featuredTag, { backgroundColor: '#F59E0B20', borderColor: '#F59E0B' }]}>
@@ -935,11 +893,11 @@ export default function CategoriesScreen() {
                   <View style={[styles.featuredActionBtn, { backgroundColor: '#F59E0B' }]}>
                     <Text style={styles.featuredActionBtnText}>🎲 Girar Ruleta</Text>
                   </View>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
               </ScrollView>
 
               {Platform.OS === 'web' && (
-                <TouchableOpacity
+                <InteractiveActionBtn
                   style={[
                     styles.carouselHoverArrow,
                     styles.carouselHoverArrowRight,
@@ -953,12 +911,12 @@ export default function CategoriesScreen() {
                       ],
                     },
                   ]}
+                  accentColor={colors.primary}
                   onPress={() => handleScrollCarousel(1)}
-                  activeOpacity={0.8}
                   accessibilityLabel="Deslizar a la derecha"
                 >
                   <Text style={[styles.carouselHoverArrowText, { color: colors.primary }]}>›</Text>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
               )}
             </View>
           </View>
@@ -975,9 +933,9 @@ export default function CategoriesScreen() {
             onChangeText={setSearchQuery}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearSearchBtn}>
+            <InteractiveActionBtn onPress={() => setSearchQuery('')} style={styles.clearSearchBtn} accentColor={colors.primary}>
               <Text style={[styles.clearSearchText, { color: colors.textSecondary }]}>✕</Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
           )}
         </View>
 
@@ -1187,14 +1145,15 @@ export default function CategoriesScreen() {
             : 'Aún no se han publicado categorías de preguntas.'}
         </Text>
         {searchQuery.trim().length > 0 && (
-          <TouchableOpacity
+          <InteractiveActionBtn
             style={[styles.clearFilterBtn, { backgroundColor: colors.primary }]}
+            accentColor={colors.primary}
             onPress={() => setSearchQuery('')}
           >
             <Text style={[styles.clearFilterBtnText, { color: colors.primaryText }]}>
               Ver todas las materias
             </Text>
-          </TouchableOpacity>
+          </InteractiveActionBtn>
         )}
       </View>
     }
