@@ -707,7 +707,9 @@ export default function CategoriesScreen() {
               </View>
             </View>
 
-            {/* Contenedo              {Platform.OS === 'web' && (
+            {/* Contenedor del Carrusel con Flechas Flotantes Inteligentes */}
+            <View style={styles.carouselHoverWrapper}>
+              {Platform.OS === 'web' && (
                 <InteractiveActionBtn
                   style={[
                     styles.carouselHoverArrow,
