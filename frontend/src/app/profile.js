@@ -10,8 +10,27 @@ import { useTheme } from '../context/ThemeContext';
 import { useSidebar } from '../context/SidebarContext';
 
 export default function ProfileScreen() {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // ⚡ Inicialización instantánea con datos en caché para carga a 0ms
+  const [profile, setProfile] = useState(() => {
+    try {
+      const cached = storage.getItem('cached_profile');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    const username = storage.getItem('username') || '';
+    const isAdmin = storage.getItem('isAdmin') === 'true';
+    const profileImage = storage.getItem('profileImage') || '';
+    return username ? { username, isAdmin, profileImage, history: [] } : null;
+  });
+
+  const [loading, setLoading] = useState(() => {
+    try {
+      const cached = storage.getItem('cached_profile');
+      if (cached) return false;
+      const username = storage.getItem('username');
+      if (username) return false;
+    } catch (e) {}
+    return true;
+  });
 
   // Detalle de partida seleccionada
   const [selectedGame, setSelectedGame] = useState(null);
@@ -66,7 +85,7 @@ export default function ProfileScreen() {
   };
 
   useEffect(() => {
-    fetchProfile();
+    fetchProfile(false); // Carga en segundo plano sin bloquear pantalla
 
     // ⚡ Escuchar actualizaciones de ranking en tiempo real vía WebSockets
     try {
@@ -128,13 +147,18 @@ export default function ProfileScreen() {
     }
   };
 
-  const fetchProfile = async () => {
+  const fetchProfile = async (showLoading = false) => {
+    if (showLoading) setLoading(true);
     try {
       const response = await api.get('/auth/profile');
       setProfile(response.data);
+      try {
+        storage.setItem('cached_profile', JSON.stringify(response.data));
+      } catch (e) {}
     } catch (error) {
       console.error('Error al cargar perfil:', error);
     } finally {
+      if (showLoading) setLoading(false);
       setLoading(false);
     }
   };
@@ -197,10 +221,16 @@ export default function ProfileScreen() {
         },
       });
 
-      setProfile(prev => ({
-        ...prev,
-        profileImage: response.data.profileImage,
-      }));
+      setProfile(prev => {
+        const updated = {
+          ...prev,
+          profileImage: response.data.profileImage,
+        };
+        try {
+          storage.setItem('cached_profile', JSON.stringify(updated));
+        } catch (e) {}
+        return updated;
+      });
 
       storage.setItem('profileImage', response.data.profileImage);
       refreshUser();
@@ -326,10 +356,16 @@ export default function ProfileScreen() {
         username: cleanName,
       });
 
-      setProfile((prev) => ({
-        ...prev,
-        username: response.data.username,
-      }));
+      setProfile((prev) => {
+        const updated = {
+          ...prev,
+          username: response.data.username,
+        };
+        try {
+          storage.setItem('cached_profile', JSON.stringify(updated));
+        } catch (e) {}
+        return updated;
+      });
 
       storage.setItem('username', response.data.username);
       if (response.data.token) {
@@ -374,10 +410,22 @@ export default function ProfileScreen() {
     event.stopPropagation(); // Evitar abrir el modal al tocar el botón de eliminar
 
     const performDelete = async () => {
+      // ⚡ Actualización optimista instantánea (0ms de retraso visual)
+      setProfile(prev => {
+        if (!prev) return prev;
+        const updatedHistory = (prev.history || []).filter(h => h._id !== scoreId);
+        const updatedProfile = { ...prev, history: updatedHistory };
+        try {
+          storage.setItem('cached_profile', JSON.stringify(updatedProfile));
+        } catch (e) {}
+        return updatedProfile;
+      });
+
       try {
         await api.delete(`/auth/history/${scoreId}`);
-        fetchProfile(); // Recargar el perfil
+        fetchProfile(false); // Sincronización silenciosa en segundo plano
       } catch (error) {
+        fetchProfile(false); // Revertir en caso de error
         const msg = error.response?.data?.message || 'No se pudo eliminar el registro';
         if (Platform.OS === 'web') {
           alert(`Error: ${msg}`);

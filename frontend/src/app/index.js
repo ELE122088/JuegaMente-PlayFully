@@ -10,8 +10,20 @@ import { useTheme } from '../context/ThemeContext';
 import { useSidebar } from '../context/SidebarContext';
 
 export default function CategoriesScreen() {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState(() => {
+    try {
+      const cached = storage.getItem('cached_categories');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return [];
+  });
+  const [loading, setLoading] = useState(() => {
+    try {
+      const cached = storage.getItem('cached_categories');
+      if (cached && JSON.parse(cached).length > 0) return false;
+    } catch (e) {}
+    return true;
+  });
   const [refreshing, setRefreshing] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [username, setUsername] = useState('');
@@ -78,7 +90,10 @@ export default function CategoriesScreen() {
     setUsername(storedUser);
     setProfileImage(storedImage);
     refreshUser();
-    fetchCategories();
+
+    // ⚡ Si ya tenemos categorías en caché/estado, refrescar silenciosamente a 0ms sin spinner
+    const hasCachedData = categories.length > 0;
+    fetchCategories(!hasCachedData);
   };
 
   const fetchCategories = async (showLoading = true) => {
@@ -86,6 +101,9 @@ export default function CategoriesScreen() {
     try {
       const response = await api.get(`/categories?_t=${Date.now()}`);
       setCategories(response.data);
+      try {
+        storage.setItem('cached_categories', JSON.stringify(response.data));
+      } catch (e) {}
     } catch (error) {
       console.error('Error al cargar categorías:', error);
       if (error.response?.status === 401) {
