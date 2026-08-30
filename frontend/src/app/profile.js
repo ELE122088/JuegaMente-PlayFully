@@ -1080,7 +1080,7 @@ export default function ProfileScreen() {
             </View>
 
             {/* =========================================================
-                TIRA RESUMEN: ESTADÍSTICA CEREBRAL (5 KPIs SIEMPRE VISIBLES)
+                TIRA RESUMEN: ESTADÍSTICA MENTAL (5 KPIs SIEMPRE VISIBLES)
             ========================================================= */}
             <View style={styles.stripSectionHeader}>
               <Text style={[styles.stripSectionTitle, { color: colors.textSecondary }]}>
@@ -2710,7 +2710,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '900',
   },
-  // Estilos de Tira Horizontal: Estadística Cerebral (5 KPIs)
+  // Estilos de Tira Horizontal: Estadística Mental (5 KPIs)
   stripSectionHeader: {
     marginHorizontal: 16,
     marginTop: 6,
