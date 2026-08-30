@@ -376,10 +376,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     fontSize: 16,
+    ...(Platform.OS === 'web' ? { outlineWidth: 0, outline: 'none', outlineStyle: 'none' } : {}),
   },
   textArea: {
     minHeight: 80,
     textAlignVertical: 'top',
+    ...(Platform.OS === 'web' ? { outlineWidth: 0, outline: 'none', outlineStyle: 'none' } : {}),
   },
   optionsGrid: {
     flexDirection: 'row',

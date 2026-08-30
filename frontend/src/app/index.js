@@ -1024,6 +1024,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 2,
     paddingVertical: 0,
+    outlineWidth: 0,
+    ...(Platform.OS === 'web' ? { outline: 'none', outlineStyle: 'none' } : {}),
   },
   kahootClearBtn: {
     padding: 4,
@@ -1161,6 +1163,8 @@ const styles = StyleSheet.create({
     letterSpacing: 8,
     width: '100%',
     marginBottom: 20,
+    outlineWidth: 0,
+    ...(Platform.OS === 'web' ? { outline: 'none', outlineStyle: 'none' } : {}),
   },
   modalButtons: {
     flexDirection: 'row',

@@ -196,10 +196,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     fontSize: 16,
+    outlineWidth: 0,
+    ...(Platform.OS === 'web' ? { outline: 'none', outlineStyle: 'none' } : {}),
   },
   textArea: {
     minHeight: 80,
     textAlignVertical: 'top',
+    outlineWidth: 0,
+    ...(Platform.OS === 'web' ? { outline: 'none', outlineStyle: 'none' } : {}),
   },
   categoryGrid: {
     flexDirection: 'row',
@@ -240,6 +244,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     fontSize: 15,
+    outlineWidth: 0,
+    ...(Platform.OS === 'web' ? { outline: 'none', outlineStyle: 'none' } : {}),
   },
   hint: {
     fontSize: 12,
