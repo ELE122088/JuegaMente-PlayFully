@@ -1685,17 +1685,17 @@ export default function ProfileScreen() {
                   <View style={styles.subjectBarsContainer}>
                     {subjectPerformance.map((subj) => {
                       return (
-                        <TouchableOpacity
+                        <InteractiveActionBtn
                           key={subj.name}
                           style={[
                             styles.subjectBarItem,
                             { backgroundColor: colors.background, borderColor: colors.border },
                           ]}
+                          accentColor={subj.barColor}
                           onPress={() => {
                             setHistoryFilter(subj.name);
                             setActiveProfileTab('history');
                           }}
-                          activeOpacity={0.7}
                         >
                           <View style={styles.subjectBarHeaderRow}>
                             <View style={styles.subjectNameWrapper}>
@@ -1732,7 +1732,7 @@ export default function ProfileScreen() {
                               🏆 Récord: {subj.bestScore}% • 🎮 {subj.attempts} {subj.attempts === 1 ? 'partida' : 'partidas'} • {subj.totalScore}/{subj.totalQuestions} pts
                             </Text>
                           </View>
-                        </TouchableOpacity>
+                        </InteractiveActionBtn>
                       );
                     })}
                   </View>
@@ -1754,10 +1754,10 @@ export default function ProfileScreen() {
                 </View>
 
                 {/* 1. Avatar */}
-                <TouchableOpacity
-                  activeOpacity={0.7}
+                <InteractiveActionBtn
                   onPress={() => setIsAvatarExpanded(!isAvatarExpanded)}
                   style={[styles.settingsRow, isAvatarExpanded && { backgroundColor: `${colors.primary}08` }]}
+                  accentColor="#8B5CF6"
                 >
                   <View style={styles.settingsRowLeft}>
                     <View style={[styles.settingsIconCircle, { backgroundColor: '#8B5CF618' }]}>
@@ -1773,14 +1773,14 @@ export default function ProfileScreen() {
                       {isAvatarExpanded ? '▲' : '▼'}
                     </Text>
                   </View>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
 
                 {isAvatarExpanded && (
                   <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
-                    <TouchableOpacity
+                    <InteractiveActionBtn
                       style={[styles.uploadGalleryBtn, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}44` }]}
+                      accentColor={colors.primary}
                       onPress={handlePickImage}
-                      activeOpacity={0.8}
                     >
                       <Text style={styles.uploadGalleryBtnIcon}>📷</Text>
                       <View style={{ flex: 1 }}>
@@ -1792,7 +1792,7 @@ export default function ProfileScreen() {
                         </Text>
                       </View>
                       <Text style={[styles.uploadGalleryBtnArrow, { color: colors.primary }]}>›</Text>
-                    </TouchableOpacity>
+                    </InteractiveActionBtn>
 
                     <Text style={[styles.avatarGallerySectionTitle, { color: colors.textSecondary }]}>
                       O elige uno de nuestros 8 avatares exclusivos de Megamente:
@@ -1802,16 +1802,16 @@ export default function ProfileScreen() {
                       {PRESET_AVATARS.map((av) => {
                         const isSelected = profile?.profileImage === av.serverPath || profile?.profileImage === av.id;
                         return (
-                          <TouchableOpacity
+                          <InteractiveActionBtn
                             key={av.id}
                             style={[
                               styles.avatarCard,
                               { backgroundColor: colors.background, borderColor: colors.border },
                               isSelected && { borderColor: colors.primary, borderWidth: 2, backgroundColor: `${colors.primary}18` },
                             ]}
+                            accentColor={colors.primary}
                             onPress={() => handleSelectPresetAvatar(av.serverPath)}
                             disabled={avatarUpdating}
-                            activeOpacity={0.7}
                           >
                             <Image source={av.localSource} style={styles.avatarCardImg} />
                             <Text style={[styles.avatarCardName, { color: colors.text }]} numberOfLines={1}>
@@ -1825,7 +1825,7 @@ export default function ProfileScreen() {
                                 <Text style={styles.avatarSelectedCheckText}>✓</Text>
                               </View>
                             )}
-                          </TouchableOpacity>
+                          </InteractiveActionBtn>
                         );
                       })}
                     </View>
@@ -1835,10 +1835,10 @@ export default function ProfileScreen() {
                 <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
 
                 {/* 2. Temas */}
-                <TouchableOpacity
-                  activeOpacity={0.7}
+                <InteractiveActionBtn
                   onPress={() => setIsThemeExpanded(!isThemeExpanded)}
                   style={[styles.settingsRow, isThemeExpanded && { backgroundColor: `${colors.primary}08` }]}
+                  accentColor={colors.primary}
                 >
                   <View style={styles.settingsRowLeft}>
                     <View style={[styles.settingsIconCircle, { backgroundColor: `${colors.primary}18` }]}>
@@ -1854,7 +1854,7 @@ export default function ProfileScreen() {
                       {isThemeExpanded ? '▲' : '▼'}
                     </Text>
                   </View>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
 
                 {isThemeExpanded && (
                   <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
@@ -1862,21 +1862,21 @@ export default function ProfileScreen() {
                       {AVAILABLE_THEMES.map((item) => {
                         const isSelected = theme === item.id;
                         return (
-                          <TouchableOpacity
+                          <InteractiveActionBtn
                             key={item.id}
                             style={[
                               styles.themeOption,
                               { backgroundColor: colors.background, borderColor: colors.border },
                               isSelected && [styles.themeOptionActive, { borderColor: item.color, borderWidth: 1.5, backgroundColor: `${item.color}15` }]
                             ]}
+                            accentColor={item.color}
                             onPress={() => setTheme(item.id)}
-                            activeOpacity={0.7}
                           >
                             <Text style={styles.themeEmoji}>{item.emoji}</Text>
                             <Text style={[styles.themeText, { color: isSelected ? item.color : colors.text, fontWeight: isSelected ? '700' : '500' }]}>
                               {item.name}
                             </Text>
-                          </TouchableOpacity>
+                          </InteractiveActionBtn>
                         );
                       })}
                     </View>
@@ -1886,8 +1886,7 @@ export default function ProfileScreen() {
                 <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
 
                 {/* 3. Nombre */}
-                <TouchableOpacity
-                  activeOpacity={0.7}
+                <InteractiveActionBtn
                   onPress={() => {
                     if (!isProfileEditExpanded) {
                       setEditUsername(profile?.username || '');
@@ -1895,6 +1894,7 @@ export default function ProfileScreen() {
                     setIsProfileEditExpanded(!isProfileEditExpanded);
                   }}
                   style={[styles.settingsRow, isProfileEditExpanded && { backgroundColor: `${colors.primary}08` }]}
+                  accentColor="#10B981"
                 >
                   <View style={styles.settingsRowLeft}>
                     <View style={[styles.settingsIconCircle, { backgroundColor: '#10B98118' }]}>
@@ -1910,7 +1910,7 @@ export default function ProfileScreen() {
                       {isProfileEditExpanded ? '▲' : '▼'}
                     </Text>
                   </View>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
 
                 {isProfileEditExpanded && (
                   <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
@@ -1949,10 +1949,10 @@ export default function ProfileScreen() {
                 <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
 
                 {/* 4. Contraseña */}
-                <TouchableOpacity
-                  activeOpacity={0.7}
+                <InteractiveActionBtn
                   onPress={() => setIsPasswordExpanded(!isPasswordExpanded)}
                   style={[styles.settingsRow, isPasswordExpanded && { backgroundColor: `${colors.primary}08` }]}
+                  accentColor="#F59E0B"
                 >
                   <View style={styles.settingsRowLeft}>
                     <View style={[styles.settingsIconCircle, { backgroundColor: '#F59E0B18' }]}>
@@ -1965,7 +1965,7 @@ export default function ProfileScreen() {
                       {isPasswordExpanded ? '▲' : '▼'}
                     </Text>
                   </View>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
 
                 {isPasswordExpanded && (
                   <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
@@ -1980,9 +1980,9 @@ export default function ProfileScreen() {
                           value={currentPassword}
                           onChangeText={setCurrentPassword}
                         />
-                        <TouchableOpacity onPress={() => setShowCurrentPass(!showCurrentPass)} style={styles.eyeBtn}>
+                        <InteractiveActionBtn onPress={() => setShowCurrentPass(!showCurrentPass)} style={styles.eyeBtn} accentColor={colors.primary}>
                           <Text style={{ fontSize: 13 }}>{showCurrentPass ? '👁️' : '🙈'}</Text>
-                        </TouchableOpacity>
+                        </InteractiveActionBtn>
                       </View>
 
                       <Text style={[styles.passInputLabel, { color: colors.text }]}>Nueva Contraseña</Text>
@@ -1995,9 +1995,9 @@ export default function ProfileScreen() {
                           value={newPassword}
                           onChangeText={setNewPassword}
                         />
-                        <TouchableOpacity onPress={() => setShowNewPass(!showNewPass)} style={styles.eyeBtn}>
+                        <InteractiveActionBtn onPress={() => setShowNewPass(!showNewPass)} style={styles.eyeBtn} accentColor={colors.primary}>
                           <Text style={{ fontSize: 13 }}>{showNewPass ? '👁️' : '🙈'}</Text>
-                        </TouchableOpacity>
+                        </InteractiveActionBtn>
                       </View>
 
                       <Text style={[styles.passInputLabel, { color: colors.text }]}>Confirmar Nueva Contraseña</Text>
@@ -2033,10 +2033,10 @@ export default function ProfileScreen() {
                 <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
 
                 {/* 5. Cerrar Sesión */}
-                <TouchableOpacity
-                  activeOpacity={0.7}
+                <InteractiveActionBtn
                   onPress={handleLogout}
                   style={styles.settingsRow}
+                  accentColor="#EF4444"
                 >
                   <View style={styles.settingsRowLeft}>
                     <View style={[styles.settingsIconCircle, { backgroundColor: '#EF444418' }]}>
@@ -2047,7 +2047,7 @@ export default function ProfileScreen() {
                   <View style={styles.settingsRowRight}>
                     <Text style={[styles.settingsChevron, { color: '#EF4444' }]}>›</Text>
                   </View>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
               </View>
             )}
 
