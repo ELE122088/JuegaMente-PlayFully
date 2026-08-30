@@ -9,6 +9,17 @@ import Header from '../components/Header';
 import { useTheme } from '../context/ThemeContext';
 import { useSidebar } from '../context/SidebarContext';
 
+// Helper para sombras compatibles web/mobile sin advertencias
+const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, elevation = 3) => {
+  const r = parseInt(color.slice(1, 3), 16) || 0;
+  const g = parseInt(color.slice(3, 5), 16) || 0;
+  const b = parseInt(color.slice(5, 7), 16) || 0;
+  return {
+    boxShadow: `0px ${offsetY}px ${radius}px rgba(${r},${g},${b},${opacity})`,
+    elevation,
+  };
+};
+
 export const PRESET_AVATARS = [
   {
     id: 'megamind_baby_gamer',
@@ -906,14 +917,16 @@ export default function ProfileScreen() {
     }
   };
 
-  const renderHistoryItem = ({ item }) => {
+  function HistoryCardItem({ item, colors, onShowDetail, onOpenRanking, onDelete }) {
+    const [isHovered, setIsHovered] = useState(false);
+
     const isGood = item.percentage >= 80;
     const isRegular = item.percentage >= 60 && item.percentage < 80;
 
     let medalEmoji = '⚠️';
     let statusText = 'Requiere Repaso';
     let statusColor = '#EF4444';
-    let statusBg = '#EF444414';
+    let statusBg = '#EF444415';
 
     if (item.percentage === 100) {
       medalEmoji = '👑';
@@ -932,85 +945,161 @@ export default function ProfileScreen() {
       statusBg = '#F59E0B18';
     }
 
+    const formattedDate = new Date(item.date).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
     return (
       <TouchableOpacity
         style={[
           styles.historyGamifiedCard,
           {
             backgroundColor: colors.card,
-            borderColor: colors.border,
-          }
+            borderColor: isHovered ? statusColor : colors.border,
+            borderLeftColor: statusColor,
+            transform: isHovered ? [{ translateY: -3 }] : [{ translateY: 0 }],
+            ...(isHovered
+              ? createShadow(statusColor, 6, 0.22, 14, 6)
+              : createShadow('#000', 1, 0.04, 3, 2)),
+          },
+          Platform.OS === 'web' && {
+            transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
+            cursor: 'pointer',
+          },
         ]}
-        onPress={() => handleShowGameDetail(item)}
-        activeOpacity={0.7}
+        onPress={() => onShowDetail(item)}
+        activeOpacity={0.75}
+        {...(Platform.OS === 'web'
+          ? {
+              onMouseEnter: () => setIsHovered(true),
+              onMouseLeave: () => setIsHovered(false),
+            }
+          : {})}
       >
-        {/* Cabecera de la Tarjeta Gamificada */}
-        <View style={styles.historyGamifiedHeader}>
-          <View style={styles.historyGamifiedLeft}>
-            <Text style={styles.historyGamifiedMedal}>{medalEmoji}</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.historyGamifiedTitle, { color: colors.text }]} numberOfLines={1}>
-                {item.categoryName}
-              </Text>
-              <Text style={[styles.historyGamifiedDate, { color: colors.textSecondary }]}>
-                {new Date(item.date).toLocaleDateString('es-ES', {
-                  day: '2-digit',
-                  month: 'short',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </Text>
+        {/* Icono / Medalla */}
+        <View
+          style={[
+            styles.historyIconContainer,
+            {
+              backgroundColor: statusBg,
+              borderColor: `${statusColor}35`,
+            },
+          ]}
+        >
+          <Text style={styles.historyIcon}>{medalEmoji}</Text>
+        </View>
+
+        {/* Información Central */}
+        <View style={styles.historyInfoContainer}>
+          {/* Título de la Materia y Nota */}
+          <View style={styles.historyTitleRow}>
+            <Text
+              style={[
+                styles.historyTitle,
+                {
+                  color: colors.text,
+                  fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
+                },
+              ]}
+              numberOfLines={1}
+            >
+              {item.categoryName}
+            </Text>
+
+            <View style={[styles.historyScoreBadge, { backgroundColor: statusBg, borderColor: `${statusColor}40` }]}>
+              <Text style={[styles.historyScoreVal, { color: statusColor }]}>{item.percentage}%</Text>
             </View>
           </View>
 
-          {/* Badge de Puntuación Destacado */}
-          <View style={[styles.historyGamifiedScoreBadge, { backgroundColor: statusBg }]}>
-            <Text style={[styles.historyGamifiedScoreVal, { color: statusColor }]}>
-              {item.percentage}%
-            </Text>
-            <Text style={[styles.historyGamifiedScoreSub, { color: statusColor }]}>
-              {item.score}/{item.total} pts
-            </Text>
+          {/* Fecha */}
+          <Text style={[styles.historyDate, { color: colors.textSecondary }]}>
+            📅 {formattedDate}
+          </Text>
+
+          {/* Fila de Badges y Botones de Acción */}
+          <View style={styles.historyFooterRow}>
+            <View style={styles.historyBadgesGroup}>
+              {/* Puntos obtenidos */}
+              <View style={[styles.historyBadge, { backgroundColor: `${statusColor}15`, borderColor: `${statusColor}30` }]}>
+                <Text style={[styles.historyBadgeText, { color: statusColor }]}>
+                  🎯 {item.score}/{item.total} pts
+                </Text>
+              </View>
+
+              {/* Estado */}
+              <View style={[styles.historyBadge, { backgroundColor: statusBg, borderColor: `${statusColor}30` }]}>
+                <Text style={[styles.historyBadgeText, { color: statusColor }]}>
+                  {statusText}
+                </Text>
+              </View>
+            </View>
+
+            {/* Grupo de Botones */}
+            <View style={styles.historyActionGroup}>
+              <TouchableOpacity
+                style={[
+                  styles.historyActionBtn,
+                  { backgroundColor: '#F59E0B18', borderColor: '#F59E0B44' },
+                ]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  onOpenRanking(item.category, item.categoryName);
+                }}
+                activeOpacity={0.7}
+                title="Ver Ranking de esta Materia"
+              >
+                <Text style={[styles.historyActionBtnText, { color: '#D97706' }]}>🏆 Ranking</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.historyDeleteBtn,
+                  { backgroundColor: '#EF444415', borderColor: '#EF444433' },
+                ]}
+                onPress={(e) => onDelete(item._id, e)}
+                activeOpacity={0.7}
+                title="Eliminar partida"
+              >
+                <Text style={styles.historyDeleteBtnText}>🗑️</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
-        {/* Barra divisoria sutil */}
-        <View style={[styles.historyGamifiedDivider, { backgroundColor: colors.border }]} />
-
-        {/* Fila Inferior con Botones con Etiqueta */}
-        <View style={styles.historyGamifiedFooter}>
-          <View style={[styles.historyGamifiedStatusPill, { backgroundColor: statusBg }]}>
-            <Text style={[styles.historyGamifiedStatusTxt, { color: statusColor }]}>
-              {statusText}
-            </Text>
-          </View>
-
-          <View style={styles.historyGamifiedBtnGroup}>
-            {/* Botón Ranking con texto dorado nítido y legible */}
-            <TouchableOpacity
-              style={[styles.historyGamifiedActionBtn, { backgroundColor: '#F59E0B22', borderColor: '#F59E0B55' }]}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleOpenCategoryRanking(item.category, item.categoryName);
-              }}
-              title="Ver Ranking de esta Materia"
-            >
-              <Text style={[styles.historyGamifiedActionTxt, { color: '#F59E0B' }]}>🏆 Ranking</Text>
-            </TouchableOpacity>
-
-            {/* Botón Eliminar Partida */}
-            <TouchableOpacity
-              style={[styles.historyGamifiedActionBtn, { backgroundColor: '#EF444418', borderColor: '#EF444433' }]}
-              onPress={(e) => handleDeleteHistory(item._id, e)}
-              title="Eliminar partida"
-            >
-              <Text style={styles.historyGamifiedActionTxt}>🗑️</Text>
-            </TouchableOpacity>
-          </View>
+        {/* Flecha o Botón Circular Detalle a la Derecha */}
+        <View
+          style={[
+            styles.historyArrowCircle,
+            {
+              backgroundColor: isHovered ? statusColor : `${statusColor}15`,
+              borderColor: `${statusColor}40`,
+              transform: isHovered ? [{ scale: 1.08 }] : [{ scale: 1 }],
+            },
+            Platform.OS === 'web' && {
+              transition: 'all 0.2s ease',
+            },
+          ]}
+        >
+          <Text style={[styles.historyArrowIcon, { color: isHovered ? '#FFFFFF' : statusColor }]}>
+            ➜
+          </Text>
         </View>
       </TouchableOpacity>
     );
-  };
+  }
+
+  const renderHistoryItem = ({ item }) => (
+    <HistoryCardItem
+      item={item}
+      colors={colors}
+      onShowDetail={handleShowGameDetail}
+      onOpenRanking={handleOpenCategoryRanking}
+      onDelete={handleDeleteHistory}
+    />
+  );
 
   if (loading && !profile) {
     return (
@@ -3132,89 +3221,127 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: '700',
   },
-  // Estilos de Propuesta 3: Tarjeta Gamificada con Medalla
+  // Estilos de Partidas Jugadas Gamificadas (Estilo CategoryCard Moderno)
   historyGamifiedCard: {
     marginHorizontal: 16,
-    marginBottom: 10,
-    padding: 12,
     borderRadius: 16,
-    borderWidth: 1,
-    gap: 8,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.04)' }
-      : { elevation: 1 }),
-  },
-  historyGamifiedHeader: {
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
+    borderWidth: 1.5,
+    borderLeftWidth: 5,
   },
-  historyGamifiedLeft: {
-    flexDirection: 'row',
+  historyIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 14,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
-    flex: 1,
+    marginRight: 14,
+    borderWidth: 1.5,
   },
-  historyGamifiedMedal: {
+  historyIcon: {
     fontSize: 24,
   },
-  historyGamifiedTitle: {
-    fontSize: 14.5,
-    fontWeight: '800',
-    marginBottom: 1,
+  historyInfoContainer: {
+    flex: 1,
+    marginRight: 10,
   },
-  historyGamifiedDate: {
-    fontSize: 10.5,
-  },
-  historyGamifiedScoreBadge: {
+  historyTitleRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 3,
   },
-  historyGamifiedScoreVal: {
-    fontSize: 15,
+  historyTitle: {
+    flex: 1,
+    fontSize: 15.5,
     fontWeight: '800',
+    letterSpacing: 0.2,
   },
-  historyGamifiedScoreSub: {
-    fontSize: 9.5,
-    fontWeight: '700',
+  historyScoreBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 8,
+    borderWidth: 1,
   },
-  historyGamifiedDivider: {
-    height: 1,
+  historyScoreVal: {
+    fontSize: 11.5,
+    fontWeight: '900',
   },
-  historyGamifiedFooter: {
+  historyDate: {
+    fontSize: 11.5,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  historyFooterRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 6,
+    flexWrap: 'wrap',
   },
-  historyGamifiedStatusPill: {
+  historyBadgesGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  historyBadge: {
+    alignSelf: 'flex-start',
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    paddingVertical: 2.5,
+    borderRadius: 7,
+    borderWidth: 1,
   },
-  historyGamifiedStatusTxt: {
-    fontSize: 10.5,
+  historyBadgeText: {
+    fontSize: 11,
     fontWeight: '700',
   },
-  historyGamifiedBtnGroup: {
+  historyActionGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  historyGamifiedActionBtn: {
-    paddingHorizontal: 9,
-    paddingVertical: 5,
+  historyActionBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
     borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}),
   },
-  historyGamifiedActionTxt: {
-    fontSize: 11.5,
+  historyActionBtnText: {
+    fontSize: 11,
     fontWeight: '800',
+  },
+  historyDeleteBtn: {
+    paddingHorizontal: 6,
+    paddingVertical: 3.5,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}),
+  },
+  historyDeleteBtnText: {
+    fontSize: 11,
+  },
+  historyArrowCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  historyArrowIcon: {
+    fontSize: 14,
+    fontWeight: '900',
   },
   // Estilos de Propuesta 2: Lista Compacta Minimalista
   historyCompactCard: {
