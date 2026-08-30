@@ -1026,6 +1026,8 @@ export default function ProfileScreen() {
           },
         ]}
         onPress={() => onShowDetail(item)}
+        onPressIn={() => setIsHovered(true)}
+        onPressOut={() => setIsHovered(false)}
         activeOpacity={0.75}
         {...(Platform.OS === 'web'
           ? {

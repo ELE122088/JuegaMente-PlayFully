@@ -165,11 +165,11 @@ export default function CategoryCard({ category, onPress }) {
           {
             backgroundColor: isClosed
               ? `${colors.textSecondary}15`
-              : isHovered
+              : isActive
               ? catColor
               : `${catColor}15`,
             borderColor: isClosed ? `${colors.textSecondary}30` : `${catColor}40`,
-            transform: isHovered && !isClosed ? [{ scale: 1.08 }] : [{ scale: 1 }],
+            transform: isActive && !isClosed ? [{ scale: 1.08 }] : [{ scale: 1 }],
           },
           Platform.OS === 'web' && {
             transition: 'all 0.2s ease',
@@ -182,7 +182,7 @@ export default function CategoryCard({ category, onPress }) {
             {
               color: isClosed
                 ? colors.textSecondary
-                : isHovered
+                : isActive
                 ? '#FFFFFF'
                 : catColor,
             },
