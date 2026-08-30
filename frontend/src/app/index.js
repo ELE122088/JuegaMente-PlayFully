@@ -10,7 +10,22 @@ import { useTheme } from '../context/ThemeContext';
 import { useSidebar } from '../context/SidebarContext';
 import { getAvatarSource } from './profile';
 
+// Helper para sombras compatibles web/mobile sin advertencias
+const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, elevation = 3) => {
+  const r = parseInt(color.slice(1, 3), 16) || 0;
+  const g = parseInt(color.slice(3, 5), 16) || 0;
+  const b = parseInt(color.slice(5, 7), 16) || 0;
+  return {
+    boxShadow: `0px ${offsetY}px ${radius}px rgba(${r},${g},${b},${opacity})`,
+    elevation,
+  };
+};
+
 export default function CategoriesScreen() {
+  const [isHeroHovered, setIsHeroHovered] = useState(false);
+  const [isKahootHovered, setIsKahootHovered] = useState(false);
+  const [hoveredCarouselIndex, setHoveredCarouselIndex] = useState(null);
+
   const [categories, setCategories] = useState(() => {
     try {
       const cached = storage.getItem('cached_categories');
@@ -468,7 +483,29 @@ export default function CategoriesScreen() {
               {/* =========================================================
                   BANNER HERO: MEGAMENTE & RACHA DIARIA (OPCIÓN 1)
               ========================================================= */}
-              <View style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View
+                style={[
+                  styles.heroCard,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: isHeroHovered ? colors.primary : colors.border,
+                    borderLeftColor: colors.primary,
+                    transform: isHeroHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
+                    ...(isHeroHovered
+                      ? createShadow(colors.primary, 6, 0.22, 14, 6)
+                      : createShadow('#000', 1, 0.04, 3, 2)),
+                  },
+                  Platform.OS === 'web' && {
+                    transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
+                  },
+                ]}
+                {...(Platform.OS === 'web'
+                  ? {
+                      onMouseEnter: () => setIsHeroHovered(true),
+                      onMouseLeave: () => setIsHeroHovered(false),
+                    }
+                  : {})}
+              >
           <View style={styles.heroTopRow}>
             {/* Avatar de Megamente */}
             <TouchableOpacity
@@ -540,42 +577,67 @@ export default function CategoriesScreen() {
         {/* =========================================================
             OPCIÓN 2: BARRA DE PIN & SALA DE EXAMEN EN VIVO (ESTILO KAHOOT)
         ========================================================= */}
-        <View style={[styles.kahootPinCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.kahootTopRow}>
-            <View style={styles.kahootTitleRow}>
-              <View style={[styles.kahootIconCircle, { backgroundColor: `${colors.primary}20` }]}>
-                <Text style={styles.kahootIconEmoji}>⚡</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.kahootTitle, { color: colors.text }]}>
-                  {getPinCardTitle()}
-                </Text>
-                <Text style={[styles.kahootSubtitle, { color: colors.textSecondary }]}>
-                  {getPinCardSubtitle()}
-                </Text>
-              </View>
-            </View>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              {activeExamsCount > 0 && (
-                <View style={styles.kahootLiveBadge}>
-                  <View style={styles.kahootLiveDot} />
-                  <Text style={styles.kahootLiveBadgeText}>
-                    {activeExamsCount} {activeExamsCount === 1 ? 'Examen Activo' : 'Exámenes Activos'}
-                  </Text>
+        {(() => {
+          const kahootAccent = activeExamsCount > 0 ? '#EF4444' : activePracticePinCount > 0 ? '#4ECDC4' : colors.primary;
+          return (
+            <View
+              style={[
+                styles.kahootPinCard,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: isKahootHovered ? kahootAccent : colors.border,
+                  borderLeftColor: kahootAccent,
+                  transform: isKahootHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
+                  ...(isKahootHovered
+                    ? createShadow(kahootAccent, 6, 0.22, 14, 6)
+                    : createShadow('#000', 1, 0.04, 3, 2)),
+                },
+                Platform.OS === 'web' && {
+                  transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
+                },
+              ]}
+              {...(Platform.OS === 'web'
+                ? {
+                    onMouseEnter: () => setIsKahootHovered(true),
+                    onMouseLeave: () => setIsKahootHovered(false),
+                  }
+                : {})}
+            >
+              <View style={styles.kahootTopRow}>
+                <View style={styles.kahootTitleRow}>
+                  <View style={[styles.kahootIconCircle, { backgroundColor: `${kahootAccent}20` }]}>
+                    <Text style={styles.kahootIconEmoji}>⚡</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.kahootTitle, { color: colors.text }]}>
+                      {getPinCardTitle()}
+                    </Text>
+                    <Text style={[styles.kahootSubtitle, { color: colors.textSecondary }]}>
+                      {getPinCardSubtitle()}
+                    </Text>
+                  </View>
                 </View>
-              )}
 
-              {activePracticePinCount > 0 && (
-                <View style={[styles.kahootLiveBadge, { backgroundColor: '#4ECDC415', borderColor: '#4ECDC444' }]}>
-                  <View style={[styles.kahootLiveDot, { backgroundColor: '#4ECDC4' }]} />
-                  <Text style={[styles.kahootLiveBadgeText, { color: '#4ECDC4' }]}>
-                    {activePracticePinCount} {activePracticePinCount === 1 ? 'Práctica Activa' : 'Prácticas Activas'}
-                  </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  {activeExamsCount > 0 && (
+                    <View style={styles.kahootLiveBadge}>
+                      <View style={styles.kahootLiveDot} />
+                      <Text style={styles.kahootLiveBadgeText}>
+                        {activeExamsCount} {activeExamsCount === 1 ? 'Examen Activo' : 'Exámenes Activos'}
+                      </Text>
+                    </View>
+                  )}
+
+                  {activePracticePinCount > 0 && (
+                    <View style={[styles.kahootLiveBadge, { backgroundColor: '#4ECDC415', borderColor: '#4ECDC444' }]}>
+                      <View style={[styles.kahootLiveDot, { backgroundColor: '#4ECDC4' }]} />
+                      <Text style={[styles.kahootLiveBadgeText, { color: '#4ECDC4' }]}>
+                        {activePracticePinCount} {activePracticePinCount === 1 ? 'Práctica Activa' : 'Prácticas Activas'}
+                      </Text>
+                    </View>
+                  )}
                 </View>
-              )}
-            </View>
-          </View>
+              </View>
 
           {/* Formulario Rápido de PIN Integrado */}
           <View style={styles.kahootInputRow}>
@@ -623,6 +685,8 @@ export default function CategoriesScreen() {
             </TouchableOpacity>
           </View>
         </View>
+          );
+        })()}
 
         {/* =========================================================
             OPCIÓN 3: CARRUSEL DE DESTACADOS Y CONTINUAR JUGANDO
@@ -696,7 +760,15 @@ export default function CategoriesScreen() {
                   <TouchableOpacity
                     style={[
                       styles.featuredCard,
-                      { backgroundColor: colors.card, borderColor: '#8B5CF6' }
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: hoveredCarouselIndex === 0 ? '#8B5CF6' : colors.border,
+                        borderLeftColor: '#8B5CF6',
+                        transform: hoveredCarouselIndex === 0 ? [{ translateY: -3 }] : [{ translateY: 0 }],
+                        ...(hoveredCarouselIndex === 0
+                          ? createShadow('#8B5CF6', 6, 0.22, 14, 6)
+                          : createShadow('#000', 1, 0.04, 3, 2)),
+                      },
                     ]}
                     onPress={() => {
                       if (lastPlayedGame.matchedCategory) {
@@ -706,6 +778,12 @@ export default function CategoriesScreen() {
                       }
                     }}
                     activeOpacity={0.8}
+                    {...(Platform.OS === 'web'
+                      ? {
+                          onMouseEnter: () => setHoveredCarouselIndex(0),
+                          onMouseLeave: () => setHoveredCarouselIndex(null),
+                        }
+                      : {})}
                   >
                     <View style={styles.featuredCardTop}>
                       <View style={[styles.featuredTag, { backgroundColor: '#8B5CF620', borderColor: '#8B5CF6' }]}>
@@ -732,10 +810,24 @@ export default function CategoriesScreen() {
                   <TouchableOpacity
                     style={[
                       styles.featuredCard,
-                      { backgroundColor: colors.card, borderColor: '#FF6B6B' }
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: hoveredCarouselIndex === 1 ? '#FF6B6B' : colors.border,
+                        borderLeftColor: '#FF6B6B',
+                        transform: hoveredCarouselIndex === 1 ? [{ translateY: -3 }] : [{ translateY: 0 }],
+                        ...(hoveredCarouselIndex === 1
+                          ? createShadow('#FF6B6B', 6, 0.22, 14, 6)
+                          : createShadow('#000', 1, 0.04, 3, 2)),
+                      },
                     ]}
                     onPress={() => handleCategoryPress(mostPopularCat)}
                     activeOpacity={0.8}
+                    {...(Platform.OS === 'web'
+                      ? {
+                          onMouseEnter: () => setHoveredCarouselIndex(1),
+                          onMouseLeave: () => setHoveredCarouselIndex(null),
+                        }
+                      : {})}
                   >
                     <View style={styles.featuredCardTop}>
                       <View style={[styles.featuredTag, { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B' }]}>
@@ -758,68 +850,87 @@ export default function CategoriesScreen() {
                 )}
 
                 {/* Card 3: Examen Activo o Materia Recomendada */}
-                {featuredExamOrPractice && (
-                  <TouchableOpacity
-                    style={[
-                      styles.featuredCard,
-                      {
-                        backgroundColor: colors.card,
-                        borderColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4'
-                      }
-                    ]}
-                    onPress={() => handleCategoryPress(featuredExamOrPractice)}
-                    activeOpacity={0.8}
-                  >
-                    <View style={styles.featuredCardTop}>
-                      <View
-                        style={[
-                          styles.featuredTag,
-                          {
-                            backgroundColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF444420' : '#4ECDC420',
-                            borderColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4'
+                {featuredExamOrPractice && (() => {
+                  const isExam = !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode;
+                  const accent = isExam ? '#EF4444' : '#4ECDC4';
+                  return (
+                    <TouchableOpacity
+                      style={[
+                        styles.featuredCard,
+                        {
+                          backgroundColor: colors.card,
+                          borderColor: hoveredCarouselIndex === 2 ? accent : colors.border,
+                          borderLeftColor: accent,
+                          transform: hoveredCarouselIndex === 2 ? [{ translateY: -3 }] : [{ translateY: 0 }],
+                          ...(hoveredCarouselIndex === 2
+                            ? createShadow(accent, 6, 0.22, 14, 6)
+                            : createShadow('#000', 1, 0.04, 3, 2)),
+                        },
+                      ]}
+                      onPress={() => handleCategoryPress(featuredExamOrPractice)}
+                      activeOpacity={0.8}
+                      {...(Platform.OS === 'web'
+                        ? {
+                            onMouseEnter: () => setHoveredCarouselIndex(2),
+                            onMouseLeave: () => setHoveredCarouselIndex(null),
                           }
-                        ]}
-                      >
-                        <Text
+                        : {})}
+                    >
+                      <View style={styles.featuredCardTop}>
+                        <View
                           style={[
-                            styles.featuredTagText,
-                            { color: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4' }
+                            styles.featuredTag,
+                            {
+                              backgroundColor: isExam ? '#EF444420' : '#4ECDC420',
+                              borderColor: accent,
+                            }
                           ]}
                         >
-                          {!featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '🔴 EXAMEN SALA' : '⭐ RECOMENDADA'}
+                          <Text style={[styles.featuredTagText, { color: accent }]}>
+                            {isExam ? '🔴 EXAMEN SALA' : '⭐ RECOMENDADA'}
+                          </Text>
+                        </View>
+                        <Text style={styles.featuredEmoji}>{featuredExamOrPractice.icon || '💡'}</Text>
+                      </View>
+
+                      <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
+                        {featuredExamOrPractice.name}
+                      </Text>
+                      <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
+                        {isExam ? `PIN: ${featuredExamOrPractice.roomCode}` : 'Acceso libre e inmediato'}
+                      </Text>
+
+                      <View style={[styles.featuredActionBtn, { backgroundColor: accent }]}>
+                        <Text style={styles.featuredActionBtnText}>
+                          {isExam ? '✍️ Rendir Examen' : '💡 Explorar'}
                         </Text>
                       </View>
-                      <Text style={styles.featuredEmoji}>{featuredExamOrPractice.icon || '💡'}</Text>
-                    </View>
-
-                    <Text style={[styles.featuredCardTitle, { color: colors.text }]} numberOfLines={1}>
-                      {featuredExamOrPractice.name}
-                    </Text>
-                    <Text style={[styles.featuredCardDesc, { color: colors.textSecondary }]}>
-                      {!featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? `PIN: ${featuredExamOrPractice.roomCode}` : 'Acceso libre e inmediato'}
-                    </Text>
-
-                    <View
-                      style={[
-                        styles.featuredActionBtn,
-                        { backgroundColor: !featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '#EF4444' : '#4ECDC4' }
-                      ]}
-                    >
-                      <Text style={styles.featuredActionBtnText}>
-                        {!featuredExamOrPractice.isPublic && featuredExamOrPractice.roomCode ? '✍️ Rendir Examen' : '💡 Explorar'}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                )}
+                    </TouchableOpacity>
+                  );
+                })()}
 
                 {/* Card 4: Ruleta Cerebral / Partida Sorpresa */}
                 <TouchableOpacity
                   style={[
                     styles.featuredCard,
-                    { backgroundColor: colors.card, borderColor: '#F59E0B' }
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: hoveredCarouselIndex === 3 ? '#F59E0B' : colors.border,
+                      borderLeftColor: '#F59E0B',
+                      transform: hoveredCarouselIndex === 3 ? [{ translateY: -3 }] : [{ translateY: 0 }],
+                      ...(hoveredCarouselIndex === 3
+                        ? createShadow('#F59E0B', 6, 0.22, 14, 6)
+                        : createShadow('#000', 1, 0.04, 3, 2)),
+                    },
                   ]}
                   onPress={handleQuickRandomGame}
                   activeOpacity={0.8}
+                  {...(Platform.OS === 'web'
+                    ? {
+                        onMouseEnter: () => setHoveredCarouselIndex(3),
+                        onMouseLeave: () => setHoveredCarouselIndex(null),
+                      }
+                    : {})}
                 >
                   <View style={styles.featuredCardTop}>
                     <View style={[styles.featuredTag, { backgroundColor: '#F59E0B20', borderColor: '#F59E0B' }]}>
@@ -1369,12 +1480,10 @@ const styles = StyleSheet.create({
   kahootPinCard: {
     marginHorizontal: 16,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: 1.5,
+    borderLeftWidth: 5,
     padding: 14,
     marginBottom: 10,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)' }
-      : { elevation: 2 }),
   },
   kahootTopRow: {
     flexDirection: 'row',
@@ -1557,11 +1666,12 @@ const styles = StyleSheet.create({
     width: Platform.OS === 'web' ? 245 : 220,
     borderRadius: 16,
     borderWidth: 1.5,
+    borderLeftWidth: 5,
     padding: 14,
     justifyContent: 'space-between',
     elevation: 3,
     boxShadow: '0px 4px 12px rgba(0,0,0,0.06)',
-    ...(Platform.OS === 'web' ? { cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' } : {}),
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease' } : {}),
   },
   featuredCardTop: {
     flexDirection: 'row',
@@ -1831,12 +1941,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 4,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: 1.5,
+    borderLeftWidth: 5,
     padding: 14,
     marginBottom: 10,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)' }
-      : { elevation: 2 }),
   },
   heroTopRow: {
     flexDirection: 'row',
