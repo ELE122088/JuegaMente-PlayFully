@@ -131,7 +131,11 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { theme, colors, setTheme } = useTheme();
   const { refreshUser } = useSidebar();
-  const [activeProfileTab, setActiveProfileTab] = useState('history'); // 'history' | 'performance' | 'achievements' | 'settings'
+  // Estados para Secciones Plegables / Acordeón Inteligente (Opción 2)
+  const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
+  const [isPerformanceOpen, setIsPerformanceOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(true);
   const [isThemeExpanded, setIsThemeExpanded] = useState(false);
 
   // Estados para Galería de Avatares Prediseñados
@@ -1062,459 +1066,275 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            {/* Barra de Pestañas Superiores para Compactar la Pantalla (Opción 1) */}
-            <View style={[styles.profileTabBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              {/* Pestaña 1: Historial */}
-              <TouchableOpacity
-                style={[
-                  styles.profileTabItem,
-                  activeProfileTab === 'history' && [styles.profileTabItemActive, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }],
-                ]}
-                onPress={() => setActiveProfileTab('history')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.profileTabEmoji}>🎮</Text>
-                <Text style={[styles.profileTabTitle, { color: activeProfileTab === 'history' ? colors.primary : colors.textSecondary }]}>
-                  Historial
-                </Text>
-                {profile?.history && profile.history.length > 0 && (
-                  <View style={[styles.profileTabBadge, { backgroundColor: activeProfileTab === 'history' ? colors.primary : `${colors.textSecondary}22` }]}>
-                    <Text style={[styles.profileTabBadgeText, { color: activeProfileTab === 'history' ? colors.primaryText : colors.textSecondary }]}>
-                      {profile.history.length}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
+            {/* =========================================================
+                TIRA RESUMEN DE RENDIMIENTO (KPIs SIEMPRE VISIBLES)
+            ========================================================= */}
+            <View style={[styles.stripContainer, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 4, marginBottom: 8 }]}>
+              {/* 1. Partidas */}
+              <View style={styles.stripCol}>
+                <Text style={styles.stripIcon}>🎮</Text>
+                <Text style={[styles.stripVal, { color: colors.text }]}>{total}</Text>
+                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Partidas</Text>
+              </View>
 
-              {/* Pestaña 2: Rendimiento */}
-              <TouchableOpacity
-                style={[
-                  styles.profileTabItem,
-                  activeProfileTab === 'performance' && [styles.profileTabItemActive, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }],
-                ]}
-                onPress={() => setActiveProfileTab('performance')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.profileTabEmoji}>📊</Text>
-                <Text style={[styles.profileTabTitle, { color: activeProfileTab === 'performance' ? colors.primary : colors.textSecondary }]}>
-                  Rendimiento
-                </Text>
-              </TouchableOpacity>
+              <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
 
-              {/* Pestaña 3: Logros */}
-              <TouchableOpacity
-                style={[
-                  styles.profileTabItem,
-                  activeProfileTab === 'achievements' && [styles.profileTabItemActive, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }],
-                ]}
-                onPress={() => setActiveProfileTab('achievements')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.profileTabEmoji}>🏆</Text>
-                <Text style={[styles.profileTabTitle, { color: activeProfileTab === 'achievements' ? colors.primary : colors.textSecondary }]}>
-                  Logros
+              {/* 2. Promedio */}
+              <View style={styles.stripCol}>
+                <Text style={styles.stripIcon}>{average >= 60 ? '🎯' : '📉'}</Text>
+                <Text style={[styles.stripVal, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
+                  {average}%
                 </Text>
-                {unlockedCount > 0 && (
-                  <View style={[styles.profileTabBadge, { backgroundColor: '#10B981' }]}>
-                    <Text style={[styles.profileTabBadgeText, { color: '#FFFFFF' }]}>
-                      {unlockedCount}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
+                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Promedio</Text>
+              </View>
 
-              {/* Pestaña 4: Ajustes */}
-              <TouchableOpacity
-                style={[
-                  styles.profileTabItem,
-                  activeProfileTab === 'settings' && [styles.profileTabItemActive, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }],
-                ]}
-                onPress={() => setActiveProfileTab('settings')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.profileTabEmoji}>⚙️</Text>
-                <Text style={[styles.profileTabTitle, { color: activeProfileTab === 'settings' ? colors.primary : colors.textSecondary }]}>
-                  Ajustes
-                </Text>
-              </TouchableOpacity>
+              <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
+
+              {/* 3. Mejor Récord */}
+              <View style={styles.stripCol}>
+                <Text style={styles.stripIcon}>🏆</Text>
+                <Text style={[styles.stripVal, { color: '#D97706' }]}>{bestScore}%</Text>
+                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Récord</Text>
+              </View>
+
+              <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
+
+              {/* 4. Aprobadas */}
+              <View style={styles.stripCol}>
+                <Text style={styles.stripIcon}>✅</Text>
+                <Text style={[styles.stripVal, { color: '#8B5CF6' }]}>{passed}</Text>
+                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Aprobadas</Text>
+              </View>
             </View>
 
             {/* =========================================================
-                PESTAÑA 4: CONFIGURACIÓN Y CUENTA
+                OPCIÓN 2: ACORDEÓN 1 - VITRINA DE LOGROS E INSIGNIAS
             ========================================================= */}
-            {activeProfileTab === 'settings' && (
-              <View style={[styles.settingsUnifiedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={styles.settingsCardHeader}>
-                  <Text style={[styles.settingsCardTitle, { color: colors.textSecondary }]}>⚙️ CONFIGURACIÓN Y CUENTA</Text>
+            <View style={[styles.accordionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <TouchableOpacity
+                style={styles.accordionHeader}
+                onPress={() => setIsAchievementsOpen(!isAchievementsOpen)}
+                activeOpacity={0.7}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                  <View style={[styles.accordionIconCircle, { backgroundColor: '#F59E0B18' }]}>
+                    <Text style={styles.accordionIconEmoji}>🏆</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.accordionTitle, { color: colors.text }]}>
+                      Vitrina de Logros e Insignias
+                    </Text>
+                    <Text style={[styles.accordionSubtitle, { color: colors.textSecondary }]}>
+                      {unlockedCount} de {totalCount} trofeos desbloqueados
+                    </Text>
+                  </View>
                 </View>
 
-              {/* 1. Fila: Avatar de Personaje y Galería */}
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => setIsAvatarExpanded(!isAvatarExpanded)}
-                style={[styles.settingsRow, isAvatarExpanded && { backgroundColor: `${colors.primary}08` }]}
-              >
-                <View style={styles.settingsRowLeft}>
-                  <View style={[styles.settingsIconCircle, { backgroundColor: '#8B5CF618' }]}>
-                    <Text style={styles.settingsRowIcon}>🎭</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={[styles.achieveCounterBadge, { backgroundColor: unlockedCount > 0 ? '#10B98118' : `${colors.primary}18` }]}>
+                    <Text style={[styles.achieveCounterText, { color: unlockedCount > 0 ? '#10B981' : colors.primary }]}>
+                      {unlockedCount} / {totalCount}
+                    </Text>
                   </View>
-                  <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Avatar de Megamente</Text>
-                </View>
-                <View style={styles.settingsRowRight}>
-                  <Text style={[styles.settingsRowValue, { color: colors.primary }]}>
-                    {profile?.profileImage ? 'Elegir / Cambiar' : 'Predeterminado'}
-                  </Text>
-                  <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
-                    {isAvatarExpanded ? '▲' : '▼'}
+                  <Text style={[styles.accordionChevron, { color: colors.textSecondary }]}>
+                    {isAchievementsOpen ? '▲' : '▼'}
                   </Text>
                 </View>
               </TouchableOpacity>
 
-              {isAvatarExpanded && (
-                <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
-                  {/* Botón para subir foto personalizada desde galería */}
-                  <TouchableOpacity
-                    style={[styles.uploadGalleryBtn, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}44` }]}
-                    onPress={handlePickImage}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.uploadGalleryBtnIcon}>📷</Text>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.uploadGalleryBtnTitle, { color: colors.text }]}>
-                        Subir Foto Propia
-                      </Text>
-                      <Text style={[styles.uploadGalleryBtnSub, { color: colors.textSecondary }]}>
-                        Elige una imagen desde tu galería o cámara
-                      </Text>
-                    </View>
-                    <Text style={[styles.uploadGalleryBtnArrow, { color: colors.primary }]}>›</Text>
-                  </TouchableOpacity>
-
-                  <Text style={[styles.avatarGallerySectionTitle, { color: colors.textSecondary }]}>
-                    O elige uno de nuestros 8 avatares exclusivos de Megamente:
-                  </Text>
-
-                  {/* Cuadrícula de Avatares Prediseñados de Megamente */}
-                  <View style={styles.avatarGrid}>
-                    {PRESET_AVATARS.map((av) => {
-                      const isSelected = profile?.profileImage === av.serverPath || profile?.profileImage === av.id;
-                      return (
-                        <TouchableOpacity
-                          key={av.id}
-                          style={[
-                            styles.avatarCard,
-                            { backgroundColor: colors.background, borderColor: colors.border },
-                            isSelected && { borderColor: colors.primary, borderWidth: 2, backgroundColor: `${colors.primary}18` },
-                          ]}
-                          onPress={() => handleSelectPresetAvatar(av.serverPath)}
-                          disabled={avatarUpdating}
-                          activeOpacity={0.7}
-                        >
-                          <Image source={av.localSource} style={styles.avatarCardImg} />
-                          <Text style={[styles.avatarCardName, { color: colors.text }]} numberOfLines={1}>
-                            {av.name}
-                          </Text>
-                          <Text style={[styles.avatarCardDesc, { color: colors.textSecondary }]} numberOfLines={1}>
-                            {av.desc}
-                          </Text>
-                          {isSelected && (
-                            <View style={[styles.avatarSelectedCheck, { backgroundColor: colors.primary }]}>
-                              <Text style={styles.avatarSelectedCheckText}>✓</Text>
-                            </View>
-                          )}
-                        </TouchableOpacity>
-                      );
-                    })}
+              {isAchievementsOpen && (
+                <View
+                  style={[styles.accordionBody, { borderTopColor: colors.border }]}
+                  {...(Platform.OS === 'web'
+                    ? {
+                        onMouseEnter: () => setIsAchieveHovered(true),
+                        onMouseLeave: () => setIsAchieveHovered(false),
+                      }
+                    : {})}
+                >
+                  {/* Barra de progreso global de logros */}
+                  <View style={[styles.achieveGlobalProgressTrack, { backgroundColor: colors.border, marginBottom: 8 }]}>
+                    <View
+                      style={[
+                        styles.achieveGlobalProgressFill,
+                        {
+                          width: `${Math.max(6, Math.round((unlockedCount / totalCount) * 100))}%`,
+                          backgroundColor: unlockedCount === totalCount ? '#F59E0B' : colors.primary,
+                        },
+                      ]}
+                    />
                   </View>
-                </View>
-              )}
 
-              <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
-
-              {/* 2. Fila: Tema Visual */}
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => setIsThemeExpanded(!isThemeExpanded)}
-                style={[styles.settingsRow, isThemeExpanded && { backgroundColor: `${colors.primary}08` }]}
-              >
-                <View style={styles.settingsRowLeft}>
-                  <View style={[styles.settingsIconCircle, { backgroundColor: `${colors.primary}18` }]}>
-                    <Text style={styles.settingsRowIcon}>🎨</Text>
-                  </View>
-                  <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Tema Visual</Text>
-                </View>
-                <View style={styles.settingsRowRight}>
-                  <Text style={[styles.settingsRowValue, { color: colors.primary }]}>
-                    {
-                      theme === 'light' ? '☀️ Claro' :
-                      theme === 'dark' ? '🌙 Oscuro' :
-                      theme === 'emerald' ? '🍃 Esmeralda' :
-                      theme === 'sunset' ? '🌅 Atardecer' :
-                      theme === 'sakura' ? '🌸 Sakura' :
-                      theme === 'ocean' ? '🌊 Océano' :
-                      theme === 'gold' ? '👑 Dorado' :
-                      theme === 'cyber' ? '🍇 Púrpura' :
-                      theme === 'neon' ? '🌌 Neón' : '🏛️ Medianoche'
-                    }
-                  </Text>
-                  <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
-                    {isThemeExpanded ? '▲' : '▼'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              {isThemeExpanded && (
-                <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
-                  <View style={styles.themeOptionsGrid}>
-                    {[
-                      { id: 'light', name: 'Claro', emoji: '☀️' },
-                      { id: 'dark', name: 'Oscuro', emoji: '🌙' },
-                      { id: 'emerald', name: 'Esmeralda', emoji: '🍃' },
-                      { id: 'sunset', name: 'Atardecer', emoji: '🌅' },
-                      { id: 'sakura', name: 'Sakura', emoji: '🌸' },
-                      { id: 'ocean', name: 'Océano', emoji: '🌊' },
-                      { id: 'gold', name: 'Dorado', emoji: '👑' },
-                      { id: 'cyber', name: 'Púrpura', emoji: '🍇' },
-                      { id: 'neon', name: 'Neón', emoji: '🌌' },
-                      { id: 'midnight', name: 'Medianoche', emoji: '🏛️' },
-                    ].map((t) => (
+                  {/* Contenedor del Carrusel con Flechas Flotantes Inteligentes (Solo en Web) */}
+                  <View style={styles.achieveHoverWrapper}>
+                    {Platform.OS === 'web' && (
                       <TouchableOpacity
-                        key={t.id}
                         style={[
-                          styles.themeOption,
-                          theme === t.id && [styles.themeOptionActive, { borderColor: colors.primary, backgroundColor: `${colors.primary}1A` }]
+                          styles.achieveHoverArrow,
+                          styles.achieveHoverArrowLeft,
+                          {
+                            backgroundColor: colors.card,
+                            borderColor: colors.primary,
+                            opacity: isAchieveHovered ? 1 : 0,
+                            transform: [
+                              { translateY: -19 },
+                              { scale: isAchieveHovered ? 1 : 0.85 },
+                            ],
+                          },
                         ]}
-                        onPress={() => setTheme(t.id)}
+                        onPress={() => handleScrollAchievements(-1)}
+                        activeOpacity={0.8}
+                        accessibilityLabel="Deslizar a la izquierda"
                       >
-                        <Text style={styles.themeEmoji}>{t.emoji}</Text>
-                        <Text style={[styles.themeText, { color: colors.text, fontWeight: theme === t.id ? 'bold' : 'normal' }]}>
-                          {t.name}
-                        </Text>
+                        <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>‹</Text>
                       </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              )}
+                    )}
 
-              <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
-
-              {/* 2. Fila: Nombre de Usuario */}
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => {
-                  const nextState = !isProfileEditExpanded;
-                  setIsProfileEditExpanded(nextState);
-                  if (nextState) {
-                    setEditUsername(profile?.username || '');
-                  }
-                }}
-                style={[styles.settingsRow, isProfileEditExpanded && { backgroundColor: `${colors.primary}08` }]}
-              >
-                <View style={styles.settingsRowLeft}>
-                  <View style={[styles.settingsIconCircle, { backgroundColor: '#3B82F618' }]}>
-                    <Text style={styles.settingsRowIcon}>✏️</Text>
-                  </View>
-                  <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Nombre de Usuario</Text>
-                </View>
-                <View style={styles.settingsRowRight}>
-                  <Text style={[styles.settingsRowValue, { color: colors.textSecondary }]} numberOfLines={1}>
-                    {profile?.username || 'Cargando...'}
-                  </Text>
-                  <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
-                    {isProfileEditExpanded ? '▲' : '▼'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              {isProfileEditExpanded && (
-                <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
-                  <View style={styles.passwordFormContainer}>
-                    <Text style={[styles.passInputLabel, { color: colors.text }]}>Nuevo Nombre de Usuario</Text>
-                    <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
-                      <TextInput
-                        style={[styles.passInput, { color: colors.text }]}
-                        placeholder="Mínimo 4 caracteres"
-                        placeholderTextColor={colors.textSecondary}
-                        value={editUsername}
-                        onChangeText={setEditUsername}
-                        autoCapitalize="none"
-                      />
-                    </View>
-
-                    <TouchableOpacity
-                      style={[styles.savePassBtn, { backgroundColor: colors.primary }]}
-                      onPress={handleUpdateProfile}
-                      disabled={profileEditLoading}
+                    {/* Carrusel Deslizable Horizontal de Tarjetas de Logro */}
+                    <ScrollView
+                      ref={achievementsScrollRef}
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.achieveScrollContent}
+                      style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
+                      {...(Platform.OS === 'web'
+                        ? {
+                            onWheel: (e) => {
+                              if (e.deltaY !== 0) {
+                                const domNode = achievementsScrollRef.current?.getScrollableNode
+                                  ? achievementsScrollRef.current.getScrollableNode()
+                                  : achievementsScrollRef.current;
+                                if (domNode) {
+                                  domNode.scrollLeft += e.deltaY;
+                                }
+                              }
+                            },
+                          }
+                        : {})}
                     >
-                      {profileEditLoading ? (
-                        <ActivityIndicator color={colors.primaryText} size="small" />
-                      ) : (
-                        <Text style={[styles.savePassBtnText, { color: colors.primaryText }]}>
-                          Guardar Cambios
-                        </Text>
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
+                      {achievementsList.map((ach) => {
+                        const progressPct = Math.min(100, Math.round((ach.current / ach.target) * 100));
+                        return (
+                          <View
+                            key={ach.id}
+                            style={[
+                              styles.achieveItemCard,
+                              {
+                                backgroundColor: ach.unlocked ? `${ach.color}10` : colors.background,
+                                borderColor: ach.unlocked ? `${ach.color}55` : colors.border,
+                              },
+                            ]}
+                          >
+                            <View style={styles.achieveTopRow}>
+                              <View style={[styles.achieveBadgePill, { backgroundColor: ach.unlocked ? `${ach.color}25` : colors.border }]}>
+                                <Text style={[styles.achieveBadgePillText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
+                                  {ach.badge}
+                                </Text>
+                              </View>
+                              <Text style={{ fontSize: 13 }}>
+                                {ach.unlocked ? '✨' : '🔒'}
+                              </Text>
+                            </View>
 
-              <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
+                            <View style={[styles.achieveItemIconWrapper, { backgroundColor: ach.unlocked ? `${ach.color}20` : `${colors.border}55` }]}>
+                              <Text style={[styles.achieveItemIcon, !ach.unlocked && { opacity: 0.5 }]}>
+                                {ach.icon}
+                              </Text>
+                            </View>
 
-              {/* 3. Fila: Seguridad y Contraseña */}
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => setIsPasswordExpanded(!isPasswordExpanded)}
-                style={[styles.settingsRow, isPasswordExpanded && { backgroundColor: `${colors.primary}08` }]}
-              >
-                <View style={styles.settingsRowLeft}>
-                  <View style={[styles.settingsIconCircle, { backgroundColor: '#F59E0B18' }]}>
-                    <Text style={styles.settingsRowIcon}>🔑</Text>
-                  </View>
-                  <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Seguridad y Clave</Text>
-                </View>
-                <View style={styles.settingsRowRight}>
-                  <Text style={[styles.settingsRowValue, { color: colors.textSecondary }]}>Cambiar</Text>
-                  <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
-                    {isPasswordExpanded ? '▲' : '▼'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
+                            <Text style={[styles.achieveItemName, { color: colors.text }]} numberOfLines={1}>
+                              {ach.name}
+                            </Text>
+                            <Text style={[styles.achieveItemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
+                              {ach.desc}
+                            </Text>
 
-              {isPasswordExpanded && (
-                <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
-                  <View style={styles.passwordFormContainer}>
-                    {/* Contraseña Actual */}
-                    <Text style={[styles.passInputLabel, { color: colors.text }]}>Contraseña Actual</Text>
-                    <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
-                      <TextInput
-                        style={[styles.passInput, { color: colors.text }]}
-                        placeholder="Ingresa tu clave actual"
-                        placeholderTextColor={colors.textSecondary}
-                        secureTextEntry={!showCurrentPass}
-                        value={currentPassword}
-                        onChangeText={setCurrentPassword}
-                      />
-                      <TouchableOpacity onPress={() => setShowCurrentPass(!showCurrentPass)} style={styles.eyeBtn}>
-                        <Text style={styles.eyeIcon}>{showCurrentPass ? '👁️' : '🙈'}</Text>
+                            <View style={styles.achieveMiniProgressContainer}>
+                              <View style={[styles.achieveMiniTrack, { backgroundColor: colors.border }]}>
+                                <View
+                                  style={[
+                                    styles.achieveMiniFill,
+                                    {
+                                      width: `${ach.unlocked ? 100 : Math.max(8, progressPct)}%`,
+                                      backgroundColor: ach.unlocked ? ach.color : colors.primary,
+                                    },
+                                  ]}
+                                />
+                              </View>
+                              <Text style={[styles.achieveMiniProgressText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
+                                {ach.unlocked ? '✓ Desbloqueado' : `${ach.current} / ${ach.target}`}
+                              </Text>
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </ScrollView>
+
+                    {Platform.OS === 'web' && (
+                      <TouchableOpacity
+                        style={[
+                          styles.achieveHoverArrow,
+                          styles.achieveHoverArrowRight,
+                          {
+                            backgroundColor: colors.card,
+                            borderColor: colors.primary,
+                            opacity: isAchieveHovered ? 1 : 0,
+                            transform: [
+                              { translateY: -19 },
+                              { scale: isAchieveHovered ? 1 : 0.85 },
+                            ],
+                          },
+                        ]}
+                        onPress={() => handleScrollAchievements(1)}
+                        activeOpacity={0.8}
+                        accessibilityLabel="Deslizar a la derecha"
+                      >
+                        <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>›</Text>
                       </TouchableOpacity>
-                    </View>
-
-                    {/* Nueva Contraseña */}
-                    <Text style={[styles.passInputLabel, { color: colors.text }]}>Nueva Contraseña</Text>
-                    <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
-                      <TextInput
-                        style={[styles.passInput, { color: colors.text }]}
-                        placeholder="Mínimo 4 caracteres"
-                        placeholderTextColor={colors.textSecondary}
-                        secureTextEntry={!showNewPass}
-                        value={newPassword}
-                        onChangeText={setNewPassword}
-                      />
-                      <TouchableOpacity onPress={() => setShowNewPass(!showNewPass)} style={styles.eyeBtn}>
-                        <Text style={styles.eyeIcon}>{showNewPass ? '👁️' : '🙈'}</Text>
-                      </TouchableOpacity>
-                    </View>
-
-                    {/* Confirmar Contraseña */}
-                    <Text style={[styles.passInputLabel, { color: colors.text }]}>Confirmar Nueva Contraseña</Text>
-                    <View style={[styles.passInputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
-                      <TextInput
-                        style={[styles.passInput, { color: colors.text }]}
-                        placeholder="Repite la nueva clave"
-                        placeholderTextColor={colors.textSecondary}
-                        secureTextEntry={!showNewPass}
-                        value={confirmPassword}
-                        onChangeText={setConfirmPassword}
-                      />
-                    </View>
-
-                    <TouchableOpacity
-                      style={[styles.savePassBtn, { backgroundColor: colors.primary }]}
-                      onPress={handleChangePassword}
-                      disabled={passLoading}
-                    >
-                      {passLoading ? (
-                        <ActivityIndicator color={colors.primaryText} size="small" />
-                      ) : (
-                        <Text style={[styles.savePassBtnText, { color: colors.primaryText }]}>
-                          Guardar Nueva Contraseña
-                        </Text>
-                      )}
-                    </TouchableOpacity>
+                    )}
                   </View>
                 </View>
               )}
             </View>
-            )}
 
             {/* =========================================================
-                PESTAÑA 2: RENDIMIENTO GENERAL Y POR MATERIA
+                OPCIÓN 2: ACORDEÓN 2 - RENDIMIENTO POR MATERIA
             ========================================================= */}
-            {activeProfileTab === 'performance' && (
-              <>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>    Resumen General</Text>
-                <View style={[styles.stripContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  {/* 1. Partidas */}
-                  <View style={styles.stripCol}>
-                    <Text style={styles.stripIcon}>🎮</Text>
-                    <Text style={[styles.stripVal, { color: colors.text }]}>{total}</Text>
-                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Partidas</Text>
-                  </View>
-
-                  <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
-
-                  {/* 2. Promedio */}
-                  <View style={styles.stripCol}>
-                    <Text style={styles.stripIcon}>{average >= 60 ? '🎯' : '📉'}</Text>
-                    <Text style={[styles.stripVal, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
-                      {average}%
-                    </Text>
-                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Promedio</Text>
-                  </View>
-
-                  <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
-
-                  {/* 3. Mejor Récord */}
-                  <View style={styles.stripCol}>
-                    <Text style={styles.stripIcon}>🏆</Text>
-                    <Text style={[styles.stripVal, { color: '#D97706' }]}>{bestScore}%</Text>
-                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Récord</Text>
-                  </View>
-
-                  <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
-
-                  {/* 4. Aprobadas */}
-                  <View style={styles.stripCol}>
-                    <Text style={styles.stripIcon}>✅</Text>
-                    <Text style={[styles.stripVal, { color: '#8B5CF6' }]}>{passed}</Text>
-                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Aprobadas</Text>
-                  </View>
-                </View>
-
-                {profile?.history && profile.history.length > 0 ? (
-                  <View style={[styles.subjectPerformanceCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    {/* Cabecera de Rendimiento por Materia */}
-                    <View style={styles.subjectPerfHeader}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                        <View style={[styles.subjectPerfHeaderIconCircle, { backgroundColor: `${colors.primary}18` }]}>
-                          <Text style={styles.subjectPerfHeaderIcon}>📊</Text>
-                        </View>
-                        <View>
-                          <Text style={[styles.subjectPerfTitle, { color: colors.text }]}>
-                            Rendimiento por Materia
-                          </Text>
-                          <Text style={[styles.subjectPerfSubtitle, { color: colors.textSecondary }]}>
-                            Toca una materia para ver sus partidas en el Historial
-                          </Text>
-                        </View>
-                      </View>
-                      <View style={[styles.subjectCountBadge, { backgroundColor: `${colors.primary}18` }]}>
-                        <Text style={[styles.subjectCountBadgeText, { color: colors.primary }]}>
-                          {subjectPerformance.length} {subjectPerformance.length === 1 ? 'materia' : 'materias'}
-                        </Text>
-                      </View>
+            {profile?.history && profile.history.length > 0 && (
+              <View style={[styles.accordionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <TouchableOpacity
+                  style={styles.accordionHeader}
+                  onPress={() => setIsPerformanceOpen(!isPerformanceOpen)}
+                  activeOpacity={0.7}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                    <View style={[styles.accordionIconCircle, { backgroundColor: `${colors.primary}18` }]}>
+                      <Text style={styles.accordionIconEmoji}>📊</Text>
                     </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.accordionTitle, { color: colors.text }]}>
+                        Rendimiento por Materia
+                      </Text>
+                      <Text style={[styles.accordionSubtitle, { color: colors.textSecondary }]}>
+                        {topSubject ? `Fuerte: ${topSubject.name} (${topSubject.average}%)` : 'Estadísticas por materia'}
+                      </Text>
+                    </View>
+                  </View>
 
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <View style={[styles.subjectCountBadge, { backgroundColor: `${colors.primary}18` }]}>
+                      <Text style={[styles.subjectCountBadgeText, { color: colors.primary }]}>
+                        {subjectPerformance.length} {subjectPerformance.length === 1 ? 'materia' : 'materias'}
+                      </Text>
+                    </View>
+                    <Text style={[styles.accordionChevron, { color: colors.textSecondary }]}>
+                      {isPerformanceOpen ? '▲' : '▼'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                {isPerformanceOpen && (
+                  <View style={[styles.accordionBody, { borderTopColor: colors.border }]}>
                     {/* Banner de Fortalezas / Consejos de Estudio */}
                     {topSubject && (
                       <View
@@ -1553,20 +1373,18 @@ export default function ProfileScreen() {
                     {/* Lista de Barras de Progreso por Materia */}
                     <View style={styles.subjectBarsContainer}>
                       {subjectPerformance.map((subj) => {
+                        const isFiltered = historyFilter === subj.name;
                         return (
                           <TouchableOpacity
                             key={subj.name}
                             style={[
                               styles.subjectBarItem,
                               { backgroundColor: colors.background, borderColor: colors.border },
+                              isFiltered && { borderColor: colors.primary, borderWidth: 1.5, backgroundColor: `${colors.primary}0D` },
                             ]}
-                            onPress={() => {
-                              setHistoryFilter(subj.name);
-                              setActiveProfileTab('history');
-                            }}
+                            onPress={() => setHistoryFilter(historyFilter === subj.name ? 'all' : subj.name)}
                             activeOpacity={0.7}
                           >
-                            {/* Fila Superior: Icono, Nombre y Píldora de Estado */}
                             <View style={styles.subjectBarHeaderRow}>
                               <View style={styles.subjectNameWrapper}>
                                 <Text style={styles.subjectIconEmoji}>{subj.icon}</Text>
@@ -1582,7 +1400,6 @@ export default function ProfileScreen() {
                               </View>
                             </View>
 
-                            {/* Barra de Progreso de Rendimiento */}
                             <View style={[styles.subjectProgressTrack, { backgroundColor: colors.border }]}>
                               <View
                                 style={[
@@ -1595,7 +1412,6 @@ export default function ProfileScreen() {
                               />
                             </View>
 
-                            {/* Fila de Estadísticas Detalladas de la Materia */}
                             <View style={styles.subjectMetricsRow}>
                               <Text style={[styles.subjectMetricAvg, { color: subj.statusColor }]}>
                                 Promedio: <Text style={{ fontWeight: '800' }}>{subj.average}%</Text>
@@ -1609,105 +1425,399 @@ export default function ProfileScreen() {
                       })}
                     </View>
                   </View>
-                ) : (
-                  <View style={styles.emptyState}>
-                    <Text style={{ fontSize: 36, marginBottom: 6 }}>📊</Text>
-                    <Text style={[styles.emptyText, { color: colors.text }]}>Sin materias jugadas todavía</Text>
-                    <Text style={[styles.emptySub, { color: colors.textSecondary }]}>Juega una partida para que aparezca tu análisis de materias aquí.</Text>
-                  </View>
                 )}
-              </>
+              </View>
             )}
 
             {/* =========================================================
-                PESTAÑA 3: VITRINA DE LOGROS E INSIGNIAS
+                OPCIÓN 2: ACORDEÓN 3 - CONFIGURACIÓN Y CUENTA
             ========================================================= */}
-            {activeProfileTab === 'achievements' && (
-              <View
-                style={[styles.achievementsCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                {...(Platform.OS === 'web'
-                  ? {
-                      onMouseEnter: () => setIsAchieveHovered(true),
-                      onMouseLeave: () => setIsAchieveHovered(false),
-                    }
-                  : {})}
+            <View style={[styles.accordionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <TouchableOpacity
+                style={styles.accordionHeader}
+                onPress={() => setIsSettingsOpen(!isSettingsOpen)}
+                activeOpacity={0.7}
               >
-                {/* Cabecera de la Vitrina */}
-                <View style={styles.achievementsHeader}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    <View style={[styles.achieveIconCircle, { backgroundColor: '#F59E0B18' }]}>
-                      <Text style={styles.achieveHeaderIcon}>🏆</Text>
-                    </View>
-                    <View>
-                      <Text style={[styles.achieveTitle, { color: colors.text }]}>
-                        Vitrina de Logros e Insignias
-                      </Text>
-                      <Text style={[styles.achieveSubtitle, { color: colors.textSecondary }]}>
-                        Desbloquea trofeos jugando y mejorando tus notas
-                      </Text>
-                    </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                  <View style={[styles.accordionIconCircle, { backgroundColor: '#8B5CF618' }]}>
+                    <Text style={styles.accordionIconEmoji}>⚙️</Text>
                   </View>
-
-                  <View style={[styles.achieveCounterBadge, { backgroundColor: unlockedCount > 0 ? '#10B98118' : `${colors.primary}18` }]}>
-                    <Text style={[styles.achieveCounterText, { color: unlockedCount > 0 ? '#10B981' : colors.primary }]}>
-                      {unlockedCount} / {totalCount}
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.accordionTitle, { color: colors.text }]}>
+                      Configuración y Cuenta
+                    </Text>
+                    <Text style={[styles.accordionSubtitle, { color: colors.textSecondary }]}>
+                      Avatar de Megamente, temas visuales y contraseña
                     </Text>
                   </View>
                 </View>
 
-                {/* Barra de progreso global de logros */}
-                <View style={[styles.achieveGlobalProgressTrack, { backgroundColor: colors.border }]}>
-                  <View
-                    style={[
-                      styles.achieveGlobalProgressFill,
-                      {
-                        width: `${Math.max(6, Math.round((unlockedCount / totalCount) * 100))}%`,
-                        backgroundColor: unlockedCount === totalCount ? '#F59E0B' : colors.primary,
-                      },
-                    ]}
-                  />
-                </View>
+                <Text style={[styles.accordionChevron, { color: colors.textSecondary }]}>
+                  {isSettingsOpen ? '▲' : '▼'}
+                </Text>
+              </TouchableOpacity>
 
-                {/* Contenedor del Carrusel con Flechas Flotantes Inteligentes (Solo en Web) */}
-                <View style={styles.achieveHoverWrapper}>
-                  {/* Flecha Flotante Lateral Izquierda (Exclusiva Web / Hover) */}
-                  {Platform.OS === 'web' && (
-                    <TouchableOpacity
-                      style={[
-                        styles.achieveHoverArrow,
-                        styles.achieveHoverArrowLeft,
-                        {
-                          backgroundColor: colors.card,
-                          borderColor: colors.primary,
-                          opacity: isAchieveHovered ? 1 : 0,
-                          transform: [
-                            { translateY: -19 },
-                            { scale: isAchieveHovered ? 1 : 0.85 },
-                          ],
-                        },
-                      ]}
-                      onPress={() => handleScrollAchievements(-1)}
-                      activeOpacity={0.8}
-                      accessibilityLabel="Deslizar a la izquierda"
-                    >
-                      <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>‹</Text>
-                    </TouchableOpacity>
+              {isSettingsOpen && (
+                <View style={[styles.accordionBody, { borderTopColor: colors.border, padding: 0 }]}>
+                  {/* 1. Fila: Avatar de Personaje y Galería */}
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => setIsAvatarExpanded(!isAvatarExpanded)}
+                    style={[styles.settingsRow, isAvatarExpanded && { backgroundColor: `${colors.primary}08` }]}
+                  >
+                    <View style={styles.settingsRowLeft}>
+                      <View style={[styles.settingsIconCircle, { backgroundColor: '#8B5CF618' }]}>
+                        <Text style={styles.settingsRowIcon}>🎭</Text>
+                      </View>
+                      <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Avatar de Megamente</Text>
+                    </View>
+                    <View style={styles.settingsRowRight}>
+                      <Text style={[styles.settingsRowValue, { color: colors.primary }]}>
+                        {profile?.profileImage ? 'Elegir / Cambiar' : 'Predeterminado'}
+                      </Text>
+                      <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
+                        {isAvatarExpanded ? '▲' : '▼'}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  {isAvatarExpanded && (
+                    <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
+                      <TouchableOpacity
+                        style={[styles.uploadGalleryBtn, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}44` }]}
+                        onPress={handlePickImage}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={styles.uploadGalleryBtnIcon}>📷</Text>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.uploadGalleryBtnTitle, { color: colors.text }]}>
+                            Subir Foto Propia
+                          </Text>
+                          <Text style={[styles.uploadGalleryBtnSub, { color: colors.textSecondary }]}>
+                            Elige una imagen desde tu galería o cámara
+                          </Text>
+                        </View>
+                        <Text style={[styles.uploadGalleryBtnArrow, { color: colors.primary }]}>›</Text>
+                      </TouchableOpacity>
+
+                      <Text style={[styles.avatarGallerySectionTitle, { color: colors.textSecondary }]}>
+                        O elige uno de nuestros 8 avatares exclusivos de Megamente:
+                      </Text>
+
+                      <View style={styles.avatarGrid}>
+                        {PRESET_AVATARS.map((av) => {
+                          const isSelected = profile?.profileImage === av.serverPath || profile?.profileImage === av.id;
+                          return (
+                            <TouchableOpacity
+                              key={av.id}
+                              style={[
+                                styles.avatarCard,
+                                { backgroundColor: colors.background, borderColor: colors.border },
+                                isSelected && { borderColor: colors.primary, borderWidth: 2, backgroundColor: `${colors.primary}18` },
+                              ]}
+                              onPress={() => handleSelectPresetAvatar(av.serverPath)}
+                              disabled={avatarUpdating}
+                              activeOpacity={0.7}
+                            >
+                              <Image source={av.localSource} style={styles.avatarCardImg} />
+                              <Text style={[styles.avatarCardName, { color: colors.text }]} numberOfLines={1}>
+                                {av.name}
+                              </Text>
+                              <Text style={[styles.avatarCardDesc, { color: colors.textSecondary }]} numberOfLines={1}>
+                                {av.desc}
+                              </Text>
+                              {isSelected && (
+                                <View style={[styles.avatarSelectedCheck, { backgroundColor: colors.primary }]}>
+                                  <Text style={styles.avatarSelectedCheckText}>✓</Text>
+                                </View>
+                              )}
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    </View>
                   )}
 
-                  {/* Carrusel Deslizable Horizontal de Tarjetas de Logro */}
+                  <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
+
+                  {/* 2. Fila: Temas Visuales */}
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => setIsThemeExpanded(!isThemeExpanded)}
+                    style={[styles.settingsRow, isThemeExpanded && { backgroundColor: `${colors.primary}08` }]}
+                  >
+                    <View style={styles.settingsRowLeft}>
+                      <View style={[styles.settingsIconCircle, { backgroundColor: `${colors.primary}18` }]}>
+                        <Text style={styles.settingsRowIcon}>🎨</Text>
+                      </View>
+                      <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Tema Visual</Text>
+                    </View>
+                    <View style={styles.settingsRowRight}>
+                      <Text style={[styles.settingsRowValue, { color: colors.primary }]}>
+                        {availableThemes.find(t => t.id === theme)?.name || 'Cyber Dark'}
+                      </Text>
+                      <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
+                        {isThemeExpanded ? '▲' : '▼'}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  {isThemeExpanded && (
+                    <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
+                      <View style={styles.themesUnifiedGrid}>
+                        {availableThemes.map((item) => {
+                          const isSelected = theme === item.id;
+                          return (
+                            <TouchableOpacity
+                              key={item.id}
+                              style={[
+                                styles.themeUnifiedCard,
+                                { backgroundColor: colors.background, borderColor: colors.border },
+                                isSelected && { borderColor: item.color, borderWidth: 2, backgroundColor: `${item.color}15` }
+                              ]}
+                              onPress={() => setTheme(item.id)}
+                              activeOpacity={0.7}
+                            >
+                              <View style={[styles.themeUnifiedPreview, { backgroundColor: item.bgPreview }]}>
+                                <View style={[styles.themeUnifiedDot, { backgroundColor: item.color }]} />
+                              </View>
+                              <Text style={[styles.themeUnifiedName, { color: colors.text }]} numberOfLines={1}>
+                                {item.name}
+                              </Text>
+                              {isSelected && (
+                                <View style={[styles.themeSelectedCheck, { backgroundColor: item.color }]}>
+                                  <Text style={styles.themeSelectedCheckText}>✓</Text>
+                                </View>
+                              )}
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  )}
+
+                  <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
+
+                  {/* 3. Fila: Editar Nombre de Usuario */}
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      if (!isProfileEditExpanded) {
+                        setEditUsername(profile?.username || '');
+                      }
+                      setIsProfileEditExpanded(!isProfileEditExpanded);
+                    }}
+                    style={[styles.settingsRow, isProfileEditExpanded && { backgroundColor: `${colors.primary}08` }]}
+                  >
+                    <View style={styles.settingsRowLeft}>
+                      <View style={[styles.settingsIconCircle, { backgroundColor: '#10B98118' }]}>
+                        <Text style={styles.settingsRowIcon}>✏️</Text>
+                      </View>
+                      <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Nombre de Usuario</Text>
+                    </View>
+                    <View style={styles.settingsRowRight}>
+                      <Text style={[styles.settingsRowValue, { color: colors.primary }]} numberOfLines={1}>
+                        {profile?.username}
+                      </Text>
+                      <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
+                        {isProfileEditExpanded ? '▲' : '▼'}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  {isProfileEditExpanded && (
+                    <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
+                      <View style={styles.editProfileForm}>
+                        <Text style={[styles.editProfileInputLabel, { color: colors.textSecondary }]}>
+                          Nuevo Nombre de Usuario:
+                        </Text>
+                        <View style={[styles.editProfileInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                          <Text style={styles.editProfileInputIcon}>👤</Text>
+                          <TextInput
+                            style={[styles.editProfileInput, { color: colors.text }]}
+                            placeholder="Ingresa tu nuevo nombre"
+                            placeholderTextColor={colors.textSecondary}
+                            value={editUsername}
+                            onChangeText={setEditUsername}
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            maxLength={30}
+                          />
+                        </View>
+                        <TouchableOpacity
+                          style={[styles.saveProfileBtn, { backgroundColor: colors.primary }]}
+                          onPress={handleUpdateUsername}
+                          disabled={profileEditLoading}
+                          activeOpacity={0.8}
+                        >
+                          {profileEditLoading ? (
+                            <ActivityIndicator color={colors.primaryText} size="small" />
+                          ) : (
+                            <Text style={[styles.saveProfileBtnText, { color: colors.primaryText }]}>
+                              Guardar Nombre
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
+
+                  <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
+
+                  {/* 4. Fila: Cambiar Contraseña */}
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => setIsPasswordExpanded(!isPasswordExpanded)}
+                    style={[styles.settingsRow, isPasswordExpanded && { backgroundColor: `${colors.primary}08` }]}
+                  >
+                    <View style={styles.settingsRowLeft}>
+                      <View style={[styles.settingsIconCircle, { backgroundColor: '#F59E0B18' }]}>
+                        <Text style={styles.settingsRowIcon}>🔒</Text>
+                      </View>
+                      <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Cambiar Contraseña</Text>
+                    </View>
+                    <View style={styles.settingsRowRight}>
+                      <Text style={[styles.settingsChevron, { color: colors.textSecondary }]}>
+                        {isPasswordExpanded ? '▲' : '▼'}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  {isPasswordExpanded && (
+                    <View style={[styles.expandedContentWrapper, { borderTopColor: colors.border }]}>
+                      <View style={styles.passFormContainer}>
+                        <View style={[styles.passInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                          <TextInput
+                            style={[styles.passInput, { color: colors.text }]}
+                            placeholder="Contraseña actual"
+                            placeholderTextColor={colors.textSecondary}
+                            secureTextEntry={!showCurrentPass}
+                            value={currentPassword}
+                            onChangeText={setCurrentPassword}
+                          />
+                          <TouchableOpacity onPress={() => setShowCurrentPass(!showCurrentPass)} style={styles.passEyeBtn}>
+                            <Text style={{ fontSize: 13 }}>{showCurrentPass ? '👁️' : '🙈'}</Text>
+                          </TouchableOpacity>
+                        </View>
+
+                        <View style={[styles.passInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                          <TextInput
+                            style={[styles.passInput, { color: colors.text }]}
+                            placeholder="Nueva contraseña (mín. 6 caracteres)"
+                            placeholderTextColor={colors.textSecondary}
+                            secureTextEntry={!showNewPass}
+                            value={newPassword}
+                            onChangeText={setNewPassword}
+                          />
+                          <TouchableOpacity onPress={() => setShowNewPass(!showNewPass)} style={styles.passEyeBtn}>
+                            <Text style={{ fontSize: 13 }}>{showNewPass ? '👁️' : '🙈'}</Text>
+                          </TouchableOpacity>
+                        </View>
+
+                        <View style={[styles.passInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                          <TextInput
+                            style={[styles.passInput, { color: colors.text }]}
+                            placeholder="Repite la nueva clave"
+                            placeholderTextColor={colors.textSecondary}
+                            secureTextEntry={!showNewPass}
+                            value={confirmPassword}
+                            onChangeText={setConfirmPassword}
+                          />
+                        </View>
+
+                        <TouchableOpacity
+                          style={[styles.savePassBtn, { backgroundColor: colors.primary }]}
+                          onPress={handleChangePassword}
+                          disabled={passLoading}
+                        >
+                          {passLoading ? (
+                            <ActivityIndicator color={colors.primaryText} size="small" />
+                          ) : (
+                            <Text style={[styles.savePassBtnText, { color: colors.primaryText }]}>
+                              Guardar Nueva Contraseña
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
+
+                  <View style={[styles.settingsDivider, { backgroundColor: colors.border }]} />
+
+                  {/* 5. Fila: Cerrar Sesión */}
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={handleLogout}
+                    style={styles.settingsRow}
+                  >
+                    <View style={styles.settingsRowLeft}>
+                      <View style={[styles.settingsIconCircle, { backgroundColor: '#EF444418' }]}>
+                        <Text style={styles.settingsRowIcon}>🚪</Text>
+                      </View>
+                      <Text style={[styles.settingsRowLabel, { color: '#EF4444' }]}>Cerrar Sesión</Text>
+                    </View>
+                    <View style={styles.settingsRowRight}>
+                      <Text style={[styles.settingsChevron, { color: '#EF4444' }]}>›</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* =========================================================
+                OPCIÓN 2: ACORDEÓN 4 - HISTORIAL DE PARTIDAS Y FILTROS
+            ========================================================= */}
+            <View style={[styles.accordionCard, { backgroundColor: colors.card, borderColor: colors.border, marginBottom: 6 }]}>
+              <TouchableOpacity
+                style={styles.accordionHeader}
+                onPress={() => setIsHistoryOpen(!isHistoryOpen)}
+                activeOpacity={0.7}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                  <View style={[styles.accordionIconCircle, { backgroundColor: '#10B98118' }]}>
+                    <Text style={styles.accordionIconEmoji}>🎮</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.accordionTitle, { color: colors.text }]}>
+                      Historial de Partidas
+                    </Text>
+                    <Text style={[styles.accordionSubtitle, { color: colors.textSecondary }]}>
+                      {profile?.history?.length || 0} partidas registradas
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  {profile?.history && profile.history.length > 0 && (
+                    <TouchableOpacity
+                      style={[styles.clearAllHistoryBtn, { backgroundColor: '#EF444415', borderColor: '#EF444438' }]}
+                      onPress={handleClearAllHistory}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.clearAllHistoryBtnText}>🧹 Vaciar</Text>
+                    </TouchableOpacity>
+                  )}
+                  <Text style={[styles.accordionChevron, { color: colors.textSecondary }]}>
+                    {isHistoryOpen ? '▲' : '▼'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              {isHistoryOpen && profile?.history && profile.history.length > 0 && (
+                <View style={[styles.accordionBody, { borderTopColor: colors.border, paddingBottom: 4 }]}>
                   <ScrollView
-                    ref={achievementsScrollRef}
+                    ref={historyPillsScrollRef}
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.achieveScrollContent}
+                    contentContainerStyle={styles.historyPillsContent}
                     style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
                     {...(Platform.OS === 'web'
                       ? {
                           onWheel: (e) => {
                             if (e.deltaY !== 0) {
-                              const domNode = achievementsScrollRef.current?.getScrollableNode
-                                ? achievementsScrollRef.current.getScrollableNode()
-                                : achievementsScrollRef.current;
+                              const domNode = historyPillsScrollRef.current?.getScrollableNode
+                                ? historyPillsScrollRef.current.getScrollableNode()
+                                : historyPillsScrollRef.current;
                               if (domNode) {
                                 domNode.scrollLeft += e.deltaY;
                               }
@@ -1716,289 +1826,104 @@ export default function ProfileScreen() {
                         }
                       : {})}
                   >
-                    {achievementsList.map((ach) => {
-                      const progressPct = Math.min(100, Math.round((ach.current / ach.target) * 100));
-                      return (
-                        <View
-                          key={ach.id}
-                          style={[
-                            styles.achieveItemCard,
-                            {
-                              backgroundColor: ach.unlocked ? `${ach.color}10` : colors.background,
-                              borderColor: ach.unlocked ? `${ach.color}55` : colors.border,
-                            },
-                          ]}
-                        >
-                          {/* Insignia / Estado */}
-                          <View style={styles.achieveTopRow}>
-                            <View style={[styles.achieveBadgePill, { backgroundColor: ach.unlocked ? `${ach.color}25` : colors.border }]}>
-                              <Text style={[styles.achieveBadgePillText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
-                                {ach.badge}
-                              </Text>
-                            </View>
-                            <Text style={{ fontSize: 13 }}>
-                              {ach.unlocked ? '✨' : '🔒'}
-                            </Text>
-                          </View>
-
-                          {/* Icono central */}
-                          <View style={[styles.achieveItemIconWrapper, { backgroundColor: ach.unlocked ? `${ach.color}20` : `${colors.border}55` }]}>
-                            <Text style={[styles.achieveItemIcon, !ach.unlocked && { opacity: 0.5 }]}>
-                              {ach.icon}
-                            </Text>
-                          </View>
-
-                          {/* Título y Descripción */}
-                          <Text style={[styles.achieveItemName, { color: colors.text }]} numberOfLines={1}>
-                            {ach.name}
-                          </Text>
-                          <Text style={[styles.achieveItemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
-                            {ach.desc}
-                          </Text>
-
-                          {/* Barra de progreso individual */}
-                          <View style={styles.achieveMiniProgressContainer}>
-                            <View style={[styles.achieveMiniTrack, { backgroundColor: colors.border }]}>
-                              <View
-                                style={[
-                                  styles.achieveMiniFill,
-                                  {
-                                    width: `${ach.unlocked ? 100 : Math.max(8, progressPct)}%`,
-                                    backgroundColor: ach.unlocked ? ach.color : colors.primary,
-                                  },
-                                ]}
-                              />
-                            </View>
-                            <Text style={[styles.achieveMiniProgressText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
-                              {ach.unlocked ? '✓ Desbloqueado' : `${ach.current} / ${ach.target}`}
-                            </Text>
-                          </View>
-                        </View>
-                      );
-                    })}
-                  </ScrollView>
-
-                  {/* Flecha Flotante Lateral Derecha (Exclusiva Web / Hover) */}
-                  {Platform.OS === 'web' && (
+                    {/* Píldora: Todas */}
                     <TouchableOpacity
                       style={[
-                        styles.achieveHoverArrow,
-                        styles.achieveHoverArrowRight,
-                        {
-                          backgroundColor: colors.card,
-                          borderColor: colors.primary,
-                          opacity: isAchieveHovered ? 1 : 0,
-                          transform: [
-                            { translateY: -19 },
-                            { scale: isAchieveHovered ? 1 : 0.85 },
-                          ],
-                        },
+                        styles.historyFilterPill,
+                        { backgroundColor: colors.card, borderColor: colors.border },
+                        historyFilter === 'all' && { backgroundColor: colors.primary, borderColor: colors.primary },
                       ]}
-                      onPress={() => handleScrollAchievements(1)}
-                      activeOpacity={0.8}
-                      accessibilityLabel="Deslizar a la derecha"
-                    >
-                      <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>›</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-            )}
-
-            {/* =========================================================
-                PESTAÑA 1: HISTORIAL DE PARTIDAS Y FILTROS RÁPIDOS
-            ========================================================= */}
-            {activeProfileTab === 'history' && (
-              <>
-                {/* Tira Resumen Rápida de Métricas */}
-                <View style={[styles.stripContainer, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 2 }]}>
-                  {/* 1. Partidas */}
-                  <View style={styles.stripCol}>
-                    <Text style={styles.stripIcon}>🎮</Text>
-                    <Text style={[styles.stripVal, { color: colors.text }]}>{total}</Text>
-                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Partidas</Text>
-                  </View>
-
-                  <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
-
-                  {/* 2. Promedio */}
-                  <View style={styles.stripCol}>
-                    <Text style={styles.stripIcon}>{average >= 60 ? '🎯' : '📉'}</Text>
-                    <Text style={[styles.stripVal, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
-                      {average}%
-                    </Text>
-                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Promedio</Text>
-                  </View>
-
-                  <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
-
-                  {/* 3. Mejor Récord */}
-                  <View style={styles.stripCol}>
-                    <Text style={styles.stripIcon}>🏆</Text>
-                    <Text style={[styles.stripVal, { color: '#D97706' }]}>{bestScore}%</Text>
-                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Récord</Text>
-                  </View>
-
-                  <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
-
-                  {/* 4. Aprobadas */}
-                  <View style={styles.stripCol}>
-                    <Text style={styles.stripIcon}>✅</Text>
-                    <Text style={[styles.stripVal, { color: '#8B5CF6' }]}>{passed}</Text>
-                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Aprobadas</Text>
-                  </View>
-                </View>
-
-                {/* Encabezado de la Sección de Historial con Contador y Botón Vaciar Todo */}
-                <View style={styles.historySectionHeaderRow}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 0, marginBottom: 0 }]}>
-                      Partidas Jugadas
-                    </Text>
-                    {profile?.history && profile.history.length > 0 && (
-                      <View style={[styles.historyCountBadge, { backgroundColor: `${colors.primary}20` }]}>
-                        <Text style={[styles.historyCountBadgeText, { color: colors.primary }]}>
-                          {filteredHistory.length}
-                          {filteredHistory.length !== profile.history.length ? ` / ${profile.history.length}` : ''}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-
-                  {profile?.history && profile.history.length > 0 && (
-                    <TouchableOpacity
-                      style={[styles.clearAllHistoryBtn, { backgroundColor: '#EF444415', borderColor: '#EF444438' }]}
-                      onPress={handleClearAllHistory}
+                      onPress={() => setHistoryFilter('all')}
                       activeOpacity={0.7}
                     >
-                      <Text style={styles.clearAllHistoryBtnText}>🧹 Vaciar Todo</Text>
+                      <Text
+                        style={[
+                          styles.historyFilterPillText,
+                          { color: historyFilter === 'all' ? colors.primaryText : colors.text },
+                        ]}
+                      >
+                        🌟 Todas ({profile.history.length})
+                      </Text>
                     </TouchableOpacity>
-                  )}
-                </View>
 
-                {/* Píldoras de Filtro Rápido (Todas, 100% Perfectas, Aprobadas, Por Materia) */}
-                {profile?.history && profile.history.length > 0 && (
-                  <View style={styles.historyPillsContainer}>
-                    <ScrollView
-                      ref={historyPillsScrollRef}
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      contentContainerStyle={styles.historyPillsContent}
-                      style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
-                      {...(Platform.OS === 'web'
-                        ? {
-                            onWheel: (e) => {
-                              if (e.deltaY !== 0) {
-                                const domNode = historyPillsScrollRef.current?.getScrollableNode
-                                  ? historyPillsScrollRef.current.getScrollableNode()
-                                  : historyPillsScrollRef.current;
-                                if (domNode) {
-                                  domNode.scrollLeft += e.deltaY;
-                                }
-                              }
-                            },
-                          }
-                        : {})}
-                    >
-                      {/* Píldora: Todas */}
+                    {/* Píldora: 100% Perfectas (si existen) */}
+                    {perfectGamesCount > 0 && (
                       <TouchableOpacity
                         style={[
                           styles.historyFilterPill,
                           { backgroundColor: colors.card, borderColor: colors.border },
-                          historyFilter === 'all' && { backgroundColor: colors.primary, borderColor: colors.primary },
+                          historyFilter === 'perfect' && { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' },
                         ]}
-                        onPress={() => setHistoryFilter('all')}
+                        onPress={() => setHistoryFilter('perfect')}
                         activeOpacity={0.7}
                       >
                         <Text
                           style={[
                             styles.historyFilterPillText,
-                            { color: historyFilter === 'all' ? colors.primaryText : colors.text },
+                            { color: historyFilter === 'perfect' ? '#FFFFFF' : colors.text },
                           ]}
                         >
-                          🌟 Todas ({profile.history.length})
+                          👑 100% ({perfectGamesCount})
                         </Text>
                       </TouchableOpacity>
+                    )}
 
-                      {/* Píldora: 100% Perfectas (si existen) */}
-                      {perfectGamesCount > 0 && (
+                    {/* Píldora: Aprobadas (si existen) */}
+                    {passedGamesCount > 0 && (
+                      <TouchableOpacity
+                        style={[
+                          styles.historyFilterPill,
+                          { backgroundColor: colors.card, borderColor: colors.border },
+                          historyFilter === 'passed' && { backgroundColor: '#10B981', borderColor: '#10B981' },
+                        ]}
+                        onPress={() => setHistoryFilter('passed')}
+                        activeOpacity={0.7}
+                      >
+                        <Text
+                          style={[
+                            styles.historyFilterPillText,
+                            { color: historyFilter === 'passed' ? '#FFFFFF' : colors.text },
+                          ]}
+                        >
+                          ✅ Aprobadas ({passedGamesCount})
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {/* Píldoras por cada materia registrada */}
+                    {uniqueHistoryCategories.map((cat) => {
+                      const isSelected = historyFilter === cat.name;
+                      return (
                         <TouchableOpacity
+                          key={cat.name}
                           style={[
                             styles.historyFilterPill,
                             { backgroundColor: colors.card, borderColor: colors.border },
-                            historyFilter === 'perfect' && { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' },
+                            isSelected && { backgroundColor: colors.primary, borderColor: colors.primary },
                           ]}
-                          onPress={() => setHistoryFilter('perfect')}
+                          onPress={() => setHistoryFilter(cat.name)}
                           activeOpacity={0.7}
                         >
                           <Text
                             style={[
                               styles.historyFilterPillText,
-                              { color: historyFilter === 'perfect' ? '#FFFFFF' : colors.text },
+                              { color: isSelected ? colors.primaryText : colors.text },
                             ]}
                           >
-                            👑 100% ({perfectGamesCount})
+                            {cat.icon} {cat.name} ({cat.count})
                           </Text>
                         </TouchableOpacity>
-                      )}
-
-                      {/* Píldora: Aprobadas (si existen) */}
-                      {passedGamesCount > 0 && (
-                        <TouchableOpacity
-                          style={[
-                            styles.historyFilterPill,
-                            { backgroundColor: colors.card, borderColor: colors.border },
-                            historyFilter === 'passed' && { backgroundColor: '#10B981', borderColor: '#10B981' },
-                          ]}
-                          onPress={() => setHistoryFilter('passed')}
-                          activeOpacity={0.7}
-                        >
-                          <Text
-                            style={[
-                              styles.historyFilterPillText,
-                              { color: historyFilter === 'passed' ? '#FFFFFF' : colors.text },
-                            ]}
-                          >
-                            ✅ Aprobadas ({passedGamesCount})
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-
-                      {/* Píldoras por cada materia registrada */}
-                      {uniqueHistoryCategories.map((cat) => {
-                        const isSelected = historyFilter === cat.name;
-                        return (
-                          <TouchableOpacity
-                            key={cat.name}
-                            style={[
-                              styles.historyFilterPill,
-                              { backgroundColor: colors.card, borderColor: colors.border },
-                              isSelected && { backgroundColor: colors.primary, borderColor: colors.primary },
-                            ]}
-                            onPress={() => setHistoryFilter(cat.name)}
-                            activeOpacity={0.7}
-                          >
-                            <Text
-                              style={[
-                                styles.historyFilterPillText,
-                                { color: isSelected ? colors.primaryText : colors.text },
-                              ]}
-                            >
-                              {cat.icon} {cat.name} ({cat.count})
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </ScrollView>
-                  </View>
-                )}
-              </>
-            )}
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
           </>
         }
-        data={activeProfileTab === 'history' ? filteredHistory : []}
+        data={isHistoryOpen ? filteredHistory : []}
         ListEmptyComponent={
-          activeProfileTab === 'history' ? (
+          isHistoryOpen ? (
             profile?.history && profile.history.length > 0 ? (
               <View style={styles.emptyFilterState}>
                 <Text style={{ fontSize: 32, marginBottom: 8 }}>🔍</Text>
@@ -2383,56 +2308,51 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
   },
-  // Estilos de la Barra de Pestañas Superiores (Tabs Compactas)
-  profileTabBar: {
+  // Estilos para Acordeones Plegables Inteligentes (Opción 2)
+  accordionCard: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.06)' }
+      : { elevation: 2 }),
+  },
+  accordionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginHorizontal: 16,
-    marginTop: 6,
-    marginBottom: 8,
-    padding: 4,
-    borderRadius: 14,
-    borderWidth: 1,
-    gap: 4,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.04)' }
-      : { elevation: 1 }),
+    paddingHorizontal: 14,
+    paddingVertical: 11,
   },
-  profileTabItem: {
-    flex: 1,
-    flexDirection: 'row',
+  accordionIconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 2,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-    gap: 4,
-    ...(Platform.OS === 'web'
-      ? { cursor: 'pointer', userSelect: 'none', transition: 'all 0.15s ease' }
-      : {}),
   },
-  profileTabItemActive: {
-    elevation: 1,
+  accordionIconEmoji: {
+    fontSize: 18,
   },
-  profileTabEmoji: {
+  accordionTitle: {
     fontSize: 14,
+    fontWeight: '800',
+    fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
   },
-  profileTabTitle: {
-    fontSize: 11.5,
-    fontWeight: '700',
+  accordionSubtitle: {
+    fontSize: 11,
+    marginTop: 1,
   },
-  profileTabBadge: {
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 8,
-    marginLeft: -1,
+  accordionChevron: {
+    fontSize: 12,
+    fontWeight: '800',
+    paddingLeft: 4,
   },
-  profileTabBadgeText: {
-    fontSize: 9.5,
-    fontWeight: '900',
+  accordionBody: {
+    borderTopWidth: 1,
+    padding: 12,
   },
   // Tarjeta Unificada de Configuración (Estilo iOS)
   settingsUnifiedCard: {
