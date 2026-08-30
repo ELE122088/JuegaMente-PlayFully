@@ -131,6 +131,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { theme, colors, setTheme } = useTheme();
   const { refreshUser } = useSidebar();
+  const [activeProfileTab, setActiveProfileTab] = useState('history'); // 'history' | 'performance' | 'achievements' | 'settings'
   const [isThemeExpanded, setIsThemeExpanded] = useState(false);
 
   // Estados para Galería de Avatares Prediseñados
@@ -1061,11 +1062,91 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            {/* PROPUESTA 1: Tarjeta Unificada de Ajustes (Estilo iOS / Configuración) */}
-            <View style={[styles.settingsUnifiedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={styles.settingsCardHeader}>
-                <Text style={[styles.settingsCardTitle, { color: colors.textSecondary }]}>⚙️ CONFIGURACIÓN Y CUENTA</Text>
-              </View>
+            {/* Barra de Pestañas Superiores para Compactar la Pantalla (Opción 1) */}
+            <View style={[styles.profileTabBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {/* Pestaña 1: Historial */}
+              <TouchableOpacity
+                style={[
+                  styles.profileTabItem,
+                  activeProfileTab === 'history' && [styles.profileTabItemActive, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }],
+                ]}
+                onPress={() => setActiveProfileTab('history')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.profileTabEmoji}>🎮</Text>
+                <Text style={[styles.profileTabTitle, { color: activeProfileTab === 'history' ? colors.primary : colors.textSecondary }]}>
+                  Historial
+                </Text>
+                {profile?.history && profile.history.length > 0 && (
+                  <View style={[styles.profileTabBadge, { backgroundColor: activeProfileTab === 'history' ? colors.primary : `${colors.textSecondary}22` }]}>
+                    <Text style={[styles.profileTabBadgeText, { color: activeProfileTab === 'history' ? colors.primaryText : colors.textSecondary }]}>
+                      {profile.history.length}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              {/* Pestaña 2: Rendimiento */}
+              <TouchableOpacity
+                style={[
+                  styles.profileTabItem,
+                  activeProfileTab === 'performance' && [styles.profileTabItemActive, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }],
+                ]}
+                onPress={() => setActiveProfileTab('performance')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.profileTabEmoji}>📊</Text>
+                <Text style={[styles.profileTabTitle, { color: activeProfileTab === 'performance' ? colors.primary : colors.textSecondary }]}>
+                  Rendimiento
+                </Text>
+              </TouchableOpacity>
+
+              {/* Pestaña 3: Logros */}
+              <TouchableOpacity
+                style={[
+                  styles.profileTabItem,
+                  activeProfileTab === 'achievements' && [styles.profileTabItemActive, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }],
+                ]}
+                onPress={() => setActiveProfileTab('achievements')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.profileTabEmoji}>🏆</Text>
+                <Text style={[styles.profileTabTitle, { color: activeProfileTab === 'achievements' ? colors.primary : colors.textSecondary }]}>
+                  Logros
+                </Text>
+                {unlockedCount > 0 && (
+                  <View style={[styles.profileTabBadge, { backgroundColor: '#10B981' }]}>
+                    <Text style={[styles.profileTabBadgeText, { color: '#FFFFFF' }]}>
+                      {unlockedCount}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              {/* Pestaña 4: Ajustes */}
+              <TouchableOpacity
+                style={[
+                  styles.profileTabItem,
+                  activeProfileTab === 'settings' && [styles.profileTabItemActive, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }],
+                ]}
+                onPress={() => setActiveProfileTab('settings')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.profileTabEmoji}>⚙️</Text>
+                <Text style={[styles.profileTabTitle, { color: activeProfileTab === 'settings' ? colors.primary : colors.textSecondary }]}>
+                  Ajustes
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* =========================================================
+                PESTAÑA 4: CONFIGURACIÓN Y CUENTA
+            ========================================================= */}
+            {activeProfileTab === 'settings' && (
+              <View style={[styles.settingsUnifiedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={styles.settingsCardHeader}>
+                  <Text style={[styles.settingsCardTitle, { color: colors.textSecondary }]}>⚙️ CONFIGURACIÓN Y CUENTA</Text>
+                </View>
 
               {/* 1. Fila: Avatar de Personaje y Galería */}
               <TouchableOpacity
@@ -1364,531 +1445,591 @@ export default function ProfileScreen() {
                 </View>
               )}
             </View>
+            )}
 
             {/* =========================================================
-                PROPUESTA C (ACTIVA): Tira Horizontal Ultra-Compacta (Estilo Apple Analytics)
+                PESTAÑA 2: RENDIMIENTO GENERAL Y POR MATERIA
             ========================================================= */}
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>    Resumen de Rendimiento</Text>
-            <View style={[styles.stripContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              {/* 1. Partidas */}
-              <View style={styles.stripCol}>
-                <Text style={styles.stripIcon}>🎮</Text>
-                <Text style={[styles.stripVal, { color: colors.text }]}>{total}</Text>
-                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Partidas</Text>
-              </View>
-
-              <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
-
-              {/* 2. Promedio */}
-              <View style={styles.stripCol}>
-                <Text style={styles.stripIcon}>{average >= 60 ? '🎯' : '📉'}</Text>
-                <Text style={[styles.stripVal, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
-                  {average}%
-                </Text>
-                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Promedio</Text>
-              </View>
-
-              <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
-
-              {/* 3. Mejor Récord */}
-              <View style={styles.stripCol}>
-                <Text style={styles.stripIcon}>🏆</Text>
-                <Text style={[styles.stripVal, { color: '#D97706' }]}>{bestScore}%</Text>
-                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Récord</Text>
-              </View>
-
-              <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
-
-              {/* 4. Aprobadas */}
-              <View style={styles.stripCol}>
-                <Text style={styles.stripIcon}>✅</Text>
-                <Text style={[styles.stripVal, { color: '#8B5CF6' }]}>{passed}</Text>
-                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Aprobadas</Text>
-              </View>
-            </View>
-
-            {/* =========================================================
-                PROPUESTA 1 (OPCIÓN 3): Vitrina de Logros con Flechas Hover Inteligentes
-            ========================================================= */}
-            <View
-              style={[styles.achievementsCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-              {...(Platform.OS === 'web'
-                ? {
-                    onMouseEnter: () => setIsAchieveHovered(true),
-                    onMouseLeave: () => setIsAchieveHovered(false),
-                  }
-                : {})}
-            >
-              {/* Cabecera de la Vitrina */}
-              <View style={styles.achievementsHeader}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <View style={[styles.achieveIconCircle, { backgroundColor: '#F59E0B18' }]}>
-                    <Text style={styles.achieveHeaderIcon}>🏆</Text>
+            {activeProfileTab === 'performance' && (
+              <>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>    Resumen General</Text>
+                <View style={[styles.stripContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  {/* 1. Partidas */}
+                  <View style={styles.stripCol}>
+                    <Text style={styles.stripIcon}>🎮</Text>
+                    <Text style={[styles.stripVal, { color: colors.text }]}>{total}</Text>
+                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Partidas</Text>
                   </View>
-                  <View>
-                    <Text style={[styles.achieveTitle, { color: colors.text }]}>
-                      Vitrina de Logros e Insignias
+
+                  <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
+
+                  {/* 2. Promedio */}
+                  <View style={styles.stripCol}>
+                    <Text style={styles.stripIcon}>{average >= 60 ? '🎯' : '📉'}</Text>
+                    <Text style={[styles.stripVal, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
+                      {average}%
                     </Text>
-                    <Text style={[styles.achieveSubtitle, { color: colors.textSecondary }]}>
-                      Desbloquea trofeos jugando y mejorando tus notas
-                    </Text>
+                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Promedio</Text>
+                  </View>
+
+                  <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
+
+                  {/* 3. Mejor Récord */}
+                  <View style={styles.stripCol}>
+                    <Text style={styles.stripIcon}>🏆</Text>
+                    <Text style={[styles.stripVal, { color: '#D97706' }]}>{bestScore}%</Text>
+                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Récord</Text>
+                  </View>
+
+                  <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
+
+                  {/* 4. Aprobadas */}
+                  <View style={styles.stripCol}>
+                    <Text style={styles.stripIcon}>✅</Text>
+                    <Text style={[styles.stripVal, { color: '#8B5CF6' }]}>{passed}</Text>
+                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Aprobadas</Text>
                   </View>
                 </View>
 
-                <View style={[styles.achieveCounterBadge, { backgroundColor: unlockedCount > 0 ? '#10B98118' : `${colors.primary}18` }]}>
-                  <Text style={[styles.achieveCounterText, { color: unlockedCount > 0 ? '#10B981' : colors.primary }]}>
-                    {unlockedCount} / {totalCount}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Barra de progreso global de logros */}
-              <View style={[styles.achieveGlobalProgressTrack, { backgroundColor: colors.border }]}>
-                <View
-                  style={[
-                    styles.achieveGlobalProgressFill,
-                    {
-                      width: `${Math.max(6, Math.round((unlockedCount / totalCount) * 100))}%`,
-                      backgroundColor: unlockedCount === totalCount ? '#F59E0B' : colors.primary,
-                    },
-                  ]}
-                />
-              </View>
-
-              {/* Contenedor del Carrusel con Flechas Flotantes Inteligentes (Solo en Web) */}
-              <View style={styles.achieveHoverWrapper}>
-                {/* Flecha Flotante Lateral Izquierda (Exclusiva Web / Hover) */}
-                {Platform.OS === 'web' && (
-                  <TouchableOpacity
-                    style={[
-                      styles.achieveHoverArrow,
-                      styles.achieveHoverArrowLeft,
-                      {
-                        backgroundColor: colors.card,
-                        borderColor: colors.primary,
-                        opacity: isAchieveHovered ? 1 : 0,
-                        transform: [
-                          { translateY: -19 },
-                          { scale: isAchieveHovered ? 1 : 0.85 },
-                        ],
-                      },
-                    ]}
-                    onPress={() => handleScrollAchievements(-1)}
-                    activeOpacity={0.8}
-                    accessibilityLabel="Deslizar a la izquierda"
-                  >
-                    <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>‹</Text>
-                  </TouchableOpacity>
-                )}
-
-                {/* Carrusel Deslizable Horizontal de Tarjetas de Logro */}
-                <ScrollView
-                  ref={achievementsScrollRef}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.achieveScrollContent}
-                  style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
-                  {...(Platform.OS === 'web'
-                    ? {
-                        onWheel: (e) => {
-                          if (e.deltaY !== 0) {
-                            const domNode = achievementsScrollRef.current?.getScrollableNode
-                              ? achievementsScrollRef.current.getScrollableNode()
-                              : achievementsScrollRef.current;
-                            if (domNode) {
-                              domNode.scrollLeft += e.deltaY;
-                            }
-                          }
-                        },
-                      }
-                    : {})}
-                >
-                  {achievementsList.map((ach) => {
-                    const progressPct = Math.min(100, Math.round((ach.current / ach.target) * 100));
-                    return (
-                      <View
-                        key={ach.id}
-                        style={[
-                          styles.achieveItemCard,
-                          {
-                            backgroundColor: ach.unlocked ? `${ach.color}10` : colors.background,
-                            borderColor: ach.unlocked ? `${ach.color}55` : colors.border,
-                          },
-                        ]}
-                      >
-                        {/* Insignia / Estado */}
-                        <View style={styles.achieveTopRow}>
-                          <View style={[styles.achieveBadgePill, { backgroundColor: ach.unlocked ? `${ach.color}25` : colors.border }]}>
-                            <Text style={[styles.achieveBadgePillText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
-                              {ach.badge}
-                            </Text>
-                          </View>
-                          <Text style={{ fontSize: 13 }}>
-                            {ach.unlocked ? '✨' : '🔒'}
-                          </Text>
+                {profile?.history && profile.history.length > 0 ? (
+                  <View style={[styles.subjectPerformanceCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    {/* Cabecera de Rendimiento por Materia */}
+                    <View style={styles.subjectPerfHeader}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <View style={[styles.subjectPerfHeaderIconCircle, { backgroundColor: `${colors.primary}18` }]}>
+                          <Text style={styles.subjectPerfHeaderIcon}>📊</Text>
                         </View>
-
-                        {/* Icono central */}
-                        <View style={[styles.achieveItemIconWrapper, { backgroundColor: ach.unlocked ? `${ach.color}20` : `${colors.border}55` }]}>
-                          <Text style={[styles.achieveItemIcon, !ach.unlocked && { opacity: 0.5 }]}>
-                            {ach.icon}
+                        <View>
+                          <Text style={[styles.subjectPerfTitle, { color: colors.text }]}>
+                            Rendimiento por Materia
                           </Text>
-                        </View>
-
-                        {/* Título y Descripción */}
-                        <Text style={[styles.achieveItemName, { color: colors.text }]} numberOfLines={1}>
-                          {ach.name}
-                        </Text>
-                        <Text style={[styles.achieveItemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
-                          {ach.desc}
-                        </Text>
-
-                        {/* Barra de progreso individual */}
-                        <View style={styles.achieveMiniProgressContainer}>
-                          <View style={[styles.achieveMiniTrack, { backgroundColor: colors.border }]}>
-                            <View
-                              style={[
-                                styles.achieveMiniFill,
-                                {
-                                  width: `${ach.unlocked ? 100 : Math.max(8, progressPct)}%`,
-                                  backgroundColor: ach.unlocked ? ach.color : colors.primary,
-                                },
-                              ]}
-                            />
-                          </View>
-                          <Text style={[styles.achieveMiniProgressText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
-                            {ach.unlocked ? '✓ Desbloqueado' : `${ach.current} / ${ach.target}`}
+                          <Text style={[styles.subjectPerfSubtitle, { color: colors.textSecondary }]}>
+                            Toca una materia para ver sus partidas en el Historial
                           </Text>
                         </View>
                       </View>
-                    );
-                  })}
-                </ScrollView>
+                      <View style={[styles.subjectCountBadge, { backgroundColor: `${colors.primary}18` }]}>
+                        <Text style={[styles.subjectCountBadgeText, { color: colors.primary }]}>
+                          {subjectPerformance.length} {subjectPerformance.length === 1 ? 'materia' : 'materias'}
+                        </Text>
+                      </View>
+                    </View>
 
-                {/* Flecha Flotante Lateral Derecha (Exclusiva Web / Hover) */}
-                {Platform.OS === 'web' && (
-                  <TouchableOpacity
-                    style={[
-                      styles.achieveHoverArrow,
-                      styles.achieveHoverArrowRight,
-                      {
-                        backgroundColor: colors.card,
-                        borderColor: colors.primary,
-                        opacity: isAchieveHovered ? 1 : 0,
-                        transform: [
-                          { translateY: -19 },
-                          { scale: isAchieveHovered ? 1 : 0.85 },
-                        ],
-                      },
-                    ]}
-                    onPress={() => handleScrollAchievements(1)}
-                    activeOpacity={0.8}
-                    accessibilityLabel="Deslizar a la derecha"
-                  >
-                    <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>›</Text>
-                  </TouchableOpacity>
+                    {/* Banner de Fortalezas / Consejos de Estudio */}
+                    {topSubject && (
+                      <View
+                        style={[
+                          styles.insightBanner,
+                          {
+                            backgroundColor: topSubject.average >= 75 ? '#10B98112' : `${colors.primary}12`,
+                            borderColor: topSubject.average >= 75 ? '#10B98133' : `${colors.primary}33`,
+                          },
+                        ]}
+                      >
+                        <Text style={{ fontSize: 16 }}>
+                          {topSubject.average >= 85 ? '🌟' : '💡'}
+                        </Text>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.insightText, { color: colors.text }]}>
+                            {topSubject.average >= 85 ? (
+                              <>¡Tu fuerte principal es <Text style={{ fontWeight: '800', color: '#10B981' }}>{topSubject.name}</Text> con <Text style={{ fontWeight: '800' }}>{topSubject.average}%</Text> de promedio!</>
+                            ) : (
+                              <>Mayor efectividad actual en <Text style={{ fontWeight: '800', color: colors.primary }}>{topSubject.name}</Text> ({topSubject.average}%).</>
+                            )}
+                            {lowestSubject && lowestSubject.average < 60 && (
+                              <Text style={{ color: colors.textSecondary, fontSize: 11 }}>
+                                {` • `}
+                                <Text style={{ fontWeight: '700', color: '#EF4444' }}>💡 Sugerencia:</Text>
+                                {` Practica más en `}
+                                <Text style={{ fontWeight: '700', color: colors.text }}>{lowestSubject.name}</Text>
+                                {` (${lowestSubject.average}%) para subir tu promedio.`}
+                              </Text>
+                            )}
+                          </Text>
+                        </View>
+                      </View>
+                    )}
+
+                    {/* Lista de Barras de Progreso por Materia */}
+                    <View style={styles.subjectBarsContainer}>
+                      {subjectPerformance.map((subj) => {
+                        return (
+                          <TouchableOpacity
+                            key={subj.name}
+                            style={[
+                              styles.subjectBarItem,
+                              { backgroundColor: colors.background, borderColor: colors.border },
+                            ]}
+                            onPress={() => {
+                              setHistoryFilter(subj.name);
+                              setActiveProfileTab('history');
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            {/* Fila Superior: Icono, Nombre y Píldora de Estado */}
+                            <View style={styles.subjectBarHeaderRow}>
+                              <View style={styles.subjectNameWrapper}>
+                                <Text style={styles.subjectIconEmoji}>{subj.icon}</Text>
+                                <Text style={[styles.subjectItemName, { color: colors.text }]} numberOfLines={1}>
+                                  {subj.name}
+                                </Text>
+                              </View>
+
+                              <View style={[styles.subjectStatusPill, { backgroundColor: subj.statusBg }]}>
+                                <Text style={[styles.subjectStatusPillText, { color: subj.statusColor }]}>
+                                  {subj.statusLabel}
+                                </Text>
+                              </View>
+                            </View>
+
+                            {/* Barra de Progreso de Rendimiento */}
+                            <View style={[styles.subjectProgressTrack, { backgroundColor: colors.border }]}>
+                              <View
+                                style={[
+                                  styles.subjectProgressFill,
+                                  {
+                                    width: `${Math.min(Math.max(subj.average, 8), 100)}%`,
+                                    backgroundColor: subj.barColor,
+                                  },
+                                ]}
+                              />
+                            </View>
+
+                            {/* Fila de Estadísticas Detalladas de la Materia */}
+                            <View style={styles.subjectMetricsRow}>
+                              <Text style={[styles.subjectMetricAvg, { color: subj.statusColor }]}>
+                                Promedio: <Text style={{ fontWeight: '800' }}>{subj.average}%</Text>
+                              </Text>
+                              <Text style={[styles.subjectMetricDetails, { color: colors.textSecondary }]}>
+                                🏆 Récord: {subj.bestScore}% • 🎮 {subj.attempts} {subj.attempts === 1 ? 'partida' : 'partidas'} • {subj.totalScore}/{subj.totalQuestions} pts
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.emptyState}>
+                    <Text style={{ fontSize: 36, marginBottom: 6 }}>📊</Text>
+                    <Text style={[styles.emptyText, { color: colors.text }]}>Sin materias jugadas todavía</Text>
+                    <Text style={[styles.emptySub, { color: colors.textSecondary }]}>Juega una partida para que aparezca tu análisis de materias aquí.</Text>
+                  </View>
                 )}
-              </View>
-            </View>
+              </>
+            )}
 
             {/* =========================================================
-                PROPUESTA 2: Barras de Rendimiento y Análisis por Materia
+                PESTAÑA 3: VITRINA DE LOGROS E INSIGNIAS
             ========================================================= */}
-            {profile?.history && profile.history.length > 0 && (
-              <View style={[styles.subjectPerformanceCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                {/* Cabecera de Rendimiento por Materia */}
-                <View style={styles.subjectPerfHeader}>
+            {activeProfileTab === 'achievements' && (
+              <View
+                style={[styles.achievementsCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                {...(Platform.OS === 'web'
+                  ? {
+                      onMouseEnter: () => setIsAchieveHovered(true),
+                      onMouseLeave: () => setIsAchieveHovered(false),
+                    }
+                  : {})}
+              >
+                {/* Cabecera de la Vitrina */}
+                <View style={styles.achievementsHeader}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    <View style={[styles.subjectPerfHeaderIconCircle, { backgroundColor: `${colors.primary}18` }]}>
-                      <Text style={styles.subjectPerfHeaderIcon}>📊</Text>
+                    <View style={[styles.achieveIconCircle, { backgroundColor: '#F59E0B18' }]}>
+                      <Text style={styles.achieveHeaderIcon}>🏆</Text>
                     </View>
                     <View>
-                      <Text style={[styles.subjectPerfTitle, { color: colors.text }]}>
-                        Rendimiento por Materia
+                      <Text style={[styles.achieveTitle, { color: colors.text }]}>
+                        Vitrina de Logros e Insignias
                       </Text>
-                      <Text style={[styles.subjectPerfSubtitle, { color: colors.textSecondary }]}>
-                        Fortalezas y materias por reforzar
+                      <Text style={[styles.achieveSubtitle, { color: colors.textSecondary }]}>
+                        Desbloquea trofeos jugando y mejorando tus notas
                       </Text>
                     </View>
                   </View>
-                  <View style={[styles.subjectCountBadge, { backgroundColor: `${colors.primary}18` }]}>
-                    <Text style={[styles.subjectCountBadgeText, { color: colors.primary }]}>
-                      {subjectPerformance.length} {subjectPerformance.length === 1 ? 'materia' : 'materias'}
+
+                  <View style={[styles.achieveCounterBadge, { backgroundColor: unlockedCount > 0 ? '#10B98118' : `${colors.primary}18` }]}>
+                    <Text style={[styles.achieveCounterText, { color: unlockedCount > 0 ? '#10B981' : colors.primary }]}>
+                      {unlockedCount} / {totalCount}
                     </Text>
                   </View>
                 </View>
 
-                {/* Banner de Fortalezas / Consejos de Estudio */}
-                {topSubject && (
+                {/* Barra de progreso global de logros */}
+                <View style={[styles.achieveGlobalProgressTrack, { backgroundColor: colors.border }]}>
                   <View
                     style={[
-                      styles.insightBanner,
+                      styles.achieveGlobalProgressFill,
                       {
-                        backgroundColor: topSubject.average >= 75 ? '#10B98112' : `${colors.primary}12`,
-                        borderColor: topSubject.average >= 75 ? '#10B98133' : `${colors.primary}33`,
+                        width: `${Math.max(6, Math.round((unlockedCount / totalCount) * 100))}%`,
+                        backgroundColor: unlockedCount === totalCount ? '#F59E0B' : colors.primary,
                       },
                     ]}
+                  />
+                </View>
+
+                {/* Contenedor del Carrusel con Flechas Flotantes Inteligentes (Solo en Web) */}
+                <View style={styles.achieveHoverWrapper}>
+                  {/* Flecha Flotante Lateral Izquierda (Exclusiva Web / Hover) */}
+                  {Platform.OS === 'web' && (
+                    <TouchableOpacity
+                      style={[
+                        styles.achieveHoverArrow,
+                        styles.achieveHoverArrowLeft,
+                        {
+                          backgroundColor: colors.card,
+                          borderColor: colors.primary,
+                          opacity: isAchieveHovered ? 1 : 0,
+                          transform: [
+                            { translateY: -19 },
+                            { scale: isAchieveHovered ? 1 : 0.85 },
+                          ],
+                        },
+                      ]}
+                      onPress={() => handleScrollAchievements(-1)}
+                      activeOpacity={0.8}
+                      accessibilityLabel="Deslizar a la izquierda"
+                    >
+                      <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>‹</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  {/* Carrusel Deslizable Horizontal de Tarjetas de Logro */}
+                  <ScrollView
+                    ref={achievementsScrollRef}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.achieveScrollContent}
+                    style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
+                    {...(Platform.OS === 'web'
+                      ? {
+                          onWheel: (e) => {
+                            if (e.deltaY !== 0) {
+                              const domNode = achievementsScrollRef.current?.getScrollableNode
+                                ? achievementsScrollRef.current.getScrollableNode()
+                                : achievementsScrollRef.current;
+                              if (domNode) {
+                                domNode.scrollLeft += e.deltaY;
+                              }
+                            }
+                          },
+                        }
+                      : {})}
                   >
-                    <Text style={{ fontSize: 16 }}>
-                      {topSubject.average >= 85 ? '🌟' : '💡'}
-                    </Text>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.insightText, { color: colors.text }]}>
-                        {topSubject.average >= 85 ? (
-                          <>¡Tu fuerte principal es <Text style={{ fontWeight: '800', color: '#10B981' }}>{topSubject.name}</Text> con <Text style={{ fontWeight: '800' }}>{topSubject.average}%</Text> de promedio!</>
-                        ) : (
-                          <>Mayor efectividad actual en <Text style={{ fontWeight: '800', color: colors.primary }}>{topSubject.name}</Text> ({topSubject.average}%).</>
-                        )}
-                        {lowestSubject && lowestSubject.average < 60 && (
-                          <Text style={{ color: colors.textSecondary, fontSize: 11 }}>
-                            {` • `}
-                            <Text style={{ fontWeight: '700', color: '#EF4444' }}>💡 Sugerencia:</Text>
-                            {` Practica más en `}
-                            <Text style={{ fontWeight: '700', color: colors.text }}>{lowestSubject.name}</Text>
-                            {` (${lowestSubject.average}%) para subir tu promedio.`}
-                          </Text>
-                        )}
-                      </Text>
-                    </View>
-                  </View>
-                )}
-
-                {/* Lista de Barras de Progreso por Materia */}
-                <View style={styles.subjectBarsContainer}>
-                  {subjectPerformance.map((subj) => {
-                    const isFiltered = historyFilter === subj.name;
-                    return (
-                      <TouchableOpacity
-                        key={subj.name}
-                        style={[
-                          styles.subjectBarItem,
-                          { backgroundColor: colors.background, borderColor: colors.border },
-                          isFiltered && { borderColor: colors.primary, borderWidth: 1.5, backgroundColor: `${colors.primary}0D` },
-                        ]}
-                        onPress={() => setHistoryFilter(historyFilter === subj.name ? 'all' : subj.name)}
-                        activeOpacity={0.7}
-                      >
-                        {/* Fila Superior: Icono, Nombre y Píldora de Estado */}
-                        <View style={styles.subjectBarHeaderRow}>
-                          <View style={styles.subjectNameWrapper}>
-                            <Text style={styles.subjectIconEmoji}>{subj.icon}</Text>
-                            <Text style={[styles.subjectItemName, { color: colors.text }]} numberOfLines={1}>
-                              {subj.name}
+                    {achievementsList.map((ach) => {
+                      const progressPct = Math.min(100, Math.round((ach.current / ach.target) * 100));
+                      return (
+                        <View
+                          key={ach.id}
+                          style={[
+                            styles.achieveItemCard,
+                            {
+                              backgroundColor: ach.unlocked ? `${ach.color}10` : colors.background,
+                              borderColor: ach.unlocked ? `${ach.color}55` : colors.border,
+                            },
+                          ]}
+                        >
+                          {/* Insignia / Estado */}
+                          <View style={styles.achieveTopRow}>
+                            <View style={[styles.achieveBadgePill, { backgroundColor: ach.unlocked ? `${ach.color}25` : colors.border }]}>
+                              <Text style={[styles.achieveBadgePillText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
+                                {ach.badge}
+                              </Text>
+                            </View>
+                            <Text style={{ fontSize: 13 }}>
+                              {ach.unlocked ? '✨' : '🔒'}
                             </Text>
                           </View>
 
-                          <View style={[styles.subjectStatusPill, { backgroundColor: subj.statusBg }]}>
-                            <Text style={[styles.subjectStatusPillText, { color: subj.statusColor }]}>
-                              {subj.statusLabel}
+                          {/* Icono central */}
+                          <View style={[styles.achieveItemIconWrapper, { backgroundColor: ach.unlocked ? `${ach.color}20` : `${colors.border}55` }]}>
+                            <Text style={[styles.achieveItemIcon, !ach.unlocked && { opacity: 0.5 }]}>
+                              {ach.icon}
+                            </Text>
+                          </View>
+
+                          {/* Título y Descripción */}
+                          <Text style={[styles.achieveItemName, { color: colors.text }]} numberOfLines={1}>
+                            {ach.name}
+                          </Text>
+                          <Text style={[styles.achieveItemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
+                            {ach.desc}
+                          </Text>
+
+                          {/* Barra de progreso individual */}
+                          <View style={styles.achieveMiniProgressContainer}>
+                            <View style={[styles.achieveMiniTrack, { backgroundColor: colors.border }]}>
+                              <View
+                                style={[
+                                  styles.achieveMiniFill,
+                                  {
+                                    width: `${ach.unlocked ? 100 : Math.max(8, progressPct)}%`,
+                                    backgroundColor: ach.unlocked ? ach.color : colors.primary,
+                                  },
+                                ]}
+                              />
+                            </View>
+                            <Text style={[styles.achieveMiniProgressText, { color: ach.unlocked ? ach.color : colors.textSecondary }]}>
+                              {ach.unlocked ? '✓ Desbloqueado' : `${ach.current} / ${ach.target}`}
                             </Text>
                           </View>
                         </View>
+                      );
+                    })}
+                  </ScrollView>
 
-                        {/* Barra de Progreso de Rendimiento */}
-                        <View style={[styles.subjectProgressTrack, { backgroundColor: colors.border }]}>
-                          <View
-                            style={[
-                              styles.subjectProgressFill,
-                              {
-                                width: `${Math.min(Math.max(subj.average, 8), 100)}%`,
-                                backgroundColor: subj.barColor,
-                              },
-                            ]}
-                          />
-                        </View>
-
-                        {/* Fila de Estadísticas Detalladas de la Materia */}
-                        <View style={styles.subjectMetricsRow}>
-                          <Text style={[styles.subjectMetricAvg, { color: subj.statusColor }]}>
-                            Promedio: <Text style={{ fontWeight: '800' }}>{subj.average}%</Text>
-                          </Text>
-                          <Text style={[styles.subjectMetricDetails, { color: colors.textSecondary }]}>
-                            🏆 Récord: {subj.bestScore}% • 🎮 {subj.attempts} {subj.attempts === 1 ? 'partida' : 'partidas'} • {subj.totalScore}/{subj.totalQuestions} pts
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
+                  {/* Flecha Flotante Lateral Derecha (Exclusiva Web / Hover) */}
+                  {Platform.OS === 'web' && (
+                    <TouchableOpacity
+                      style={[
+                        styles.achieveHoverArrow,
+                        styles.achieveHoverArrowRight,
+                        {
+                          backgroundColor: colors.card,
+                          borderColor: colors.primary,
+                          opacity: isAchieveHovered ? 1 : 0,
+                          transform: [
+                            { translateY: -19 },
+                            { scale: isAchieveHovered ? 1 : 0.85 },
+                          ],
+                        },
+                      ]}
+                      onPress={() => handleScrollAchievements(1)}
+                      activeOpacity={0.8}
+                      accessibilityLabel="Deslizar a la derecha"
+                    >
+                      <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>›</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             )}
 
-            {/* Encabezado de la Sección de Historial con Contador y Botón Vaciar Todo */}
-            <View style={styles.historySectionHeaderRow}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 0, marginBottom: 0 }]}>
-                  Historial de Partidas
-                </Text>
-                {profile?.history && profile.history.length > 0 && (
-                  <View style={[styles.historyCountBadge, { backgroundColor: `${colors.primary}20` }]}>
-                    <Text style={[styles.historyCountBadgeText, { color: colors.primary }]}>
-                      {filteredHistory.length}
-                      {filteredHistory.length !== profile.history.length ? ` / ${profile.history.length}` : ''}
-                    </Text>
+            {/* =========================================================
+                PESTAÑA 1: HISTORIAL DE PARTIDAS Y FILTROS RÁPIDOS
+            ========================================================= */}
+            {activeProfileTab === 'history' && (
+              <>
+                {/* Tira Resumen Rápida de Métricas */}
+                <View style={[styles.stripContainer, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 2 }]}>
+                  {/* 1. Partidas */}
+                  <View style={styles.stripCol}>
+                    <Text style={styles.stripIcon}>🎮</Text>
+                    <Text style={[styles.stripVal, { color: colors.text }]}>{total}</Text>
+                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Partidas</Text>
                   </View>
-                )}
-              </View>
 
-              {profile?.history && profile.history.length > 0 && (
-                <TouchableOpacity
-                  style={[styles.clearAllHistoryBtn, { backgroundColor: '#EF444415', borderColor: '#EF444438' }]}
-                  onPress={handleClearAllHistory}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.clearAllHistoryBtnText}>🧹 Vaciar Todo</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+                  <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
 
-            {/* Píldoras de Filtro Rápido (Todas, 100% Perfectas, Aprobadas, Por Materia) */}
-            {profile?.history && profile.history.length > 0 && (
-              <View style={styles.historyPillsContainer}>
-                <ScrollView
-                  ref={historyPillsScrollRef}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.historyPillsContent}
-                  style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
-                  {...(Platform.OS === 'web'
-                    ? {
-                        onWheel: (e) => {
-                          if (e.deltaY !== 0) {
-                            const domNode = historyPillsScrollRef.current?.getScrollableNode
-                              ? historyPillsScrollRef.current.getScrollableNode()
-                              : historyPillsScrollRef.current;
-                            if (domNode) {
-                              domNode.scrollLeft += e.deltaY;
-                            }
-                          }
-                        },
-                      }
-                    : {})}
-                >
-                  {/* Píldora: Todas */}
-                  <TouchableOpacity
-                    style={[
-                      styles.historyFilterPill,
-                      { backgroundColor: colors.card, borderColor: colors.border },
-                      historyFilter === 'all' && { backgroundColor: colors.primary, borderColor: colors.primary },
-                    ]}
-                    onPress={() => setHistoryFilter('all')}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      style={[
-                        styles.historyFilterPillText,
-                        { color: historyFilter === 'all' ? colors.primaryText : colors.text },
-                      ]}
-                    >
-                      🌟 Todas ({profile.history.length})
+                  {/* 2. Promedio */}
+                  <View style={styles.stripCol}>
+                    <Text style={styles.stripIcon}>{average >= 60 ? '🎯' : '📉'}</Text>
+                    <Text style={[styles.stripVal, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
+                      {average}%
                     </Text>
-                  </TouchableOpacity>
+                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Promedio</Text>
+                  </View>
 
-                  {/* Píldora: 100% Perfectas (si existen) */}
-                  {perfectGamesCount > 0 && (
+                  <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
+
+                  {/* 3. Mejor Récord */}
+                  <View style={styles.stripCol}>
+                    <Text style={styles.stripIcon}>🏆</Text>
+                    <Text style={[styles.stripVal, { color: '#D97706' }]}>{bestScore}%</Text>
+                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Récord</Text>
+                  </View>
+
+                  <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
+
+                  {/* 4. Aprobadas */}
+                  <View style={styles.stripCol}>
+                    <Text style={styles.stripIcon}>✅</Text>
+                    <Text style={[styles.stripVal, { color: '#8B5CF6' }]}>{passed}</Text>
+                    <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Aprobadas</Text>
+                  </View>
+                </View>
+
+                {/* Encabezado de la Sección de Historial con Contador y Botón Vaciar Todo */}
+                <View style={styles.historySectionHeaderRow}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 0, marginBottom: 0 }]}>
+                      Partidas Jugadas
+                    </Text>
+                    {profile?.history && profile.history.length > 0 && (
+                      <View style={[styles.historyCountBadge, { backgroundColor: `${colors.primary}20` }]}>
+                        <Text style={[styles.historyCountBadgeText, { color: colors.primary }]}>
+                          {filteredHistory.length}
+                          {filteredHistory.length !== profile.history.length ? ` / ${profile.history.length}` : ''}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {profile?.history && profile.history.length > 0 && (
                     <TouchableOpacity
-                      style={[
-                        styles.historyFilterPill,
-                        { backgroundColor: colors.card, borderColor: colors.border },
-                        historyFilter === 'perfect' && { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' },
-                      ]}
-                      onPress={() => setHistoryFilter('perfect')}
+                      style={[styles.clearAllHistoryBtn, { backgroundColor: '#EF444415', borderColor: '#EF444438' }]}
+                      onPress={handleClearAllHistory}
                       activeOpacity={0.7}
                     >
-                      <Text
-                        style={[
-                          styles.historyFilterPillText,
-                          { color: historyFilter === 'perfect' ? '#FFFFFF' : colors.text },
-                        ]}
-                      >
-                        👑 100% ({perfectGamesCount})
-                      </Text>
+                      <Text style={styles.clearAllHistoryBtnText}>🧹 Vaciar Todo</Text>
                     </TouchableOpacity>
                   )}
+                </View>
 
-                  {/* Píldora: Aprobadas (si existen) */}
-                  {passedGamesCount > 0 && (
-                    <TouchableOpacity
-                      style={[
-                        styles.historyFilterPill,
-                        { backgroundColor: colors.card, borderColor: colors.border },
-                        historyFilter === 'passed' && { backgroundColor: '#10B981', borderColor: '#10B981' },
-                      ]}
-                      onPress={() => setHistoryFilter('passed')}
-                      activeOpacity={0.7}
+                {/* Píldoras de Filtro Rápido (Todas, 100% Perfectas, Aprobadas, Por Materia) */}
+                {profile?.history && profile.history.length > 0 && (
+                  <View style={styles.historyPillsContainer}>
+                    <ScrollView
+                      ref={historyPillsScrollRef}
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.historyPillsContent}
+                      style={Platform.OS === 'web' ? { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } : undefined}
+                      {...(Platform.OS === 'web'
+                        ? {
+                            onWheel: (e) => {
+                              if (e.deltaY !== 0) {
+                                const domNode = historyPillsScrollRef.current?.getScrollableNode
+                                  ? historyPillsScrollRef.current.getScrollableNode()
+                                  : historyPillsScrollRef.current;
+                                if (domNode) {
+                                  domNode.scrollLeft += e.deltaY;
+                                }
+                              }
+                            },
+                          }
+                        : {})}
                     >
-                      <Text
-                        style={[
-                          styles.historyFilterPillText,
-                          { color: historyFilter === 'passed' ? '#FFFFFF' : colors.text },
-                        ]}
-                      >
-                        ✅ Aprobadas ({passedGamesCount})
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Píldoras por cada materia registrada */}
-                  {uniqueHistoryCategories.map((cat) => {
-                    const isSelected = historyFilter === cat.name;
-                    return (
+                      {/* Píldora: Todas */}
                       <TouchableOpacity
-                        key={cat.name}
                         style={[
                           styles.historyFilterPill,
                           { backgroundColor: colors.card, borderColor: colors.border },
-                          isSelected && { backgroundColor: colors.primary, borderColor: colors.primary },
+                          historyFilter === 'all' && { backgroundColor: colors.primary, borderColor: colors.primary },
                         ]}
-                        onPress={() => setHistoryFilter(cat.name)}
+                        onPress={() => setHistoryFilter('all')}
                         activeOpacity={0.7}
                       >
                         <Text
                           style={[
                             styles.historyFilterPillText,
-                            { color: isSelected ? colors.primaryText : colors.text },
+                            { color: historyFilter === 'all' ? colors.primaryText : colors.text },
                           ]}
                         >
-                          {cat.icon} {cat.name} ({cat.count})
+                          🌟 Todas ({profile.history.length})
                         </Text>
                       </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-              </View>
+
+                      {/* Píldora: 100% Perfectas (si existen) */}
+                      {perfectGamesCount > 0 && (
+                        <TouchableOpacity
+                          style={[
+                            styles.historyFilterPill,
+                            { backgroundColor: colors.card, borderColor: colors.border },
+                            historyFilter === 'perfect' && { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' },
+                          ]}
+                          onPress={() => setHistoryFilter('perfect')}
+                          activeOpacity={0.7}
+                        >
+                          <Text
+                            style={[
+                              styles.historyFilterPillText,
+                              { color: historyFilter === 'perfect' ? '#FFFFFF' : colors.text },
+                            ]}
+                          >
+                            👑 100% ({perfectGamesCount})
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+
+                      {/* Píldora: Aprobadas (si existen) */}
+                      {passedGamesCount > 0 && (
+                        <TouchableOpacity
+                          style={[
+                            styles.historyFilterPill,
+                            { backgroundColor: colors.card, borderColor: colors.border },
+                            historyFilter === 'passed' && { backgroundColor: '#10B981', borderColor: '#10B981' },
+                          ]}
+                          onPress={() => setHistoryFilter('passed')}
+                          activeOpacity={0.7}
+                        >
+                          <Text
+                            style={[
+                              styles.historyFilterPillText,
+                              { color: historyFilter === 'passed' ? '#FFFFFF' : colors.text },
+                            ]}
+                          >
+                            ✅ Aprobadas ({passedGamesCount})
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+
+                      {/* Píldoras por cada materia registrada */}
+                      {uniqueHistoryCategories.map((cat) => {
+                        const isSelected = historyFilter === cat.name;
+                        return (
+                          <TouchableOpacity
+                            key={cat.name}
+                            style={[
+                              styles.historyFilterPill,
+                              { backgroundColor: colors.card, borderColor: colors.border },
+                              isSelected && { backgroundColor: colors.primary, borderColor: colors.primary },
+                            ]}
+                            onPress={() => setHistoryFilter(cat.name)}
+                            activeOpacity={0.7}
+                          >
+                            <Text
+                              style={[
+                                styles.historyFilterPillText,
+                                { color: isSelected ? colors.primaryText : colors.text },
+                              ]}
+                            >
+                              {cat.icon} {cat.name} ({cat.count})
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
+                )}
+              </>
             )}
           </>
         }
+        data={activeProfileTab === 'history' ? filteredHistory : []}
         ListEmptyComponent={
-          profile?.history && profile.history.length > 0 ? (
-            <View style={styles.emptyFilterState}>
-              <Text style={{ fontSize: 32, marginBottom: 8 }}>🔍</Text>
-              <Text style={[styles.emptyFilterTitle, { color: colors.text }]}>
-                No hay partidas con este filtro
-              </Text>
-              <Text style={[styles.emptyFilterSub, { color: colors.textSecondary }]}>
-                Prueba seleccionando otra categoría o restablece el filtro.
-              </Text>
-              <TouchableOpacity
-                style={[styles.resetFilterBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
-                onPress={() => setHistoryFilter('all')}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.resetFilterBtnText, { color: colors.primary }]}>
-                  🌟 Ver Todas las Partidas ({profile.history.length})
+          activeProfileTab === 'history' ? (
+            profile?.history && profile.history.length > 0 ? (
+              <View style={styles.emptyFilterState}>
+                <Text style={{ fontSize: 32, marginBottom: 8 }}>🔍</Text>
+                <Text style={[styles.emptyFilterTitle, { color: colors.text }]}>
+                  No hay partidas con este filtro
                 </Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.emptyState}>
-              <Image
-                source={require('../../assets/images/empty_history_illustration1_1787436082611.jpg')}
-                style={styles.emptyIllustration}
-                resizeMode="contain"
-              />
-              <Text style={[styles.emptyText, { color: colors.text }]}>Aún no has jugado ninguna partida</Text>
-              <Text style={[styles.emptySub, { color: colors.textSecondary }]}>Las puntuaciones que guardes aparecerán aquí.</Text>
-            </View>
-          )
+                <Text style={[styles.emptyFilterSub, { color: colors.textSecondary }]}>
+                  Prueba seleccionando otra categoría o restablece el filtro.
+                </Text>
+                <TouchableOpacity
+                  style={[styles.resetFilterBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
+                  onPress={() => setHistoryFilter('all')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.resetFilterBtnText, { color: colors.primary }]}>
+                    🌟 Ver Todas las Partidas ({profile.history.length})
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.emptyState}>
+                <Image
+                  source={require('../../assets/images/empty_history_illustration1_1787436082611.jpg')}
+                  style={styles.emptyIllustration}
+                  resizeMode="contain"
+                />
+                <Text style={[styles.emptyText, { color: colors.text }]}>Aún no has jugado ninguna partida</Text>
+                <Text style={[styles.emptySub, { color: colors.textSecondary }]}>Las puntuaciones que guardes aparecerán aquí.</Text>
+              </View>
+            )
+          ) : null
         }
       />
 
@@ -2242,14 +2383,61 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
   },
-  role: {
-    fontSize: 13,
-    marginTop: 2,
+  // Estilos de la Barra de Pestañas Superiores (Tabs Compactas)
+  profileTabBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 16,
+    marginTop: 6,
+    marginBottom: 8,
+    padding: 4,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 4,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.04)' }
+      : { elevation: 1 }),
+  },
+  profileTabItem: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 2,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    gap: 4,
+    ...(Platform.OS === 'web'
+      ? { cursor: 'pointer', userSelect: 'none', transition: 'all 0.15s ease' }
+      : {}),
+  },
+  profileTabItemActive: {
+    elevation: 1,
+  },
+  profileTabEmoji: {
+    fontSize: 14,
+  },
+  profileTabTitle: {
+    fontSize: 11.5,
+    fontWeight: '700',
+  },
+  profileTabBadge: {
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 8,
+    marginLeft: -1,
+  },
+  profileTabBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '900',
   },
   // Tarjeta Unificada de Configuración (Estilo iOS)
   settingsUnifiedCard: {
     marginHorizontal: 16,
-    marginTop: 12,
+    marginTop: 6,
     marginBottom: 8,
     borderRadius: 16,
     borderWidth: 1,
