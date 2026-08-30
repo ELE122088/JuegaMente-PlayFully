@@ -5,6 +5,8 @@ import { useTheme } from '../context/ThemeContext';
 import api, { BASE_URL } from '../services/api';
 import { getSocket } from '../services/socket';
 
+const DRAWER_WIDTH = 295;
+
 const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, elevation = 3) => {
   if (Platform.OS === 'web') {
     const r = parseInt(color.slice(1, 3), 16) || 0;
