@@ -570,6 +570,86 @@ export default function ProfileScreen() {
   const perfectGamesCount = (profile?.history || []).filter((h) => h.percentage === 100).length;
   const passedGamesCount = (profile?.history || []).filter((h) => h.percentage >= 60).length;
 
+  // Calcular análisis y desglose de rendimiento por materia
+  const getSubjectPerformance = () => {
+    if (!profile?.history || profile.history.length === 0) return [];
+
+    const subjectMap = new Map();
+    profile.history.forEach((h) => {
+      const name = h.categoryName || 'Materia';
+      const score = Number(h.score || 0);
+      const total = Number(h.total || 0);
+      const percentage = Number(h.percentage || 0);
+      const icon = h.categoryIcon || '📚';
+      const categoryId = h.categoryId || h.category;
+
+      if (!subjectMap.has(name)) {
+        subjectMap.set(name, {
+          name,
+          categoryId,
+          icon,
+          attempts: 1,
+          totalScore: score,
+          totalQuestions: total,
+          sumPercentages: percentage,
+          bestScore: percentage,
+        });
+      } else {
+        const item = subjectMap.get(name);
+        item.attempts += 1;
+        item.totalScore += score;
+        item.totalQuestions += total;
+        item.sumPercentages += percentage;
+        item.bestScore = Math.max(item.bestScore, percentage);
+      }
+    });
+
+    return Array.from(subjectMap.values())
+      .map((item) => {
+        const avg = Math.round(item.sumPercentages / item.attempts);
+        let statusLabel = '⚡ Buen Nivel';
+        let statusColor = '#3B82F6';
+        let statusBg = '#3B82F618';
+        let barColor = '#3B82F6';
+
+        if (avg >= 85) {
+          statusLabel = '🌟 Dominada';
+          statusColor = '#10B981';
+          statusBg = '#10B98118';
+          barColor = '#10B981';
+        } else if (avg >= 70) {
+          statusLabel = '⚡ Buen Nivel';
+          statusColor = '#3B82F6';
+          statusBg = '#3B82F618';
+          barColor = '#3B82F6';
+        } else if (avg >= 60) {
+          statusLabel = '📘 Aprobada';
+          statusColor = '#F59E0B';
+          statusBg = '#F59E0B18';
+          barColor = '#F59E0B';
+        } else {
+          statusLabel = '⚠️ Reforzar';
+          statusColor = '#EF4444';
+          statusBg = '#EF444418';
+          barColor = '#EF4444';
+        }
+
+        return {
+          ...item,
+          average: avg,
+          statusLabel,
+          statusColor,
+          statusBg,
+          barColor,
+        };
+      })
+      .sort((a, b) => b.average - a.average);
+  };
+
+  const subjectPerformance = getSubjectPerformance();
+  const topSubject = subjectPerformance.length > 0 ? subjectPerformance[0] : null;
+  const lowestSubject = subjectPerformance.length > 1 ? subjectPerformance[subjectPerformance.length - 1] : null;
+
   const getFilteredHistory = () => {
     if (!profile?.history) return [];
     if (historyFilter === 'all') return profile.history;
@@ -1200,107 +1280,126 @@ export default function ProfileScreen() {
             </View>
 
             {/* =========================================================
-                PROPUESTA B (Bloqueada/Comentada): Barra de Nivel
+                PROPUESTA 2: Barras de Rendimiento y Análisis por Materia
             ========================================================= */}
-            {/*
-            <View style={[styles.levelCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={styles.levelHeader}>
-                <View style={styles.levelRankLeft}>
-                  <Text style={styles.levelRankIcon}>
-                    {average >= 90 ? '👑' : average >= 75 ? '⭐' : average >= 60 ? '📚' : '🌱'}
-                  </Text>
-                  <View>
-                    <Text style={[styles.levelRankTitle, { color: colors.text }]}>
-                      {average >= 90 ? 'Maestro Legendario' : average >= 75 ? 'Estudiante Avanzado' : average >= 60 ? 'Estudiante Destacado' : 'Aprendiz en Progreso'}
-                    </Text>
-                    <Text style={[styles.levelRankSub, { color: colors.textSecondary }]}>
-                      Rango según efectividad
+            {profile?.history && profile.history.length > 0 && (
+              <View style={[styles.subjectPerformanceCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                {/* Cabecera de Rendimiento por Materia */}
+                <View style={styles.subjectPerfHeader}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <View style={[styles.subjectPerfHeaderIconCircle, { backgroundColor: `${colors.primary}18` }]}>
+                      <Text style={styles.subjectPerfHeaderIcon}>📊</Text>
+                    </View>
+                    <View>
+                      <Text style={[styles.subjectPerfTitle, { color: colors.text }]}>
+                        Rendimiento por Materia
+                      </Text>
+                      <Text style={[styles.subjectPerfSubtitle, { color: colors.textSecondary }]}>
+                        Fortalezas y materias por reforzar
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={[styles.subjectCountBadge, { backgroundColor: `${colors.primary}18` }]}>
+                    <Text style={[styles.subjectCountBadgeText, { color: colors.primary }]}>
+                      {subjectPerformance.length} {subjectPerformance.length === 1 ? 'materia' : 'materias'}
                     </Text>
                   </View>
                 </View>
-                <View style={[styles.levelPercentBadge, { backgroundColor: average >= 60 ? '#10B98118' : '#EF444418' }]}>
-                  <Text style={[styles.levelPercentText, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>
-                    {average}%
-                  </Text>
-                </View>
-              </View>
-              <View style={[styles.progressBarTrack, { backgroundColor: colors.border }]}>
-                <View
-                  style={[
-                    styles.progressBarFill,
-                    {
-                      width: `${Math.min(Math.max(average, 6), 100)}%`,
-                      backgroundColor: average >= 80 ? '#10B981' : average >= 60 ? colors.primary : '#EF4444',
-                    }
-                  ]}
-                />
-              </View>
-              <View style={[styles.levelStatsRow, { borderTopColor: colors.border }]}>
-                <View style={styles.levelStatItem}>
-                  <Text style={[styles.levelStatVal, { color: colors.text }]}>🎮 {total}</Text>
-                  <Text style={[styles.levelStatLbl, { color: colors.textSecondary }]}>Partidas</Text>
-                </View>
-                <View style={styles.levelStatDivider} />
-                <View style={styles.levelStatItem}>
-                  <Text style={[styles.levelStatVal, { color: '#8B5CF6' }]}>✅ {passed}</Text>
-                  <Text style={[styles.levelStatLbl, { color: colors.textSecondary }]}>Aprobadas</Text>
-                </View>
-                <View style={styles.levelStatDivider} />
-                <View style={styles.levelStatItem}>
-                  <Text style={[styles.levelStatVal, { color: '#D97706' }]}>🏆 {bestScore}%</Text>
-                  <Text style={[styles.levelStatLbl, { color: colors.textSecondary }]}>Récord</Text>
-                </View>
-              </View>
-            </View>
-            */}
 
-            {/* =========================================================
-                PROPUESTA A (Bloqueada/Comentada): Cuadrícula 2x2
-            ========================================================= */}
-            {/*
-            <View style={styles.kpiContainer}>
-              <View style={styles.kpiRow}>
-                <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <View style={[styles.kpiIconWrapper, { backgroundColor: '#3B82F618' }]}>
-                    <Text style={styles.kpiIcon}>🎮</Text>
+                {/* Banner de Fortalezas / Consejos de Estudio */}
+                {topSubject && (
+                  <View
+                    style={[
+                      styles.insightBanner,
+                      {
+                        backgroundColor: topSubject.average >= 75 ? '#10B98112' : `${colors.primary}12`,
+                        borderColor: topSubject.average >= 75 ? '#10B98133' : `${colors.primary}33`,
+                      },
+                    ]}
+                  >
+                    <Text style={{ fontSize: 16 }}>
+                      {topSubject.average >= 85 ? '🌟' : '💡'}
+                    </Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.insightText, { color: colors.text }]}>
+                        {topSubject.average >= 85 ? (
+                          <>¡Tu fuerte principal es <Text style={{ fontWeight: '800', color: '#10B981' }}>{topSubject.name}</Text> con <Text style={{ fontWeight: '800' }}>{topSubject.average}%</Text> de promedio!</>
+                        ) : (
+                          <>Mayor efectividad actual en <Text style={{ fontWeight: '800', color: colors.primary }}>{topSubject.name}</Text> ({topSubject.average}%).</>
+                        )}
+                        {lowestSubject && lowestSubject.average < 60 && (
+                          <Text style={{ color: colors.textSecondary, fontSize: 11 }}>
+                            {` • `}
+                            <Text style={{ fontWeight: '700', color: '#EF4444' }}>💡 Sugerencia:</Text>
+                            {` Practica más en `}
+                            <Text style={{ fontWeight: '700', color: colors.text }}>{lowestSubject.name}</Text>
+                            {` (${lowestSubject.average}%) para subir tu promedio.`}
+                          </Text>
+                        )}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.kpiContent}>
-                    <Text style={[styles.kpiValue, { color: colors.text }]}>{total}</Text>
-                    <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Partidas</Text>
-                  </View>
-                </View>
-                <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <View style={[styles.kpiIconWrapper, { backgroundColor: average >= 60 ? '#10B98118' : '#EF444418' }]}>
-                    <Text style={styles.kpiIcon}>{average >= 60 ? '🎯' : '📉'}</Text>
-                  </View>
-                  <View style={styles.kpiContent}>
-                    <Text style={[styles.kpiValue, { color: average >= 60 ? '#10B981' : '#EF4444' }]}>{average}%</Text>
-                    <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Promedio</Text>
-                  </View>
+                )}
+
+                {/* Lista de Barras de Progreso por Materia */}
+                <View style={styles.subjectBarsContainer}>
+                  {subjectPerformance.map((subj) => {
+                    const isFiltered = historyFilter === subj.name;
+                    return (
+                      <TouchableOpacity
+                        key={subj.name}
+                        style={[
+                          styles.subjectBarItem,
+                          { backgroundColor: colors.background, borderColor: colors.border },
+                          isFiltered && { borderColor: colors.primary, borderWidth: 1.5, backgroundColor: `${colors.primary}0D` },
+                        ]}
+                        onPress={() => setHistoryFilter(historyFilter === subj.name ? 'all' : subj.name)}
+                        activeOpacity={0.7}
+                      >
+                        {/* Fila Superior: Icono, Nombre y Píldora de Estado */}
+                        <View style={styles.subjectBarHeaderRow}>
+                          <View style={styles.subjectNameWrapper}>
+                            <Text style={styles.subjectIconEmoji}>{subj.icon}</Text>
+                            <Text style={[styles.subjectItemName, { color: colors.text }]} numberOfLines={1}>
+                              {subj.name}
+                            </Text>
+                          </View>
+
+                          <View style={[styles.subjectStatusPill, { backgroundColor: subj.statusBg }]}>
+                            <Text style={[styles.subjectStatusPillText, { color: subj.statusColor }]}>
+                              {subj.statusLabel}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Barra de Progreso de Rendimiento */}
+                        <View style={[styles.subjectProgressTrack, { backgroundColor: colors.border }]}>
+                          <View
+                            style={[
+                              styles.subjectProgressFill,
+                              {
+                                width: `${Math.min(Math.max(subj.average, 8), 100)}%`,
+                                backgroundColor: subj.barColor,
+                              },
+                            ]}
+                          />
+                        </View>
+
+                        {/* Fila de Estadísticas Detalladas de la Materia */}
+                        <View style={styles.subjectMetricsRow}>
+                          <Text style={[styles.subjectMetricAvg, { color: subj.statusColor }]}>
+                            Promedio: <Text style={{ fontWeight: '800' }}>{subj.average}%</Text>
+                          </Text>
+                          <Text style={[styles.subjectMetricDetails, { color: colors.textSecondary }]}>
+                            🏆 Récord: {subj.bestScore}% • 🎮 {subj.attempts} {subj.attempts === 1 ? 'partida' : 'partidas'} • {subj.totalScore}/{subj.totalQuestions} pts
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
-              <View style={styles.kpiRow}>
-                <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <View style={[styles.kpiIconWrapper, { backgroundColor: '#F59E0B18' }]}>
-                    <Text style={styles.kpiIcon}>🏆</Text>
-                  </View>
-                  <View style={styles.kpiContent}>
-                    <Text style={[styles.kpiValue, { color: '#D97706' }]}>{bestScore}%</Text>
-                    <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Mejor Récord</Text>
-                  </View>
-                </View>
-                <View style={[styles.kpiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <View style={[styles.kpiIconWrapper, { backgroundColor: '#8B5CF618' }]}>
-                    <Text style={styles.kpiIcon}>✅</Text>
-                  </View>
-                  <View style={styles.kpiContent}>
-                    <Text style={[styles.kpiValue, { color: '#8B5CF6' }]}>{passed}</Text>
-                    <Text style={[styles.kpiLabel, { color: colors.textSecondary }]}>Aprobadas</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-            */}
+            )}
 
             {/* Encabezado de la Sección de Historial con Contador y Botón Vaciar Todo */}
             <View style={styles.historySectionHeaderRow}>
@@ -2032,128 +2131,125 @@ const styles = StyleSheet.create({
     width: 1,
     height: 28,
   },
-  // Estilos de Propuesta B: Barra de Nivel & Rango
-  levelCard: {
+  // Estilos de Rendimiento por Materia (Propuesta 2)
+  subjectPerformanceCard: {
     marginHorizontal: 16,
+    marginTop: 4,
+    marginBottom: 8,
     padding: 14,
     borderRadius: 16,
     borderWidth: 1,
-    gap: 12,
-    marginBottom: 8,
+    gap: 10,
     ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.06)' }
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)' }
       : { elevation: 2 }),
   },
-  levelHeader: {
+  subjectPerfHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  levelRankLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  levelRankIcon: {
-    fontSize: 26,
-  },
-  levelRankTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  levelRankSub: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  levelPercentBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  levelPercentText: {
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  progressBarTrack: {
-    width: '100%',
-    height: 10,
-    borderRadius: 5,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 5,
-  },
-  levelStatsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    borderTopWidth: 1,
-    paddingTop: 10,
-  },
-  levelStatItem: {
-    alignItems: 'center',
-    gap: 2,
-  },
-  levelStatVal: {
-    fontSize: 13.5,
-    fontWeight: '800',
-  },
-  levelStatLbl: {
-    fontSize: 10.5,
-    fontWeight: '600',
-  },
-  levelStatDivider: {
-    width: 1,
-    height: 22,
-    backgroundColor: 'rgba(128,128,128,0.2)',
-  },
-  // Cuadrícula KPI Gamificada (2x2 Fija y Responsiva)
-  kpiContainer: {
-    paddingHorizontal: 16,
-    gap: 10,
-    marginBottom: 8,
-  },
-  kpiRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  kpiCard: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderRadius: 14,
-    borderWidth: 1,
-    gap: 8,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.04)' }
-      : { elevation: 1 }),
-  },
-  kpiIconWrapper: {
-    width: 34,
-    height: 34,
+  subjectPerfHeaderIconCircle: {
+    width: 32,
+    height: 32,
     borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  kpiIcon: {
+  subjectPerfHeaderIcon: {
     fontSize: 16,
   },
-  kpiContent: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  kpiValue: {
-    fontSize: 16,
+  subjectPerfTitle: {
+    fontSize: 14,
     fontWeight: '800',
-    marginBottom: 1,
   },
-  kpiLabel: {
+  subjectPerfSubtitle: {
     fontSize: 10.5,
+    marginTop: 1,
+  },
+  subjectCountBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  subjectCountBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  insightBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 8,
+  },
+  insightText: {
+    fontSize: 11.5,
+    lineHeight: 16,
+  },
+  subjectBarsContainer: {
+    gap: 8,
+  },
+  subjectBarItem: {
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 6,
+  },
+  subjectBarHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  subjectNameWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+  },
+  subjectIconEmoji: {
+    fontSize: 16,
+  },
+  subjectItemName: {
+    fontSize: 13,
+    fontWeight: '700',
+    flex: 1,
+  },
+  subjectStatusPill: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  subjectStatusPillText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+  },
+  subjectProgressTrack: {
+    width: '100%',
+    height: 7,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  subjectProgressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  subjectMetricsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 4,
+    marginTop: 1,
+  },
+  subjectMetricAvg: {
+    fontSize: 11.5,
     fontWeight: '600',
+  },
+  subjectMetricDetails: {
+    fontSize: 10.5,
   },
   sectionTitle: {
     fontSize: 18,
