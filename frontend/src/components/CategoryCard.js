@@ -4,18 +4,26 @@ import { useTheme } from '../context/ThemeContext';
 
 // Helper para sombras compatibles web/mobile sin advertencias
 const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, elevation = 3) => {
-  const r = parseInt(color.slice(1,3), 16) || 0;
-  const g = parseInt(color.slice(3,5), 16) || 0;
-  const b = parseInt(color.slice(5,7), 16) || 0;
+  if (Platform.OS === 'web') {
+    const r = parseInt(color.slice(1,3), 16) || 0;
+    const g = parseInt(color.slice(3,5), 16) || 0;
+    const b = parseInt(color.slice(5,7), 16) || 0;
+    return {
+      boxShadow: `0px ${offsetY}px ${radius}px rgba(${r},${g},${b},${opacity})`,
+    };
+  }
   return {
-    boxShadow: `0px ${offsetY}px ${radius}px rgba(${r},${g},${b},${opacity})`,
+    shadowColor: color,
+    shadowOffset: { width: 0, height: offsetY },
+    shadowOpacity: Math.min(1, opacity * 2.5),
+    shadowRadius: radius,
     elevation,
   };
 };
 
 export default function CategoryCard({ category, onPress }) {
   const { colors } = useTheme();
-  const [isHovered, setIsHovered] = useState(false);
+  const [isActive, setIsActive] = useState(false);
 
   const catColor = category.color || colors.primary;
   const iconBg = `${catColor}16`;
@@ -30,12 +38,12 @@ export default function CategoryCard({ category, onPress }) {
         styles.card,
         {
           backgroundColor: colors.card,
-          borderColor: isHovered ? catColor : colors.border,
+          borderColor: isActive ? catColor : colors.border,
           borderLeftColor: isClosed ? colors.textSecondary : catColor,
           opacity: isClosed ? 0.75 : 1,
-          transform: isHovered && !isClosed ? [{ translateY: -3 }] : [{ translateY: 0 }],
-          ...(isHovered && !isClosed
-            ? createShadow(catColor, 6, 0.22, 14, 6)
+          transform: isActive && !isClosed ? [{ translateY: -3 }] : [{ translateY: 0 }],
+          ...(isActive && !isClosed
+            ? createShadow(catColor, 6, 0.35, 14, 8)
             : createShadow('#000', 1, 0.04, 3, 2)),
         },
         Platform.OS === 'web' && {
@@ -44,11 +52,13 @@ export default function CategoryCard({ category, onPress }) {
         },
       ]}
       onPress={onPress}
-      activeOpacity={0.75}
+      onPressIn={() => !isClosed && setIsActive(true)}
+      onPressOut={() => !isClosed && setIsActive(false)}
+      activeOpacity={0.8}
       {...(Platform.OS === 'web'
         ? {
-            onMouseEnter: () => setIsHovered(true),
-            onMouseLeave: () => setIsHovered(false),
+            onMouseEnter: () => setIsActive(true),
+            onMouseLeave: () => setIsActive(false),
           }
         : {})}
     >

@@ -19,7 +19,7 @@ const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, e
   return {
     shadowColor: color,
     shadowOffset: { width: 0, height: offsetY },
-    shadowOpacity: opacity,
+    shadowOpacity: Math.min(1, opacity * 2.5),
     shadowRadius: radius,
     elevation,
   };
@@ -33,7 +33,7 @@ const SidebarMenuItem = ({
   colors,
   styles,
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [isActive, setIsActive] = useState(false);
   const color = accentColor || colors.primary;
 
   return (
@@ -41,11 +41,11 @@ const SidebarMenuItem = ({
       style={[
         styles.menuItem,
         {
-          backgroundColor: isHovered ? `${color}14` : colors.inputBg || `${colors.card}`,
-          borderColor: isHovered ? color : colors.border,
-          transform: isHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
-          ...(isHovered
-            ? createShadow(color, 4, 0.22, 10, 4)
+          backgroundColor: isActive ? `${color}18` : colors.inputBg || `${colors.card}`,
+          borderColor: isActive ? color : colors.border,
+          transform: isActive ? [{ translateY: -2 }] : [{ translateY: 0 }],
+          ...(isActive
+            ? createShadow(color, 4, 0.35, 10, 6)
             : createShadow('#000', 1, 0.03, 3, 1)),
         },
         Platform.OS === 'web' && {
@@ -54,16 +54,18 @@ const SidebarMenuItem = ({
         },
       ]}
       onPress={onPress}
+      onPressIn={() => setIsActive(true)}
+      onPressOut={() => setIsActive(false)}
       activeOpacity={0.75}
       {...(Platform.OS === 'web'
         ? {
-            onMouseEnter: () => setIsHovered(true),
-            onMouseLeave: () => setIsHovered(false),
+            onMouseEnter: () => setIsActive(true),
+            onMouseLeave: () => setIsActive(false),
           }
         : {})}
     >
       <Text style={styles.menuIcon}>{icon}</Text>
-      <Text style={[styles.menuText, { color: isHovered ? color : colors.text }]}>
+      <Text style={[styles.menuText, { color: isActive ? color : colors.text }]}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -79,7 +81,7 @@ const InteractiveActionBtn = ({
   activeOpacity = 0.75,
   ...props
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [isActive, setIsActive] = useState(false);
 
   return (
     <TouchableOpacity
@@ -89,19 +91,21 @@ const InteractiveActionBtn = ({
           transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease, opacity 0.2s ease',
           cursor: disabled ? 'default' : 'pointer',
         },
-        isHovered && !disabled && {
+        isActive && !disabled && {
           transform: [{ translateY: -2 }],
           borderColor: accentColor,
-          ...createShadow(accentColor, 4, 0.28, 10, 4),
+          ...createShadow(accentColor, 4, 0.35, 10, 6),
         },
       ]}
       onPress={onPress}
+      onPressIn={() => !disabled && setIsActive(true)}
+      onPressOut={() => !disabled && setIsActive(false)}
       disabled={disabled}
       activeOpacity={activeOpacity}
       {...(Platform.OS === 'web' && !disabled
         ? {
-            onMouseEnter: () => setIsHovered(true),
-            onMouseLeave: () => setIsHovered(false),
+            onMouseEnter: () => setIsActive(true),
+            onMouseLeave: () => setIsActive(false),
           }
         : {})}
       {...props}

@@ -12,11 +12,19 @@ import { getAvatarSource } from './profile';
 
 // Helper para sombras compatibles web/mobile sin advertencias
 const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, elevation = 3) => {
-  const r = parseInt(color.slice(1, 3), 16) || 0;
-  const g = parseInt(color.slice(3, 5), 16) || 0;
-  const b = parseInt(color.slice(5, 7), 16) || 0;
+  if (Platform.OS === 'web') {
+    const r = parseInt(color.slice(1, 3), 16) || 0;
+    const g = parseInt(color.slice(3, 5), 16) || 0;
+    const b = parseInt(color.slice(5, 7), 16) || 0;
+    return {
+      boxShadow: `0px ${offsetY}px ${radius}px rgba(${r},${g},${b},${opacity})`,
+    };
+  }
   return {
-    boxShadow: `0px ${offsetY}px ${radius}px rgba(${r},${g},${b},${opacity})`,
+    shadowColor: color,
+    shadowOffset: { width: 0, height: offsetY },
+    shadowOpacity: Math.min(1, opacity * 2.5),
+    shadowRadius: radius,
     elevation,
   };
 };
@@ -28,8 +36,9 @@ const InteractiveActionBtn = ({
   disabled = false,
   children,
   activeOpacity = 0.75,
+  ...props
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [isActive, setIsActive] = useState(false);
 
   return (
     <TouchableOpacity
@@ -39,21 +48,24 @@ const InteractiveActionBtn = ({
           transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease, opacity 0.2s ease',
           cursor: disabled ? 'default' : 'pointer',
         },
-        isHovered && !disabled && {
+        isActive && !disabled && {
           transform: [{ translateY: -2 }],
           borderColor: accentColor,
-          ...createShadow(accentColor, 4, 0.28, 10, 4),
+          ...createShadow(accentColor, 4, 0.35, 10, 6),
         },
       ]}
       onPress={onPress}
+      onPressIn={() => !disabled && setIsActive(true)}
+      onPressOut={() => !disabled && setIsActive(false)}
       disabled={disabled}
       activeOpacity={activeOpacity}
       {...(Platform.OS === 'web' && !disabled
         ? {
-            onMouseEnter: () => setIsHovered(true),
-            onMouseLeave: () => setIsHovered(false),
+            onMouseEnter: () => setIsActive(true),
+            onMouseLeave: () => setIsActive(false),
           }
         : {})}
+      {...props}
     >
       {children}
     </TouchableOpacity>

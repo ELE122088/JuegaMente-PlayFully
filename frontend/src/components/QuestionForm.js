@@ -14,7 +14,7 @@ const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, e
   return {
     shadowColor: color,
     shadowOffset: { width: 0, height: offsetY },
-    shadowOpacity: opacity,
+    shadowOpacity: Math.min(1, opacity * 2.5),
     shadowRadius: radius,
     elevation,
   };
@@ -29,7 +29,7 @@ const InteractiveActionBtn = ({
   activeOpacity = 0.75,
   ...props
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [isActive, setIsActive] = useState(false);
 
   return (
     <TouchableOpacity
@@ -39,19 +39,21 @@ const InteractiveActionBtn = ({
           transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease, opacity 0.2s ease',
           cursor: disabled ? 'default' : 'pointer',
         },
-        isHovered && !disabled && {
+        isActive && !disabled && {
           transform: [{ translateY: -2 }],
           borderColor: accentColor,
-          ...createShadow(accentColor, 4, 0.28, 10, 4),
+          ...createShadow(accentColor, 4, 0.35, 10, 6),
         },
       ]}
       onPress={onPress}
+      onPressIn={() => !disabled && setIsActive(true)}
+      onPressOut={() => !disabled && setIsActive(false)}
       disabled={disabled}
       activeOpacity={activeOpacity}
       {...(Platform.OS === 'web' && !disabled
         ? {
-            onMouseEnter: () => setIsHovered(true),
-            onMouseLeave: () => setIsHovered(false),
+            onMouseEnter: () => setIsActive(true),
+            onMouseLeave: () => setIsActive(false),
           }
         : {})}
       {...props}
