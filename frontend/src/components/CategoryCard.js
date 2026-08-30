@@ -64,21 +64,33 @@ export default function CategoryCard({ category, onPress }) {
           {category.isActive === false ? (
             <View style={[styles.badge, { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B60', borderWidth: 1 }]}>
               <Text style={[styles.badgeText, { color: '#FF6B6B', fontWeight: '800' }]}>
-                🚫 Examen Cerrado
-              </Text>
-            </View>
-          ) : category.isPublic || !category.roomCode ? (
-            <View style={[styles.badge, { backgroundColor: '#4ECDC415', borderColor: '#4ECDC445', borderWidth: 1 }]}>
-              <Text style={[styles.badgeText, { color: '#4ECDC4', fontWeight: '700' }]}>
-                🌐 Práctica (5 ❤️)
+                🚫 Cerrado
               </Text>
             </View>
           ) : (
-            <View style={[styles.badge, { backgroundColor: '#FF6B6B15', borderColor: '#FF6B6B45', borderWidth: 1 }]}>
-              <Text style={[styles.badgeText, { color: '#FF6B6B', fontWeight: '700' }]}>
-                🔒 Examen (3 ❤️) • PIN
-              </Text>
-            </View>
+            <>
+              {/* Badge de Acceso: Público vs Con PIN */}
+              {category.isPublic || !category.roomCode ? (
+                <View style={[styles.badge, { backgroundColor: '#4ECDC415', borderColor: '#4ECDC445', borderWidth: 1 }]}>
+                  <Text style={[styles.badgeText, { color: '#4ECDC4', fontWeight: '700' }]}>
+                    🌐 Público
+                  </Text>
+                </View>
+              ) : (
+                <View style={[styles.badge, { backgroundColor: '#FF6B6B15', borderColor: '#FF6B6B45', borderWidth: 1 }]}>
+                  <Text style={[styles.badgeText, { color: '#FF6B6B', fontWeight: '700' }]}>
+                    🔒 PIN
+                  </Text>
+                </View>
+              )}
+
+              {/* Badge de Modo y Vidas */}
+              <View style={[styles.badge, { backgroundColor: category.gameMode === 'exam' ? '#8B5CF615' : '#10B98115', borderColor: category.gameMode === 'exam' ? '#8B5CF645' : '#10B98145', borderWidth: 1 }]}>
+                <Text style={[styles.badgeText, { color: category.gameMode === 'exam' ? '#8B5CF6' : '#10B981', fontWeight: '700' }]}>
+                  {category.gameMode === 'exam' ? '📝 Examen' : '💡 Práctica'} ({category.initialLives || (category.gameMode === 'exam' ? 3 : 5)} ❤️)
+                </Text>
+              </View>
+            </>
           )}
 
           {category.timePerQuestion !== undefined && (

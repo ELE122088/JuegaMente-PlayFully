@@ -401,18 +401,14 @@ const updateCategory = async (req, res) => {
       category.isPublic = Boolean(isPublic);
       if (category.isPublic) {
         category.roomCode = null;
-        category.gameMode = gameMode || 'practice';
-        category.initialLives = initialLives ? Number(initialLives) : 5;
       } else {
         if (!category.roomCode) category.roomCode = roomCode || generateRoomCode();
-        category.gameMode = gameMode || 'exam';
-        category.initialLives = initialLives ? Number(initialLives) : 3;
       }
-    } else {
-      if (roomCode) category.roomCode = roomCode;
-      if (gameMode) category.gameMode = gameMode;
-      if (initialLives) category.initialLives = Number(initialLives);
+    } else if (roomCode !== undefined) {
+      category.roomCode = roomCode;
     }
+    if (gameMode !== undefined) category.gameMode = gameMode;
+    if (initialLives !== undefined) category.initialLives = Number(initialLives);
 
     const updated = await category.save();
     emitCategoryUpdate(req, 'categories:updated', { action: 'update', categoryId: updated._id });

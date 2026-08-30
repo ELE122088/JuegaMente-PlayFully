@@ -573,17 +573,23 @@ export default function AdminScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Fila 2: Badges de Tipo/PIN y Segundero (Envueltos en móvil) */}
+          {/* Fila 2: Badges de Tipo/PIN, Modo de Juego y Segundero */}
           <View style={styles.categoryBadgesRow}>
             {item.isPublic || !item.roomCode ? (
               <View style={[styles.pinBadgeCompact, { backgroundColor: '#4ECDC418', borderColor: '#4ECDC4' }]}>
-                <Text style={[styles.pinBadgeTextCompact, { color: '#4ECDC4' }]}>🌐 Práctica (5 ❤️)</Text>
+                <Text style={[styles.pinBadgeTextCompact, { color: '#4ECDC4' }]}>🌐 Público</Text>
               </View>
             ) : (
               <View style={[styles.pinBadgeCompact, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}>
-                <Text style={[styles.pinBadgeTextCompact, { color: colors.primary }]}>🎯 PIN: {item.roomCode} (3 ❤️)</Text>
+                <Text style={[styles.pinBadgeTextCompact, { color: colors.primary }]}>🎯 PIN: {item.roomCode}</Text>
               </View>
             )}
+
+            <View style={[styles.pinBadgeCompact, { backgroundColor: item.gameMode === 'exam' ? '#8B5CF618' : '#10B98118', borderColor: item.gameMode === 'exam' ? '#8B5CF6' : '#10B981' }]}>
+              <Text style={[styles.pinBadgeTextCompact, { color: item.gameMode === 'exam' ? '#8B5CF6' : '#10B981' }]}>
+                {item.gameMode === 'exam' ? '📝 Examen' : '💡 Práctica'} ({item.initialLives || (item.gameMode === 'exam' ? 3 : 5)} ❤️)
+              </Text>
+            </View>
 
             <View style={[styles.pinBadgeCompact, { backgroundColor: `${colors.textSecondary}15`, borderColor: `${colors.textSecondary}30` }]}>
               <Text style={[styles.pinBadgeTextCompact, { color: colors.textSecondary }]}>

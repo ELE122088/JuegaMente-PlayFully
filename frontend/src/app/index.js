@@ -779,10 +779,16 @@ export default function CategoriesScreen() {
               {categoryToPlay?.name}
             </Text>
 
-            <View style={{ flexDirection: 'row', gap: 6, marginBottom: 16 }}>
-              <View style={[styles.badge, { backgroundColor: (categoryToPlay?.isPublic || !categoryToPlay?.roomCode) ? '#4ECDC420' : '#FF6B6B20' }]}>
-                <Text style={{ fontSize: 12, fontWeight: 'bold', color: (categoryToPlay?.isPublic || !categoryToPlay?.roomCode) ? '#4ECDC4' : '#FF6B6B' }}>
-                  {(categoryToPlay?.isPublic || !categoryToPlay?.roomCode) ? '🌐 Modo Práctica Libre' : '📝 Modo Examen Oficial'}
+            <View style={{ flexDirection: 'row', gap: 6, marginBottom: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <View style={[styles.badge, { backgroundColor: (categoryToPlay?.isPublic || !categoryToPlay?.roomCode) ? '#4ECDC420' : '#3B82F620' }]}>
+                <Text style={{ fontSize: 12, fontWeight: 'bold', color: (categoryToPlay?.isPublic || !categoryToPlay?.roomCode) ? '#4ECDC4' : '#3B82F6' }}>
+                  {(categoryToPlay?.isPublic || !categoryToPlay?.roomCode) ? '🌐 Acceso Público' : '🔒 Acceso con PIN'}
+                </Text>
+              </View>
+
+              <View style={[styles.badge, { backgroundColor: categoryToPlay?.gameMode === 'exam' ? '#8B5CF620' : '#10B98120' }]}>
+                <Text style={{ fontSize: 12, fontWeight: 'bold', color: categoryToPlay?.gameMode === 'exam' ? '#8B5CF6' : '#10B981' }}>
+                  {categoryToPlay?.gameMode === 'exam' ? '📝 Modo Examen' : '💡 Modo Práctica'}
                 </Text>
               </View>
             </View>

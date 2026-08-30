@@ -26,6 +26,7 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
   const [color, setColor] = useState('#6C63FF');
   const [isPublic, setIsPublic] = useState(false);
   const [gameMode, setGameMode] = useState('exam');
+  const [initialLives, setInitialLives] = useState(3);
   const [timePerQuestion, setTimePerQuestion] = useState(15);
   const [isActive, setIsActive] = useState(true);
 
@@ -36,7 +37,8 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
       setIcon(category.icon || '📚');
       setColor(category.color || '#6C63FF');
       setIsPublic(category.isPublic || false);
-      setGameMode(category.gameMode || (category.isPublic ? 'practice' : 'exam'));
+      setGameMode(category.gameMode || 'exam');
+      setInitialLives(category.initialLives !== undefined ? category.initialLives : (category.gameMode === 'practice' ? 5 : 3));
       setTimePerQuestion(category.timePerQuestion !== undefined ? category.timePerQuestion : 15);
       setIsActive(category.isActive !== undefined ? category.isActive : true);
     } else {
@@ -46,6 +48,7 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
       setColor('#6C63FF');
       setIsPublic(false);
       setGameMode('exam');
+      setInitialLives(3);
       setTimePerQuestion(15);
       setIsActive(true);
     }
@@ -68,7 +71,7 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
       color,
       isPublic,
       gameMode,
-      initialLives: gameMode === 'practice' ? 5 : 3,
+      initialLives: Number(initialLives),
       timePerQuestion,
       isActive,
     });
@@ -112,8 +115,8 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
               </TouchableOpacity>
             </View>
 
-            {/* Tipo de Acceso (Privado con PIN vs Público) */}
-            <Text style={[styles.label, { color: colors.text }]}>Tipo de Acceso</Text>
+            {/* 1. Tipo de Acceso (Privado con PIN vs Público) */}
+            <Text style={[styles.label, { color: colors.text }]}>🌐 Tipo de Acceso</Text>
             <View style={styles.segmentedControl}>
               <TouchableOpacity
                 style={[
@@ -121,10 +124,7 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                   { backgroundColor: colors.background, borderColor: colors.border },
                   !isPublic && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
                 ]}
-                onPress={() => {
-                  setIsPublic(false);
-                  setGameMode('exam');
-                }}
+                onPress={() => setIsPublic(false)}
               >
                 <Text style={[styles.segmentBtnText, { color: !isPublic ? colors.primary : colors.textSecondary }]}>
                   🔒 Privado (Con PIN)
@@ -136,18 +136,69 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                   { backgroundColor: colors.background, borderColor: colors.border },
                   isPublic && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
                 ]}
-                onPress={() => {
-                  setIsPublic(true);
-                  setGameMode('practice');
-                }}
+                onPress={() => setIsPublic(true)}
               >
                 <Text style={[styles.segmentBtnText, { color: isPublic ? colors.primary : colors.textSecondary }]}>
-                  🌐 Práctica Libre
+                  🌐 Público (Sin PIN)
                 </Text>
               </TouchableOpacity>
             </View>
 
-            {/* Tiempo por Pregunta */}
+            {/* 2. Modalidad de Juego (Examen vs Práctica) */}
+            <Text style={[styles.label, { color: colors.text }]}>🎮 Modo de Juego</Text>
+            <View style={styles.segmentedControl}>
+              <TouchableOpacity
+                style={[
+                  styles.segmentBtn,
+                  { backgroundColor: colors.background, borderColor: colors.border },
+                  gameMode === 'exam' && { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B' }
+                ]}
+                onPress={() => setGameMode('exam')}
+              >
+                <Text style={[styles.segmentBtnText, { color: gameMode === 'exam' ? '#FF6B6B' : colors.textSecondary }]}>
+                  📝 Modo Examen
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.segmentBtn,
+                  { backgroundColor: colors.background, borderColor: colors.border },
+                  gameMode === 'practice' && { backgroundColor: '#4ECDC420', borderColor: '#4ECDC4' }
+                ]}
+                onPress={() => setGameMode('practice')}
+              >
+                <Text style={[styles.segmentBtnText, { color: gameMode === 'practice' ? '#4ECDC4' : colors.textSecondary }]}>
+                  💡 Modo Práctica
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* 3. Cantidad de Vidas */}
+            <Text style={[styles.label, { color: colors.text }]}>❤️ Cantidad de Vidas</Text>
+            <View style={styles.segmentedControl}>
+              {[
+                { label: '1 ❤️ Muerte Súbita', value: 1 },
+                { label: '3 ❤️ Estándar', value: 3 },
+                { label: '5 ❤️ Extendido', value: 5 },
+                { label: '10 ❤️ Libre', value: 10 },
+              ].map((item) => (
+                <TouchableOpacity
+                  key={item.value}
+                  style={[
+                    styles.segmentBtn,
+                    { backgroundColor: colors.background, borderColor: colors.border, paddingVertical: 8, paddingHorizontal: 4 },
+                    initialLives === item.value && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
+                  ]}
+                  onPress={() => setInitialLives(item.value)}
+                >
+                  <Text style={[styles.segmentBtnText, { fontSize: 11, color: initialLives === item.value ? colors.primary : colors.textSecondary }]}>
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* 4. Tiempo por Pregunta */}
             <Text style={[styles.label, { color: colors.text }]}>⏱️ Tiempo por Pregunta</Text>
             <View style={styles.segmentedControl}>
               {[
@@ -171,35 +222,6 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                   </Text>
                 </TouchableOpacity>
               ))}
-            </View>
-
-            {/* Modalidad y Vidas */}
-            <Text style={[styles.label, { color: colors.text }]}>Modo de Juego y Vidas</Text>
-            <View style={styles.segmentedControl}>
-              <TouchableOpacity
-                style={[
-                  styles.segmentBtn,
-                  { backgroundColor: colors.background, borderColor: colors.border },
-                  gameMode === 'exam' && { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B' }
-                ]}
-                onPress={() => setGameMode('exam')}
-              >
-                <Text style={[styles.segmentBtnText, { color: gameMode === 'exam' ? '#FF6B6B' : colors.textSecondary }]}>
-                  📝 Examen (3 ❤️)
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.segmentBtn,
-                  { backgroundColor: colors.background, borderColor: colors.border },
-                  gameMode === 'practice' && { backgroundColor: '#4ECDC420', borderColor: '#4ECDC4' }
-                ]}
-                onPress={() => setGameMode('practice')}
-              >
-                <Text style={[styles.segmentBtnText, { color: gameMode === 'practice' ? '#4ECDC4' : colors.textSecondary }]}>
-                  💡 Práctica (5 ❤️)
-                </Text>
-              </TouchableOpacity>
             </View>
 
             {/* Nombre */}
