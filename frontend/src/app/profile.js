@@ -1130,7 +1130,29 @@ export default function ProfileScreen() {
                 onPress={() => setActiveProfileTab('history')}
                 activeOpacity={0.7}
               >
-                <Text style={styles.profileTabEmoji}>🎮</Text>
+                <View style={styles.tabIconWrapper}>
+                  <Text style={styles.profileTabEmoji}>🎮</Text>
+                  {profile?.history && profile.history.length > 0 && (
+                    <View
+                      style={[
+                        styles.profileTabFloatingBadge,
+                        {
+                          backgroundColor:
+                            activeProfileTab === 'history' ? colors.primaryText : colors.primary,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.profileTabFloatingBadgeText,
+                          { color: activeProfileTab === 'history' ? colors.primary : colors.primaryText },
+                        ]}
+                      >
+                        {profile.history.length}
+                      </Text>
+                    </View>
+                  )}
+                </View>
                 <Text
                   style={[
                     styles.profileTabTitle,
@@ -1140,26 +1162,6 @@ export default function ProfileScreen() {
                 >
                   Historial
                 </Text>
-                {profile?.history && profile.history.length > 0 && (
-                  <View
-                    style={[
-                      styles.profileTabBadge,
-                      {
-                        backgroundColor:
-                          activeProfileTab === 'history' ? `${colors.primaryText}33` : `${colors.primary}18`,
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.profileTabBadgeText,
-                        { color: activeProfileTab === 'history' ? colors.primaryText : colors.primary },
-                      ]}
-                    >
-                      {profile.history.length}
-                    </Text>
-                  </View>
-                )}
               </TouchableOpacity>
 
               {/* Pestaña 2: 📊 Rendimiento */}
@@ -1171,7 +1173,9 @@ export default function ProfileScreen() {
                 onPress={() => setActiveProfileTab('performance')}
                 activeOpacity={0.7}
               >
-                <Text style={styles.profileTabEmoji}>📊</Text>
+                <View style={styles.tabIconWrapper}>
+                  <Text style={styles.profileTabEmoji}>📊</Text>
+                </View>
                 <Text
                   style={[
                     styles.profileTabTitle,
@@ -1192,7 +1196,29 @@ export default function ProfileScreen() {
                 onPress={() => setActiveProfileTab('achievements')}
                 activeOpacity={0.7}
               >
-                <Text style={styles.profileTabEmoji}>🏆</Text>
+                <View style={styles.tabIconWrapper}>
+                  <Text style={styles.profileTabEmoji}>🏆</Text>
+                  {unlockedCount > 0 && (
+                    <View
+                      style={[
+                        styles.profileTabFloatingBadge,
+                        {
+                          backgroundColor:
+                            activeProfileTab === 'achievements' ? colors.primaryText : '#10B981',
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.profileTabFloatingBadgeText,
+                          { color: activeProfileTab === 'achievements' ? colors.primary : '#FFFFFF' },
+                        ]}
+                      >
+                        {unlockedCount}
+                      </Text>
+                    </View>
+                  )}
+                </View>
                 <Text
                   style={[
                     styles.profileTabTitle,
@@ -1202,35 +1228,6 @@ export default function ProfileScreen() {
                 >
                   Logros
                 </Text>
-                <View
-                  style={[
-                    styles.profileTabBadge,
-                    {
-                      backgroundColor:
-                        activeProfileTab === 'achievements'
-                          ? `${colors.primaryText}33`
-                          : unlockedCount > 0
-                          ? '#10B98118'
-                          : `${colors.primary}18`,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.profileTabBadgeText,
-                      {
-                        color:
-                          activeProfileTab === 'achievements'
-                            ? colors.primaryText
-                            : unlockedCount > 0
-                            ? '#10B981'
-                            : colors.primary,
-                      },
-                    ]}
-                  >
-                    {unlockedCount}/{totalCount}
-                  </Text>
-                </View>
               </TouchableOpacity>
 
               {/* Pestaña 4: ⚙️ Ajustes */}
@@ -1242,7 +1239,9 @@ export default function ProfileScreen() {
                 onPress={() => setActiveProfileTab('settings')}
                 activeOpacity={0.7}
               >
-                <Text style={styles.profileTabEmoji}>⚙️</Text>
+                <View style={styles.tabIconWrapper}>
+                  <Text style={styles.profileTabEmoji}>⚙️</Text>
+                </View>
                 <Text
                   style={[
                     styles.profileTabTitle,
@@ -2399,30 +2398,31 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
   },
-  // Estilos de la Barra de Pestañas Superiores (Opción 1)
+  // Estilos de la Barra de Pestañas Superiores (Ultra-Responsive Móvil + Web)
   profileTabBar: {
-    marginHorizontal: 16,
+    marginHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 4,
+    padding: 3,
     borderRadius: 14,
     borderWidth: 1,
     marginBottom: 10,
-    gap: 4,
+    gap: 3,
     ...(Platform.OS === 'web'
       ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.04)' }
       : { elevation: 1 }),
   },
   profileTabItem: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 9,
-    paddingHorizontal: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 2,
     borderRadius: 10,
-    gap: 5,
+    gap: 2,
+    minWidth: 0,
     ...(Platform.OS === 'web' ? { cursor: 'pointer', userSelect: 'none', transition: 'all 0.15s ease' } : {}),
   },
   profileTabItemActive: {
@@ -2430,21 +2430,33 @@ const styles = StyleSheet.create({
       ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.12)' }
       : { elevation: 2 }),
   },
+  tabIconWrapper: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   profileTabEmoji: {
-    fontSize: 14,
+    fontSize: 16,
   },
   profileTabTitle: {
-    fontSize: 12,
+    fontSize: 10.5,
     fontWeight: '700',
+    textAlign: 'center',
   },
-  profileTabBadge: {
-    paddingHorizontal: 5,
+  profileTabFloatingBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -10,
+    paddingHorizontal: 4,
     paddingVertical: 1,
-    borderRadius: 6,
+    borderRadius: 8,
+    minWidth: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  profileTabBadgeText: {
-    fontSize: 9.5,
-    fontWeight: '800',
+  profileTabFloatingBadgeText: {
+    fontSize: 8.5,
+    fontWeight: '900',
   },
   // Tarjeta Unificada de Configuración (Estilo iOS)
   settingsUnifiedCard: {
@@ -2626,15 +2638,15 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '900',
   },
-  // Estilos de Propuesta C: Tira Horizontal Ultra-Compacta
+  // Estilos de Tira Horizontal Ultra-Compacta
   stripContainer: {
-    marginHorizontal: 16,
+    marginHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 16,
+    paddingVertical: 9,
+    paddingHorizontal: 4,
+    borderRadius: 14,
     borderWidth: 1,
     marginBottom: 8,
     ...(Platform.OS === 'web'
@@ -2645,23 +2657,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    gap: 1,
   },
   stripIcon: {
-    fontSize: 16,
+    fontSize: 14,
     marginBottom: 1,
   },
   stripVal: {
-    fontSize: 15,
+    fontSize: 13.5,
     fontWeight: '800',
   },
   stripLbl: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: '600',
   },
   stripDivider: {
     width: 1,
-    height: 28,
+    height: 22,
   },
   // Estilos de Vitrina de Logros e Insignias (Propuesta 1)
   achievementsCard: {
