@@ -444,10 +444,32 @@ export default function CategoriesScreen() {
       <Header title="🎮 JuegaMente" rightComponent={<ProfileButton />} />
       
       <View style={styles.content}>
-        {/* =========================================================
-            BANNER HERO: MEGAMENTE & RACHA DIARIA (OPCIÓN 1)
-        ========================================================= */}
-        <View style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <FlatList
+          data={filteredCategories}
+          keyExtractor={(item) => `${item._id}_${item.isPublic}_${item.roomCode || 'public'}_${item.name}`}
+          extraData={categories}
+          renderItem={({ item }) => (
+            <CategoryCard 
+              category={item} 
+              onPress={() => handleCategoryPress(item)} 
+            />
+          )}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={true}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handlePullToRefresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
+          ListHeaderComponent={
+            <>
+              {/* =========================================================
+                  BANNER HERO: MEGAMENTE & RACHA DIARIA (OPCIÓN 1)
+              ========================================================= */}
+              <View style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.heroTopRow}>
             {/* Avatar de Megamente */}
             <TouchableOpacity
@@ -1047,60 +1069,41 @@ export default function CategoriesScreen() {
         <Text style={[styles.subtitle, { color: colors.text }]}>
           {searchQuery.trim() || selectedPill !== 'all' ? `Resultados (${filteredCategories.length})` : 'Materias Disponibles'}
         </Text>
-        
-        <FlatList
-          data={filteredCategories}
-          keyExtractor={(item) => `${item._id}_${item.isPublic}_${item.roomCode || 'public'}_${item.name}`}
-          extraData={categories}
-          renderItem={({ item }) => (
-            <CategoryCard 
-              category={item} 
-              onPress={() => handleCategoryPress(item)} 
-            />
-          )}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handlePullToRefresh}
-              colors={[colors.primary]}
-              tintColor={colors.primary}
-            />
+      </>
+    }
+    ListEmptyComponent={
+      <View style={styles.emptyState}>
+        <Image
+          source={
+            searchQuery.trim().length > 0
+              ? require('../../assets/images/no_results_search.jpg')
+              : require('../../assets/images/empty_categories.jpg')
           }
-          ListEmptyComponent={
-            <View style={styles.emptyState}>
-              <Image
-                source={
-                  searchQuery.trim().length > 0
-                    ? require('../../assets/images/no_results_search.jpg')
-                    : require('../../assets/images/empty_categories.jpg')
-                }
-                style={styles.emptyIllustration}
-                resizeMode="contain"
-              />
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>
-                {searchQuery.trim().length > 0 ? 'Sin coincidencias' : 'No hay categorías disponibles'}
-              </Text>
-              <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-                {searchQuery.trim().length > 0
-                  ? `No se encontraron materias que coincidan con "${searchQuery}".`
-                  : 'Aún no se han publicado categorías de preguntas.'}
-              </Text>
-              {searchQuery.trim().length > 0 && (
-                <TouchableOpacity
-                  style={[styles.clearFilterBtn, { backgroundColor: colors.primary }]}
-                  onPress={() => setSearchQuery('')}
-                >
-                  <Text style={[styles.clearFilterBtnText, { color: colors.primaryText }]}>
-                    Ver todas las materias
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          }
+          style={styles.emptyIllustration}
+          resizeMode="contain"
         />
+        <Text style={[styles.emptyTitle, { color: colors.text }]}>
+          {searchQuery.trim().length > 0 ? 'Sin coincidencias' : 'No hay categorías disponibles'}
+        </Text>
+        <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+          {searchQuery.trim().length > 0
+            ? `No se encontraron materias que coincidan con "${searchQuery}".`
+            : 'Aún no se han publicado categorías de preguntas.'}
+        </Text>
+        {searchQuery.trim().length > 0 && (
+          <TouchableOpacity
+            style={[styles.clearFilterBtn, { backgroundColor: colors.primary }]}
+            onPress={() => setSearchQuery('')}
+          >
+            <Text style={[styles.clearFilterBtnText, { color: colors.primaryText }]}>
+              Ver todas las materias
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
+    }
+  />
+</View>
 
       {/* Modal para Ingresar PIN de Sala */}
       <Modal visible={roomPinModal} animationType="fade" transparent={true}>
@@ -1359,7 +1362,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: Platform.OS === 'web' ? 24 : 16,
     width: '100%',
     maxWidth: 920,
     alignSelf: 'center',
@@ -1640,7 +1642,8 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
   },
   list: {
-    paddingBottom: 20,
+    padding: Platform.OS === 'web' ? 24 : 16,
+    paddingBottom: 40,
     flexGrow: 1,
   },
   emptyState: {
