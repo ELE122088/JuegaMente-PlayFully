@@ -558,7 +558,7 @@ export default function ProfileScreen() {
     );
   };
 
-  if (loading) {
+  if (loading && !profile) {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary} />

@@ -719,7 +719,7 @@ export default function AdminScreen() {
     );
   };
 
-  if (loading) {
+  if (loading && categories.length === 0) {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary} />

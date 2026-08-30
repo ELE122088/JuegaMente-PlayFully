@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, FlatList, ActivityIndicator, Text, TouchableOpacity, Modal, TextInput, Alert, Platform, Image, RefreshControl, ScrollView } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import api, { BASE_URL } from '../services/api';
@@ -17,6 +17,12 @@ export default function CategoriesScreen() {
     } catch (e) {}
     return [];
   });
+
+  const categoriesRef = useRef(categories);
+  useEffect(() => {
+    categoriesRef.current = categories;
+  }, [categories]);
+
   const [loading, setLoading] = useState(() => {
     try {
       const cached = storage.getItem('cached_categories');
@@ -91,16 +97,19 @@ export default function CategoriesScreen() {
     setProfileImage(storedImage);
     refreshUser();
 
-    // ⚡ Si ya tenemos categorías en caché/estado, refrescar silenciosamente a 0ms sin spinner
-    const hasCachedData = categories.length > 0;
+    // ⚡ Usar categoriesRef para evitar el cierre estático desactualizado en móvil
+    const hasCachedData = (categoriesRef.current && categoriesRef.current.length > 0);
     fetchCategories(!hasCachedData);
   };
 
   const fetchCategories = async (showLoading = true) => {
-    if (showLoading) setLoading(true);
+    if (showLoading && (!categoriesRef.current || categoriesRef.current.length === 0)) {
+      setLoading(true);
+    }
     try {
       const response = await api.get(`/categories?_t=${Date.now()}`);
       setCategories(response.data);
+      categoriesRef.current = response.data;
       try {
         storage.setItem('cached_categories', JSON.stringify(response.data));
       } catch (e) {}
@@ -111,7 +120,7 @@ export default function CategoriesScreen() {
         router.replace('/login');
       }
     } finally {
-      if (showLoading) setLoading(false);
+      setLoading(false);
       setRefreshing(false);
     }
   };
@@ -272,7 +281,7 @@ export default function CategoriesScreen() {
     </TouchableOpacity>
   );
 
-  if (loading) {
+  if (loading && categories.length === 0) {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary} />
