@@ -575,17 +575,18 @@ export default function ProfileScreen() {
 
   const getStats = () => {
     if (!profile || !profile.history || profile.history.length === 0) {
-      return { total: 0, average: 0, bestScore: 0, passed: 0 };
+      return { total: 0, average: 0, bestScore: 0, passed: 0, failed: 0 };
     }
     const total = profile.history.length;
     const sumPercentages = profile.history.reduce((acc, curr) => acc + (curr.percentage || 0), 0);
     const average = Math.round(sumPercentages / total);
     const bestScore = Math.max(...profile.history.map((h) => h.percentage || 0));
     const passed = profile.history.filter((h) => (h.percentage || 0) >= 60).length;
-    return { total, average, bestScore, passed };
+    const failed = total - passed;
+    return { total, average, bestScore, passed, failed };
   };
 
-  const { total, average, bestScore, passed } = getStats();
+  const { total, average, bestScore, passed, failed } = getStats();
 
   // Obtener materias únicas presentes en el historial
   const getUniqueHistoryCategories = () => {
@@ -609,6 +610,7 @@ export default function ProfileScreen() {
   const uniqueHistoryCategories = getUniqueHistoryCategories();
   const perfectGamesCount = (profile?.history || []).filter((h) => h.percentage === 100).length;
   const passedGamesCount = (profile?.history || []).filter((h) => h.percentage >= 60).length;
+  const failedGamesCount = (profile?.history || []).filter((h) => (h.percentage || 0) < 60).length;
 
   // Calcular análisis y desglose de rendimiento por materia
   const getSubjectPerformance = () => {
@@ -798,6 +800,7 @@ export default function ProfileScreen() {
     if (historyFilter === 'all') return profile.history;
     if (historyFilter === 'perfect') return profile.history.filter((h) => h.percentage === 100);
     if (historyFilter === 'passed') return profile.history.filter((h) => h.percentage >= 60);
+    if (historyFilter === 'failed') return profile.history.filter((h) => (h.percentage || 0) < 60);
     return profile.history.filter((h) => h.categoryName === historyFilter);
   };
 
@@ -1077,15 +1080,28 @@ export default function ProfileScreen() {
             </View>
 
             {/* =========================================================
-                TIRA RESUMEN DE RENDIMIENTO (KPIs SIEMPRE VISIBLES)
+                TIRA RESUMEN: ESTADÍSTICA CEREBRAL (5 KPIs SIEMPRE VISIBLES)
             ========================================================= */}
-            <View style={[styles.stripContainer, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 4, marginBottom: 8 }]}>
+            <View style={styles.stripSectionHeader}>
+              <Text style={[styles.stripSectionTitle, { color: colors.textSecondary }]}>
+                🧠 ESTADÍSTICA MENTAL
+              </Text>
+            </View>
+
+            <View style={[styles.stripContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {/* 1. Partidas */}
-              <View style={styles.stripCol}>
+              <TouchableOpacity
+                style={styles.stripCol}
+                onPress={() => {
+                  setHistoryFilter('all');
+                  setActiveProfileTab('history');
+                }}
+                activeOpacity={0.7}
+              >
                 <Text style={styles.stripIcon}>🎮</Text>
                 <Text style={[styles.stripVal, { color: colors.text }]}>{total}</Text>
                 <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Partidas</Text>
-              </View>
+              </TouchableOpacity>
 
               <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
 
@@ -1101,20 +1117,54 @@ export default function ProfileScreen() {
               <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
 
               {/* 3. Mejor Récord */}
-              <View style={styles.stripCol}>
+              <TouchableOpacity
+                style={styles.stripCol}
+                onPress={() => {
+                  if (perfectGamesCount > 0) {
+                    setHistoryFilter('perfect');
+                    setActiveProfileTab('history');
+                  }
+                }}
+                activeOpacity={0.7}
+              >
                 <Text style={styles.stripIcon}>🏆</Text>
-                <Text style={[styles.stripVal, { color: '#D97706' }]}>{bestScore}%</Text>
+                <Text style={[styles.stripVal, { color: '#F59E0B' }]}>{bestScore}%</Text>
                 <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Récord</Text>
-              </View>
+              </TouchableOpacity>
 
               <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
 
               {/* 4. Aprobadas */}
-              <View style={styles.stripCol}>
+              <TouchableOpacity
+                style={styles.stripCol}
+                onPress={() => {
+                  setHistoryFilter('passed');
+                  setActiveProfileTab('history');
+                }}
+                activeOpacity={0.7}
+              >
                 <Text style={styles.stripIcon}>✅</Text>
-                <Text style={[styles.stripVal, { color: '#8B5CF6' }]}>{passed}</Text>
+                <Text style={[styles.stripVal, { color: '#10B981' }]}>{passed}</Text>
                 <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Aprobadas</Text>
-              </View>
+              </TouchableOpacity>
+
+              <View style={[styles.stripDivider, { backgroundColor: colors.border }]} />
+
+              {/* 5. Reprobadas */}
+              <TouchableOpacity
+                style={styles.stripCol}
+                onPress={() => {
+                  if (failedGamesCount > 0) {
+                    setHistoryFilter('failed');
+                    setActiveProfileTab('history');
+                  }
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.stripIcon}>❌</Text>
+                <Text style={[styles.stripVal, { color: '#EF4444' }]}>{failed}</Text>
+                <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Reprobadas</Text>
+              </TouchableOpacity>
             </View>
 
             {/* =========================================================
@@ -1980,6 +2030,28 @@ export default function ProfileScreen() {
                         </TouchableOpacity>
                       )}
 
+                      {/* Píldora: Reprobadas */}
+                      {failedGamesCount > 0 && (
+                        <TouchableOpacity
+                          style={[
+                            styles.historyFilterPill,
+                            { backgroundColor: colors.card, borderColor: colors.border },
+                            historyFilter === 'failed' && { backgroundColor: '#EF4444', borderColor: '#EF4444' },
+                          ]}
+                          onPress={() => setHistoryFilter('failed')}
+                          activeOpacity={0.7}
+                        >
+                          <Text
+                            style={[
+                              styles.historyFilterPillText,
+                              { color: historyFilter === 'failed' ? '#FFFFFF' : colors.text },
+                            ]}
+                          >
+                            ❌ Reprobadas ({failedGamesCount})
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+
                       {/* Píldoras por materia */}
                       {uniqueHistoryCategories.map((cat) => {
                         const isSelected = historyFilter === cat.name;
@@ -2638,14 +2710,26 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '900',
   },
-  // Estilos de Tira Horizontal Ultra-Compacta
+  // Estilos de Tira Horizontal: Estadística Cerebral (5 KPIs)
+  stripSectionHeader: {
+    marginHorizontal: 16,
+    marginTop: 6,
+    marginBottom: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stripSectionTitle: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
   stripContainer: {
     marginHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 9,
-    paddingHorizontal: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 2,
     borderRadius: 14,
     borderWidth: 1,
     marginBottom: 8,
@@ -2658,22 +2742,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 1,
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', userSelect: 'none' } : {}),
   },
   stripIcon: {
-    fontSize: 14,
+    fontSize: 13.5,
     marginBottom: 1,
   },
   stripVal: {
-    fontSize: 13.5,
+    fontSize: 13,
     fontWeight: '800',
   },
   stripLbl: {
-    fontSize: 9.5,
+    fontSize: 9,
     fontWeight: '600',
+    textAlign: 'center',
   },
   stripDivider: {
     width: 1,
-    height: 22,
+    height: 20,
   },
   // Estilos de Vitrina de Logros e Insignias (Propuesta 1)
   achievementsCard: {
