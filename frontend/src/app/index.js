@@ -483,29 +483,7 @@ export default function CategoriesScreen() {
               {/* =========================================================
                   BANNER HERO: MEGAMENTE & RACHA DIARIA (OPCIÓN 1)
               ========================================================= */}
-              <View
-                style={[
-                  styles.heroCard,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: isHeroHovered ? colors.primary : colors.border,
-                    borderLeftColor: colors.primary,
-                    transform: isHeroHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
-                    ...(isHeroHovered
-                      ? createShadow(colors.primary, 6, 0.22, 14, 6)
-                      : createShadow('#000', 1, 0.04, 3, 2)),
-                  },
-                  Platform.OS === 'web' && {
-                    transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
-                  },
-                ]}
-                {...(Platform.OS === 'web'
-                  ? {
-                      onMouseEnter: () => setIsHeroHovered(true),
-                      onMouseLeave: () => setIsHeroHovered(false),
-                    }
-                  : {})}
-              >
+              <View style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.heroTopRow}>
             {/* Avatar de Megamente */}
             <TouchableOpacity
@@ -577,67 +555,42 @@ export default function CategoriesScreen() {
         {/* =========================================================
             OPCIÓN 2: BARRA DE PIN & SALA DE EXAMEN EN VIVO (ESTILO KAHOOT)
         ========================================================= */}
-        {(() => {
-          const kahootAccent = activeExamsCount > 0 ? '#EF4444' : activePracticePinCount > 0 ? '#4ECDC4' : colors.primary;
-          return (
-            <View
-              style={[
-                styles.kahootPinCard,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: isKahootHovered ? kahootAccent : colors.border,
-                  borderLeftColor: kahootAccent,
-                  transform: isKahootHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
-                  ...(isKahootHovered
-                    ? createShadow(kahootAccent, 6, 0.22, 14, 6)
-                    : createShadow('#000', 1, 0.04, 3, 2)),
-                },
-                Platform.OS === 'web' && {
-                  transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
-                },
-              ]}
-              {...(Platform.OS === 'web'
-                ? {
-                    onMouseEnter: () => setIsKahootHovered(true),
-                    onMouseLeave: () => setIsKahootHovered(false),
-                  }
-                : {})}
-            >
-              <View style={styles.kahootTopRow}>
-                <View style={styles.kahootTitleRow}>
-                  <View style={[styles.kahootIconCircle, { backgroundColor: `${kahootAccent}20` }]}>
-                    <Text style={styles.kahootIconEmoji}>⚡</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.kahootTitle, { color: colors.text }]}>
-                      {getPinCardTitle()}
-                    </Text>
-                    <Text style={[styles.kahootSubtitle, { color: colors.textSecondary }]}>
-                      {getPinCardSubtitle()}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  {activeExamsCount > 0 && (
-                    <View style={styles.kahootLiveBadge}>
-                      <View style={styles.kahootLiveDot} />
-                      <Text style={styles.kahootLiveBadgeText}>
-                        {activeExamsCount} {activeExamsCount === 1 ? 'Examen Activo' : 'Exámenes Activos'}
-                      </Text>
-                    </View>
-                  )}
-
-                  {activePracticePinCount > 0 && (
-                    <View style={[styles.kahootLiveBadge, { backgroundColor: '#4ECDC415', borderColor: '#4ECDC444' }]}>
-                      <View style={[styles.kahootLiveDot, { backgroundColor: '#4ECDC4' }]} />
-                      <Text style={[styles.kahootLiveBadgeText, { color: '#4ECDC4' }]}>
-                        {activePracticePinCount} {activePracticePinCount === 1 ? 'Práctica Activa' : 'Prácticas Activas'}
-                      </Text>
-                    </View>
-                  )}
-                </View>
+        <View style={[styles.kahootPinCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.kahootTopRow}>
+            <View style={styles.kahootTitleRow}>
+              <View style={[styles.kahootIconCircle, { backgroundColor: `${colors.primary}20` }]}>
+                <Text style={styles.kahootIconEmoji}>⚡</Text>
               </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.kahootTitle, { color: colors.text }]}>
+                  {getPinCardTitle()}
+                </Text>
+                <Text style={[styles.kahootSubtitle, { color: colors.textSecondary }]}>
+                  {getPinCardSubtitle()}
+                </Text>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              {activeExamsCount > 0 && (
+                <View style={styles.kahootLiveBadge}>
+                  <View style={styles.kahootLiveDot} />
+                  <Text style={styles.kahootLiveBadgeText}>
+                    {activeExamsCount} {activeExamsCount === 1 ? 'Examen Activo' : 'Exámenes Activos'}
+                  </Text>
+                </View>
+              )}
+
+              {activePracticePinCount > 0 && (
+                <View style={[styles.kahootLiveBadge, { backgroundColor: '#4ECDC415', borderColor: '#4ECDC444' }]}>
+                  <View style={[styles.kahootLiveDot, { backgroundColor: '#4ECDC4' }]} />
+                  <Text style={[styles.kahootLiveBadgeText, { color: '#4ECDC4' }]}>
+                    {activePracticePinCount} {activePracticePinCount === 1 ? 'Práctica Activa' : 'Prácticas Activas'}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
 
           {/* Formulario Rápido de PIN Integrado */}
           <View style={styles.kahootInputRow}>
@@ -685,8 +638,6 @@ export default function CategoriesScreen() {
             </TouchableOpacity>
           </View>
         </View>
-          );
-        })()}
 
         {/* =========================================================
             OPCIÓN 3: CARRUSEL DE DESTACADOS Y CONTINUAR JUGANDO
@@ -762,8 +713,7 @@ export default function CategoriesScreen() {
                       styles.featuredCard,
                       {
                         backgroundColor: colors.card,
-                        borderColor: hoveredCarouselIndex === 0 ? '#8B5CF6' : colors.border,
-                        borderLeftColor: '#8B5CF6',
+                        borderColor: '#8B5CF6',
                         transform: hoveredCarouselIndex === 0 ? [{ translateY: -3 }] : [{ translateY: 0 }],
                         ...(hoveredCarouselIndex === 0
                           ? createShadow('#8B5CF6', 6, 0.22, 14, 6)
@@ -812,8 +762,7 @@ export default function CategoriesScreen() {
                       styles.featuredCard,
                       {
                         backgroundColor: colors.card,
-                        borderColor: hoveredCarouselIndex === 1 ? '#FF6B6B' : colors.border,
-                        borderLeftColor: '#FF6B6B',
+                        borderColor: '#FF6B6B',
                         transform: hoveredCarouselIndex === 1 ? [{ translateY: -3 }] : [{ translateY: 0 }],
                         ...(hoveredCarouselIndex === 1
                           ? createShadow('#FF6B6B', 6, 0.22, 14, 6)
@@ -859,8 +808,7 @@ export default function CategoriesScreen() {
                         styles.featuredCard,
                         {
                           backgroundColor: colors.card,
-                          borderColor: hoveredCarouselIndex === 2 ? accent : colors.border,
-                          borderLeftColor: accent,
+                          borderColor: accent,
                           transform: hoveredCarouselIndex === 2 ? [{ translateY: -3 }] : [{ translateY: 0 }],
                           ...(hoveredCarouselIndex === 2
                             ? createShadow(accent, 6, 0.22, 14, 6)
@@ -915,8 +863,7 @@ export default function CategoriesScreen() {
                     styles.featuredCard,
                     {
                       backgroundColor: colors.card,
-                      borderColor: hoveredCarouselIndex === 3 ? '#F59E0B' : colors.border,
-                      borderLeftColor: '#F59E0B',
+                      borderColor: '#F59E0B',
                       transform: hoveredCarouselIndex === 3 ? [{ translateY: -3 }] : [{ translateY: 0 }],
                       ...(hoveredCarouselIndex === 3
                         ? createShadow('#F59E0B', 6, 0.22, 14, 6)
@@ -1480,10 +1427,12 @@ const styles = StyleSheet.create({
   kahootPinCard: {
     marginHorizontal: 16,
     borderRadius: 16,
-    borderWidth: 1.5,
-    borderLeftWidth: 5,
+    borderWidth: 1,
     padding: 14,
     marginBottom: 10,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)' }
+      : { elevation: 2 }),
   },
   kahootTopRow: {
     flexDirection: 'row',
@@ -1666,7 +1615,6 @@ const styles = StyleSheet.create({
     width: Platform.OS === 'web' ? 245 : 220,
     borderRadius: 16,
     borderWidth: 1.5,
-    borderLeftWidth: 5,
     padding: 14,
     justifyContent: 'space-between',
     elevation: 3,
@@ -1941,10 +1889,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 4,
     borderRadius: 16,
-    borderWidth: 1.5,
-    borderLeftWidth: 5,
+    borderWidth: 1,
     padding: 14,
     marginBottom: 10,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)' }
+      : { elevation: 2 }),
   },
   heroTopRow: {
     flexDirection: 'row',

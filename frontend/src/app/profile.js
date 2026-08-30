@@ -1124,80 +1124,53 @@ export default function ProfileScreen() {
         ListHeaderComponent={
           <>
             {/* Cabecera de Perfil Definitiva: Tarjeta Flotante Redondeada (Opción 2) */}
-            {(() => {
-              const headerAccent = (profile?.role === 'admin' || profile?.isAdmin) ? '#F59E0B' : colors.primary;
-              return (
-                <View
-                  style={[
-                    styles.profileSlimHeaderCard,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: isHeaderHovered ? headerAccent : colors.border,
-                      borderLeftColor: headerAccent,
-                      transform: isHeaderHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
-                      ...(isHeaderHovered
-                        ? createShadow(headerAccent, 6, 0.22, 14, 6)
-                        : createShadow('#000', 1, 0.04, 3, 2)),
-                    },
-                    Platform.OS === 'web' && {
-                      transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
-                    },
-                  ]}
-                  {...(Platform.OS === 'web'
-                    ? {
-                        onMouseEnter: () => setIsHeaderHovered(true),
-                        onMouseLeave: () => setIsHeaderHovered(false),
-                      }
-                    : {})}
-                >
-                  {/* Botón de Retorno Estilo iOS Nativo ‹ volver */}
-                  <TouchableOpacity
-                    style={styles.iosBackBtn}
-                    onPress={() => {
-                      if (router.canGoBack()) router.back();
-                      else router.replace('/');
-                    }}
-                    activeOpacity={0.6}
-                  >
-                    <Text style={[styles.iosBackChevron, { color: colors.primary }]}>‹</Text>
-                    <Text style={[styles.iosBackText, { color: colors.primary }]}>volver</Text>
-                  </TouchableOpacity>
+            <View style={[styles.profileSlimHeaderCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {/* Botón de Retorno Estilo iOS Nativo ‹ volver */}
+              <TouchableOpacity
+                style={styles.iosBackBtn}
+                onPress={() => {
+                  if (router.canGoBack()) router.back();
+                  else router.replace('/');
+                }}
+                activeOpacity={0.6}
+              >
+                <Text style={[styles.iosBackChevron, { color: colors.primary }]}>‹</Text>
+                <Text style={[styles.iosBackText, { color: colors.primary }]}>volver</Text>
+              </TouchableOpacity>
 
-                  {/* Avatar circular (Toca para cambiar foto o avatar) */}
-                  <TouchableOpacity
-                    style={[styles.slimAvatar, { backgroundColor: colors.primary }]}
-                    onPress={() => setIsAvatarExpanded(!isAvatarExpanded)}
-                    activeOpacity={0.8}
-                  >
-                    {profile?.profileImage ? (
-                      <Image
-                        source={getAvatarSource(profile.profileImage)}
-                        style={styles.slimAvatarImg}
-                      />
-                    ) : (
-                      <Text style={[styles.slimAvatarTxt, { color: colors.primaryText }]}>
-                        {profile?.username?.substring(0, 2).toUpperCase()}
-                      </Text>
-                    )}
-                    <View style={[styles.slimAvatarBadge, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                      <Text style={{ fontSize: 9 }}>🎭</Text>
-                    </View>
-                  </TouchableOpacity>
-
-                  {/* Nombre de Usuario + Insignia de Rol en la misma fila */}
-                  <View style={styles.slimUserInfo}>
-                    <Text style={[styles.slimUsername, { color: colors.text }]} numberOfLines={1}>
-                      {profile?.username}
-                    </Text>
-                    <View style={[styles.slimRoleBadge, { backgroundColor: (profile?.role === 'admin' || profile?.isAdmin) ? '#F59E0B20' : `${colors.primary}20` }]}>
-                      <Text style={[styles.slimRoleText, { color: (profile?.role === 'admin' || profile?.isAdmin) ? '#D97706' : colors.primary }]} numberOfLines={1}>
-                        {profile?.role === 'admin' || profile?.isAdmin ? '👑 Administrador' : '🎓 Estudiante'}
-                      </Text>
-                    </View>
-                  </View>
+              {/* Avatar circular (Toca para cambiar foto o avatar) */}
+              <TouchableOpacity
+                style={[styles.slimAvatar, { backgroundColor: colors.primary }]}
+                onPress={() => setIsAvatarExpanded(!isAvatarExpanded)}
+                activeOpacity={0.8}
+              >
+                {profile?.profileImage ? (
+                  <Image
+                    source={getAvatarSource(profile.profileImage)}
+                    style={styles.slimAvatarImg}
+                  />
+                ) : (
+                  <Text style={[styles.slimAvatarTxt, { color: colors.primaryText }]}>
+                    {profile?.username?.substring(0, 2).toUpperCase()}
+                  </Text>
+                )}
+                <View style={[styles.slimAvatarBadge, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <Text style={{ fontSize: 9 }}>🎭</Text>
                 </View>
-              );
-            })()}
+              </TouchableOpacity>
+
+              {/* Nombre de Usuario + Insignia de Rol en la misma fila */}
+              <View style={styles.slimUserInfo}>
+                <Text style={[styles.slimUsername, { color: colors.text }]} numberOfLines={1}>
+                  {profile?.username}
+                </Text>
+                <View style={[styles.slimRoleBadge, { backgroundColor: (profile?.role === 'admin' || profile?.isAdmin) ? '#F59E0B20' : `${colors.primary}20` }]}>
+                  <Text style={[styles.slimRoleText, { color: (profile?.role === 'admin' || profile?.isAdmin) ? '#D97706' : colors.primary }]} numberOfLines={1}>
+                    {profile?.role === 'admin' || profile?.isAdmin ? '👑 Administrador' : '🎓 Estudiante'}
+                  </Text>
+                </View>
+              </View>
+            </View>
 
             {/* =========================================================
                 TIRA RESUMEN: ESTADÍSTICA MENTAL (5 KPIs SIEMPRE VISIBLES)
@@ -1208,32 +1181,7 @@ export default function ProfileScreen() {
               </Text>
             </View>
 
-            {(() => {
-              const statAccent = average >= 60 ? '#10B981' : '#F59E0B';
-              return (
-                <View
-                  style={[
-                    styles.stripContainer,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: isStripHovered ? statAccent : colors.border,
-                      borderLeftColor: statAccent,
-                      transform: isStripHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
-                      ...(isStripHovered
-                        ? createShadow(statAccent, 6, 0.22, 14, 6)
-                        : createShadow('#000', 1, 0.04, 3, 2)),
-                    },
-                    Platform.OS === 'web' && {
-                      transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
-                    },
-                  ]}
-                  {...(Platform.OS === 'web'
-                    ? {
-                        onMouseEnter: () => setIsStripHovered(true),
-                        onMouseLeave: () => setIsStripHovered(false),
-                      }
-                    : {})}
-                >
+            <View style={[styles.stripContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {/* 1. Partidas */}
               <TouchableOpacity
                 style={styles.stripCol}
@@ -1311,8 +1259,6 @@ export default function ProfileScreen() {
                 <Text style={[styles.stripLbl, { color: colors.textSecondary }]}>Reprobadas</Text>
               </TouchableOpacity>
             </View>
-              );
-            })()}
 
             {/* =========================================================
                 OPCIÓN 1: SISTEMA DE PESTAÑAS SUPERIORES (TABS MODERNOS)
@@ -1458,21 +1404,7 @@ export default function ProfileScreen() {
             {/* MÓDULO 1: 🏆 LOGROS E INSIGNIAS */}
             {activeProfileTab === 'achievements' && (
               <View
-                style={[
-                  styles.achievementsCard,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: isAchieveHovered ? '#F59E0B' : colors.border,
-                    borderLeftColor: '#F59E0B',
-                    transform: isAchieveHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
-                    ...(isAchieveHovered
-                      ? createShadow('#F59E0B', 6, 0.22, 14, 6)
-                      : createShadow('#000', 1, 0.04, 3, 2)),
-                  },
-                  Platform.OS === 'web' && {
-                    transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
-                  },
-                ]}
+                style={[styles.achievementsCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                 {...(Platform.OS === 'web'
                   ? {
                       onMouseEnter: () => setIsAchieveHovered(true),
@@ -1650,29 +1582,7 @@ export default function ProfileScreen() {
             {/* MÓDULO 2: 📊 RENDIMIENTO POR MATERIA */}
             {activeProfileTab === 'performance' && (
               profile?.history && profile.history.length > 0 ? (
-                <View
-                  style={[
-                    styles.subjectPerformanceCard,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: isPerfHovered ? colors.primary : colors.border,
-                      borderLeftColor: colors.primary,
-                      transform: isPerfHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
-                      ...(isPerfHovered
-                        ? createShadow(colors.primary, 6, 0.22, 14, 6)
-                        : createShadow('#000', 1, 0.04, 3, 2)),
-                    },
-                    Platform.OS === 'web' && {
-                      transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
-                    },
-                  ]}
-                  {...(Platform.OS === 'web'
-                    ? {
-                        onMouseEnter: () => setIsPerfHovered(true),
-                        onMouseLeave: () => setIsPerfHovered(false),
-                      }
-                    : {})}
-                >
+                <View style={[styles.subjectPerformanceCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={styles.subjectPerfHeader}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                       <View style={[styles.subjectPerfHeaderIconCircle, { backgroundColor: `${colors.primary}18` }]}>
@@ -1796,29 +1706,7 @@ export default function ProfileScreen() {
 
             {/* MÓDULO 3: ⚙️ CONFIGURACIÓN Y CUENTA */}
             {activeProfileTab === 'settings' && (
-              <View
-                style={[
-                  styles.settingsUnifiedCard,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: isSettingsHovered ? colors.primary : colors.border,
-                    borderLeftColor: colors.primary,
-                    transform: isSettingsHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
-                    ...(isSettingsHovered
-                      ? createShadow(colors.primary, 6, 0.22, 14, 6)
-                      : createShadow('#000', 1, 0.04, 3, 2)),
-                  },
-                  Platform.OS === 'web' && {
-                    transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
-                  },
-                ]}
-                {...(Platform.OS === 'web'
-                  ? {
-                      onMouseEnter: () => setIsSettingsHovered(true),
-                      onMouseLeave: () => setIsSettingsHovered(false),
-                    }
-                  : {})}
-              >
+              <View style={[styles.settingsUnifiedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={styles.settingsCardHeader}>
                   <Text style={[styles.settingsCardTitle, { color: colors.textSecondary }]}>⚙️ CONFIGURACIÓN Y CUENTA</Text>
                 </View>
@@ -2577,7 +2465,6 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingBottom: 40,
   },
-  // Cabecera Ultra-Slim Definitiva: Tarjeta Flotante Redondeada (Opción 2)
   profileSlimHeaderCard: {
     marginHorizontal: 16,
     marginTop: Platform.OS === 'web' ? 14 : 44,
@@ -2587,9 +2474,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 16,
-    borderWidth: 1.5,
-    borderLeftWidth: 5,
+    borderWidth: 1,
     gap: 12,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.05)' }
+      : { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 3, elevation: 2 }),
   },
   iosBackBtn: {
     flexDirection: 'row',
@@ -2740,9 +2629,11 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginBottom: 8,
     borderRadius: 16,
-    borderWidth: 1.5,
-    borderLeftWidth: 5,
+    borderWidth: 1,
     overflow: 'hidden',
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.06)' }
+      : { elevation: 2 }),
   },
   settingsCardHeader: {
     paddingHorizontal: 14,
@@ -2926,16 +2817,18 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   stripContainer: {
-    marginHorizontal: 16,
+    marginHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 8,
     paddingHorizontal: 2,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderLeftWidth: 5,
+    borderRadius: 14,
+    borderWidth: 1,
     marginBottom: 8,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.04)' }
+      : { elevation: 1 }),
   },
   stripCol: {
     flex: 1,
@@ -2968,9 +2861,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     padding: 14,
     borderRadius: 16,
-    borderWidth: 1.5,
-    borderLeftWidth: 5,
+    borderWidth: 1,
     gap: 10,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)' }
+      : { elevation: 2 }),
   },
   achievementsHeader: {
     flexDirection: 'row',
@@ -3129,9 +3024,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     padding: 14,
     borderRadius: 16,
-    borderWidth: 1.5,
-    borderLeftWidth: 5,
+    borderWidth: 1,
     gap: 10,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)' }
+      : { elevation: 2 }),
   },
   subjectPerfHeader: {
     flexDirection: 'row',
