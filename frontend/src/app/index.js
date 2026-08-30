@@ -140,9 +140,34 @@ export default function CategoriesScreen() {
     )
   );
 
+  // Detección dinámica de salas con PIN activas (Exámenes vs Prácticas)
   const activeExamsCount = categories.filter(
     (c) => !c.isPublic && c.roomCode && c.isActive !== false
   ).length;
+
+  const activePracticePinCount = categories.filter(
+    (c) => c.isPublic && c.roomCode && c.isActive !== false
+  ).length;
+
+  const getPinCardTitle = () => {
+    if (activeExamsCount > 0 && activePracticePinCount === 0) return 'Unirse a Sala de Examen';
+    if (activePracticePinCount > 0 && activeExamsCount === 0) return 'Unirse a Sala de Práctica';
+    if (activeExamsCount > 0 && activePracticePinCount > 0) return 'Unirse a Sala (Examen / Práctica)';
+    return 'Unirse a Sala';
+  };
+
+  const getPinCardSubtitle = () => {
+    if (activeExamsCount > 0 && activePracticePinCount === 0) {
+      return 'Ingresa el código PIN para rendir tu examen de clase';
+    }
+    if (activePracticePinCount > 0 && activeExamsCount === 0) {
+      return 'Ingresa el código PIN para unirte a la práctica guiada';
+    }
+    if (activeExamsCount > 0 && activePracticePinCount > 0) {
+      return 'Ingresa el código PIN para tu examen o sala de práctica';
+    }
+    return 'Ingresa el código PIN proporcionado por tu docente';
+  };
 
   const filteredCategories = categories.filter((cat) => {
     // Filtro por píldoras rápidas
@@ -433,22 +458,33 @@ export default function CategoriesScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.kahootTitle, { color: colors.text }]}>
-                  Unirse a Sala de Examen
+                  {getPinCardTitle()}
                 </Text>
                 <Text style={[styles.kahootSubtitle, { color: colors.textSecondary }]}>
-                  Ingresa el código PIN proporcionado por tu docente
+                  {getPinCardSubtitle()}
                 </Text>
               </View>
             </View>
 
-            {activeExamsCount > 0 && (
-              <View style={styles.kahootLiveBadge}>
-                <View style={styles.kahootLiveDot} />
-                <Text style={styles.kahootLiveBadgeText}>
-                  {activeExamsCount} {activeExamsCount === 1 ? 'Examen Activo' : 'Exámenes Activos'}
-                </Text>
-              </View>
-            )}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              {activeExamsCount > 0 && (
+                <View style={styles.kahootLiveBadge}>
+                  <View style={styles.kahootLiveDot} />
+                  <Text style={styles.kahootLiveBadgeText}>
+                    {activeExamsCount} {activeExamsCount === 1 ? 'Examen Activo' : 'Exámenes Activos'}
+                  </Text>
+                </View>
+              )}
+
+              {activePracticePinCount > 0 && (
+                <View style={[styles.kahootLiveBadge, { backgroundColor: '#4ECDC415', borderColor: '#4ECDC444' }]}>
+                  <View style={[styles.kahootLiveDot, { backgroundColor: '#4ECDC4' }]} />
+                  <Text style={[styles.kahootLiveBadgeText, { color: '#4ECDC4' }]}>
+                    {activePracticePinCount} {activePracticePinCount === 1 ? 'Práctica Activa' : 'Prácticas Activas'}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
 
           {/* Formulario Rápido de PIN Integrado */}
