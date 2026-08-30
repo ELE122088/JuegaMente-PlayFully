@@ -370,6 +370,16 @@ export default function CategoriesScreen() {
     ) ||
     categories[0];
 
+  const carouselRef = useRef(null);
+  const [carouselScrollX, setCarouselScrollX] = useState(0);
+
+  const scrollCarousel = (direction) => {
+    const step = 260;
+    const newX = direction === 'left' ? Math.max(0, carouselScrollX - step) : carouselScrollX + step;
+    carouselRef.current?.scrollTo({ x: newX, animated: true });
+    setCarouselScrollX(newX);
+  };
+
   // Partida rápida aleatoria
   const handleQuickRandomGame = () => {
     const activeCats = categories.filter((c) => c.isActive !== false);
@@ -579,18 +589,48 @@ export default function CategoriesScreen() {
         {categories.length > 0 && (
           <View style={styles.carouselSection}>
             <View style={styles.carouselHeaderRow}>
-              <Text style={[styles.carouselSectionTitle, { color: colors.text }]}>
-                ⭐ Destacados y Desafíos
-              </Text>
-              <Text style={[styles.carouselSectionSubtitle, { color: colors.textSecondary }]}>
-                Desliza para descubrir ➔
-              </Text>
+              <View>
+                <Text style={[styles.carouselSectionTitle, { color: colors.text }]}>
+                  ⭐ Destacados y Desafíos
+                </Text>
+                <Text style={[styles.carouselSectionSubtitle, { color: colors.textSecondary }]}>
+                  Desliza o navega con las flechas ➔
+                </Text>
+              </View>
+
+              {/* Botones de Desplazamiento Web/Móvil */}
+              <View style={styles.carouselNavButtons}>
+                <TouchableOpacity
+                  style={[
+                    styles.carouselArrowBtn,
+                    { backgroundColor: colors.card, borderColor: colors.border }
+                  ]}
+                  onPress={() => scrollCarousel('left')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.carouselArrowText, { color: colors.text }]}>◀</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.carouselArrowBtn,
+                    { backgroundColor: colors.card, borderColor: colors.border }
+                  ]}
+                  onPress={() => scrollCarousel('right')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.carouselArrowText, { color: colors.text }]}>▶</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             <ScrollView
+              ref={carouselRef}
               horizontal
-              showsHorizontalScrollIndicator={false}
+              showsHorizontalScrollIndicator={Platform.OS === 'web'}
+              onScroll={(e) => setCarouselScrollX(e.nativeEvent.contentOffset.x)}
+              scrollEventThrottle={16}
               contentContainerStyle={styles.carouselScrollContent}
+              style={styles.carouselScrollView}
             >
               {/* Card 1: Última Materia Jugada / Continuar */}
               {lastPlayedGame && (
@@ -1277,6 +1317,34 @@ const styles = StyleSheet.create({
   carouselSectionSubtitle: {
     fontSize: 12,
     fontWeight: '600',
+  },
+  carouselNavButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  carouselArrowBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+    boxShadow: '0px 2px 6px rgba(0,0,0,0.06)',
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', transition: 'transform 0.15s ease' } : {}),
+  },
+  carouselArrowText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  carouselScrollView: {
+    ...(Platform.OS === 'web'
+      ? {
+          overflowX: 'auto',
+          scrollBehavior: 'smooth',
+        }
+      : {}),
   },
   carouselScrollContent: {
     paddingRight: 10,
