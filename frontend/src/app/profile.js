@@ -1455,29 +1455,31 @@ export default function ProfileScreen() {
                 />
               </View>
 
-              {/* Contenedor del Carrusel con Flechas Flotantes Inteligentes (Hover) */}
+              {/* Contenedor del Carrusel con Flechas Flotantes Inteligentes (Solo en Web) */}
               <View style={styles.achieveHoverWrapper}>
-                {/* Flecha Flotante Lateral Izquierda (Hover) */}
-                <TouchableOpacity
-                  style={[
-                    styles.achieveHoverArrow,
-                    styles.achieveHoverArrowLeft,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: colors.primary,
-                      opacity: Platform.OS === 'web' ? (isAchieveHovered ? 1 : 0) : 1,
-                      transform: [
-                        { translateY: -19 },
-                        { scale: Platform.OS === 'web' && isAchieveHovered ? 1 : 0.85 },
-                      ],
-                    },
-                  ]}
-                  onPress={() => handleScrollAchievements(-1)}
-                  activeOpacity={0.8}
-                  accessibilityLabel="Deslizar a la izquierda"
-                >
-                  <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>‹</Text>
-                </TouchableOpacity>
+                {/* Flecha Flotante Lateral Izquierda (Exclusiva Web / Hover) */}
+                {Platform.OS === 'web' && (
+                  <TouchableOpacity
+                    style={[
+                      styles.achieveHoverArrow,
+                      styles.achieveHoverArrowLeft,
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: colors.primary,
+                        opacity: isAchieveHovered ? 1 : 0,
+                        transform: [
+                          { translateY: -19 },
+                          { scale: isAchieveHovered ? 1 : 0.85 },
+                        ],
+                      },
+                    ]}
+                    onPress={() => handleScrollAchievements(-1)}
+                    activeOpacity={0.8}
+                    accessibilityLabel="Deslizar a la izquierda"
+                  >
+                    <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>‹</Text>
+                  </TouchableOpacity>
+                )}
 
                 {/* Carrusel Deslizable Horizontal de Tarjetas de Logro */}
                 <ScrollView
@@ -1563,27 +1565,29 @@ export default function ProfileScreen() {
                   })}
                 </ScrollView>
 
-                {/* Flecha Flotante Lateral Derecha (Hover) */}
-                <TouchableOpacity
-                  style={[
-                    styles.achieveHoverArrow,
-                    styles.achieveHoverArrowRight,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: colors.primary,
-                      opacity: Platform.OS === 'web' ? (isAchieveHovered ? 1 : 0) : 1,
-                      transform: [
-                        { translateY: -19 },
-                        { scale: Platform.OS === 'web' && isAchieveHovered ? 1 : 0.85 },
-                      ],
-                    },
-                  ]}
-                  onPress={() => handleScrollAchievements(1)}
-                  activeOpacity={0.8}
-                  accessibilityLabel="Deslizar a la derecha"
-                >
-                  <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>›</Text>
-                </TouchableOpacity>
+                {/* Flecha Flotante Lateral Derecha (Exclusiva Web / Hover) */}
+                {Platform.OS === 'web' && (
+                  <TouchableOpacity
+                    style={[
+                      styles.achieveHoverArrow,
+                      styles.achieveHoverArrowRight,
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: colors.primary,
+                        opacity: isAchieveHovered ? 1 : 0,
+                        transform: [
+                          { translateY: -19 },
+                          { scale: isAchieveHovered ? 1 : 0.85 },
+                        ],
+                      },
+                    ]}
+                    onPress={() => handleScrollAchievements(1)}
+                    activeOpacity={0.8}
+                    accessibilityLabel="Deslizar a la derecha"
+                  >
+                    <Text style={[styles.achieveHoverArrowText, { color: colors.primary }]}>›</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
 
