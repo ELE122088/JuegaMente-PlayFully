@@ -144,8 +144,8 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { theme, colors, setTheme } = useTheme();
   const { refreshUser } = useSidebar();
-  // Estado para Módulos de la Cuadrícula 2x2 Bento Box (Opción 3)
-  const [activeBentoCard, setActiveBentoCard] = useState('history'); // 'history' | 'performance' | 'achievements' | 'settings'
+  // Estado para Navegación por Pestañas Superiores (Opción 1 Seleccionada)
+  const [activeProfileTab, setActiveProfileTab] = useState('history'); // 'history' | 'performance' | 'achievements' | 'settings'
   const [isThemeExpanded, setIsThemeExpanded] = useState(false);
 
   // Estados para Galería de Avatares Prediseñados
@@ -1020,7 +1020,7 @@ export default function ProfileScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
-        data={filteredHistory}
+        data={activeProfileTab === 'history' ? filteredHistory : []}
         keyExtractor={(item, index) => item._id || index.toString()}
         renderItem={renderHistoryItem}
         contentContainerStyle={styles.listContainer}
@@ -1118,120 +1118,149 @@ export default function ProfileScreen() {
             </View>
 
             {/* =========================================================
-                OPCIÓN 3: TABLERO CUADRÍCULA 2X2 (BENTO GRID DASHBOARD)
+                OPCIÓN 1: SISTEMA DE PESTAÑAS SUPERIORES (TABS MODERNOS)
             ========================================================= */}
-            <View style={styles.bentoGrid}>
-              {/* Tarjeta 1: 🎮 Historial */}
+            <View style={[styles.profileTabBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {/* Pestaña 1: 🎮 Historial */}
               <TouchableOpacity
                 style={[
-                  styles.bentoCard,
-                  { backgroundColor: colors.card, borderColor: colors.border },
-                  activeBentoCard === 'history' && [styles.bentoCardActive, { borderColor: colors.primary, backgroundColor: `${colors.primary}0D` }],
+                  styles.profileTabItem,
+                  activeProfileTab === 'history' && [styles.profileTabItemActive, { backgroundColor: colors.primary }],
                 ]}
-                onPress={() => setActiveBentoCard('history')}
+                onPress={() => setActiveProfileTab('history')}
                 activeOpacity={0.7}
               >
-                <View style={styles.bentoCardTop}>
-                  <View style={[styles.bentoIconCircle, { backgroundColor: '#10B98118' }]}>
-                    <Text style={styles.bentoIconEmoji}>🎮</Text>
-                  </View>
-                  <View style={[styles.bentoBadge, { backgroundColor: activeBentoCard === 'history' ? colors.primary : `${colors.primary}18` }]}>
-                    <Text style={[styles.bentoBadgeText, { color: activeBentoCard === 'history' ? colors.primaryText : colors.primary }]}>
-                      {profile?.history?.length || 0}
+                <Text style={styles.profileTabEmoji}>🎮</Text>
+                <Text
+                  style={[
+                    styles.profileTabTitle,
+                    { color: activeProfileTab === 'history' ? colors.primaryText : colors.textSecondary },
+                  ]}
+                  numberOfLines={1}
+                >
+                  Historial
+                </Text>
+                {profile?.history && profile.history.length > 0 && (
+                  <View
+                    style={[
+                      styles.profileTabBadge,
+                      {
+                        backgroundColor:
+                          activeProfileTab === 'history' ? `${colors.primaryText}33` : `${colors.primary}18`,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.profileTabBadgeText,
+                        { color: activeProfileTab === 'history' ? colors.primaryText : colors.primary },
+                      ]}
+                    >
+                      {profile.history.length}
                     </Text>
                   </View>
-                </View>
-                <Text style={[styles.bentoTitle, { color: colors.text }]}>Historial</Text>
-                <Text style={[styles.bentoSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
-                  {passedGamesCount > 0 ? `${passedGamesCount} aprobadas` : 'Ver partidas'}
+                )}
+              </TouchableOpacity>
+
+              {/* Pestaña 2: 📊 Rendimiento */}
+              <TouchableOpacity
+                style={[
+                  styles.profileTabItem,
+                  activeProfileTab === 'performance' && [styles.profileTabItemActive, { backgroundColor: colors.primary }],
+                ]}
+                onPress={() => setActiveProfileTab('performance')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.profileTabEmoji}>📊</Text>
+                <Text
+                  style={[
+                    styles.profileTabTitle,
+                    { color: activeProfileTab === 'performance' ? colors.primaryText : colors.textSecondary },
+                  ]}
+                  numberOfLines={1}
+                >
+                  Rendimiento
                 </Text>
               </TouchableOpacity>
 
-              {/* Tarjeta 2: 📊 Rendimiento */}
+              {/* Pestaña 3: 🏆 Logros */}
               <TouchableOpacity
                 style={[
-                  styles.bentoCard,
-                  { backgroundColor: colors.card, borderColor: colors.border },
-                  activeBentoCard === 'performance' && [styles.bentoCardActive, { borderColor: colors.primary, backgroundColor: `${colors.primary}0D` }],
+                  styles.profileTabItem,
+                  activeProfileTab === 'achievements' && [styles.profileTabItemActive, { backgroundColor: colors.primary }],
                 ]}
-                onPress={() => setActiveBentoCard('performance')}
+                onPress={() => setActiveProfileTab('achievements')}
                 activeOpacity={0.7}
               >
-                <View style={styles.bentoCardTop}>
-                  <View style={[styles.bentoIconCircle, { backgroundColor: `${colors.primary}18` }]}>
-                    <Text style={styles.bentoIconEmoji}>📊</Text>
-                  </View>
-                  <View style={[styles.bentoBadge, { backgroundColor: activeBentoCard === 'performance' ? colors.primary : `${colors.primary}18` }]}>
-                    <Text style={[styles.bentoBadgeText, { color: activeBentoCard === 'performance' ? colors.primaryText : colors.primary }]}>
-                      {subjectPerformance.length} {subjectPerformance.length === 1 ? 'mat.' : 'mat.'}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={[styles.bentoTitle, { color: colors.text }]}>Rendimiento</Text>
-                <Text style={[styles.bentoSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
-                  {topSubject ? `Top: ${topSubject.name}` : 'Por materias'}
+                <Text style={styles.profileTabEmoji}>🏆</Text>
+                <Text
+                  style={[
+                    styles.profileTabTitle,
+                    { color: activeProfileTab === 'achievements' ? colors.primaryText : colors.textSecondary },
+                  ]}
+                  numberOfLines={1}
+                >
+                  Logros
                 </Text>
+                <View
+                  style={[
+                    styles.profileTabBadge,
+                    {
+                      backgroundColor:
+                        activeProfileTab === 'achievements'
+                          ? `${colors.primaryText}33`
+                          : unlockedCount > 0
+                          ? '#10B98118'
+                          : `${colors.primary}18`,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.profileTabBadgeText,
+                      {
+                        color:
+                          activeProfileTab === 'achievements'
+                            ? colors.primaryText
+                            : unlockedCount > 0
+                            ? '#10B981'
+                            : colors.primary,
+                      },
+                    ]}
+                  >
+                    {unlockedCount}/{totalCount}
+                  </Text>
+                </View>
               </TouchableOpacity>
 
-              {/* Tarjeta 3: 🏆 Logros */}
+              {/* Pestaña 4: ⚙️ Ajustes */}
               <TouchableOpacity
                 style={[
-                  styles.bentoCard,
-                  { backgroundColor: colors.card, borderColor: colors.border },
-                  activeBentoCard === 'achievements' && [styles.bentoCardActive, { borderColor: colors.primary, backgroundColor: `${colors.primary}0D` }],
+                  styles.profileTabItem,
+                  activeProfileTab === 'settings' && [styles.profileTabItemActive, { backgroundColor: colors.primary }],
                 ]}
-                onPress={() => setActiveBentoCard('achievements')}
+                onPress={() => setActiveProfileTab('settings')}
                 activeOpacity={0.7}
               >
-                <View style={styles.bentoCardTop}>
-                  <View style={[styles.bentoIconCircle, { backgroundColor: '#F59E0B18' }]}>
-                    <Text style={styles.bentoIconEmoji}>🏆</Text>
-                  </View>
-                  <View style={[styles.bentoBadge, { backgroundColor: unlockedCount > 0 ? '#10B98118' : `${colors.primary}18` }]}>
-                    <Text style={[styles.bentoBadgeText, { color: unlockedCount > 0 ? '#10B981' : colors.primary }]}>
-                      {unlockedCount} / {totalCount}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={[styles.bentoTitle, { color: colors.text }]}>Logros</Text>
-                <Text style={[styles.bentoSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
-                  {unlockedCount === totalCount ? '¡100% Hecho!' : `${Math.round((unlockedCount/totalCount)*100)}% trofeos`}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Tarjeta 4: ⚙️ Ajustes */}
-              <TouchableOpacity
-                style={[
-                  styles.bentoCard,
-                  { backgroundColor: colors.card, borderColor: colors.border },
-                  activeBentoCard === 'settings' && [styles.bentoCardActive, { borderColor: colors.primary, backgroundColor: `${colors.primary}0D` }],
-                ]}
-                onPress={() => setActiveBentoCard('settings')}
-                activeOpacity={0.7}
-              >
-                <View style={styles.bentoCardTop}>
-                  <View style={[styles.bentoIconCircle, { backgroundColor: '#8B5CF618' }]}>
-                    <Text style={styles.bentoIconEmoji}>⚙️</Text>
-                  </View>
-                  <View style={[styles.bentoBadge, { backgroundColor: activeBentoCard === 'settings' ? colors.primary : '#8B5CF618' }]}>
-                    <Text style={[styles.bentoBadgeText, { color: activeBentoCard === 'settings' ? colors.primaryText : '#8B5CF6' }]}>
-                      Megamente
-                    </Text>
-                  </View>
-                </View>
-                <Text style={[styles.bentoTitle, { color: colors.text }]}>Configuración</Text>
-                <Text style={[styles.bentoSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
-                  Avatar, Temas, Clave
+                <Text style={styles.profileTabEmoji}>⚙️</Text>
+                <Text
+                  style={[
+                    styles.profileTabTitle,
+                    { color: activeProfileTab === 'settings' ? colors.primaryText : colors.textSecondary },
+                  ]}
+                  numberOfLines={1}
+                >
+                  Ajustes
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* =========================================================
-                CONTENIDO DINÁMICO SEGÚN LA TARJETA BENTO SELECCIONADA
+                CONTENIDO DINÁMICO SEGÚN LA PESTAÑA SELECCIONADA
             ========================================================= */}
 
             {/* MÓDULO 1: 🏆 LOGROS E INSIGNIAS */}
-            {activeBentoCard === 'achievements' && (
+            {activeProfileTab === 'achievements' && (
               <View
                 style={[styles.achievementsCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                 {...(Platform.OS === 'web'
@@ -1408,7 +1437,7 @@ export default function ProfileScreen() {
             )}
 
             {/* MÓDULO 2: 📊 RENDIMIENTO POR MATERIA */}
-            {activeBentoCard === 'performance' && (
+            {activeProfileTab === 'performance' && (
               profile?.history && profile.history.length > 0 ? (
                 <View style={[styles.subjectPerformanceCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={styles.subjectPerfHeader}>
@@ -1479,7 +1508,7 @@ export default function ProfileScreen() {
                           ]}
                           onPress={() => {
                             setHistoryFilter(subj.name);
-                            setActiveBentoCard('history');
+                            setActiveProfileTab('history');
                           }}
                           activeOpacity={0.7}
                         >
@@ -1533,7 +1562,7 @@ export default function ProfileScreen() {
             )}
 
             {/* MÓDULO 3: ⚙️ CONFIGURACIÓN Y CUENTA */}
-            {activeBentoCard === 'settings' && (
+            {activeProfileTab === 'settings' && (
               <View style={[styles.settingsUnifiedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={styles.settingsCardHeader}>
                   <Text style={[styles.settingsCardTitle, { color: colors.textSecondary }]}>⚙️ CONFIGURACIÓN Y CUENTA</Text>
@@ -1837,7 +1866,7 @@ export default function ProfileScreen() {
             )}
 
             {/* MÓDULO 4: 🎮 HISTORIAL DE PARTIDAS Y FILTROS */}
-            {activeBentoCard === 'history' && (
+            {activeProfileTab === 'history' && (
               <>
                 <View style={styles.historySectionHeaderRow}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -1985,7 +2014,7 @@ export default function ProfileScreen() {
           </>
         }
         ListEmptyComponent={
-          activeBentoCard === 'history' ? (
+          activeProfileTab === 'history' ? (
             profile?.history && profile.history.length > 0 ? (
               <View style={styles.emptyFilterState}>
                 <Text style={{ fontSize: 32, marginBottom: 8 }}>🔍</Text>
@@ -2370,63 +2399,52 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
   },
-  // Estilos de la Cuadrícula 2x2 Bento Box (Opción 3)
-  bentoGrid: {
+  // Estilos de la Barra de Pestañas Superiores (Opción 1)
+  profileTabBar: {
     marginHorizontal: 16,
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 8,
-    marginBottom: 8,
-  },
-  bentoCard: {
-    width: '48.5%',
-    padding: 10,
+    padding: 4,
     borderRadius: 14,
-    borderWidth: 1.5,
+    borderWidth: 1,
+    marginBottom: 10,
+    gap: 4,
     ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.04)', cursor: 'pointer', userSelect: 'none', transition: 'all 0.15s ease' }
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.04)' }
       : { elevation: 1 }),
   },
-  bentoCardActive: {
-    elevation: 2,
-    ...(Platform.OS === 'web'
-      ? { transform: 'scale(1.01)', boxShadow: '0px 3px 10px rgba(0,0,0,0.08)' }
-      : {}),
-  },
-  bentoCardTop: {
+  profileTabItem: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  bentoIconCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 9,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+    gap: 5,
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', userSelect: 'none', transition: 'all 0.15s ease' } : {}),
   },
-  bentoIconEmoji: {
+  profileTabItemActive: {
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.12)' }
+      : { elevation: 2 }),
+  },
+  profileTabEmoji: {
     fontSize: 14,
   },
-  bentoBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
+  profileTabTitle: {
+    fontSize: 12,
+    fontWeight: '700',
   },
-  bentoBadgeText: {
-    fontSize: 10,
+  profileTabBadge: {
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  profileTabBadgeText: {
+    fontSize: 9.5,
     fontWeight: '800',
-  },
-  bentoTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    marginBottom: 1,
-    fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
-  },
-  bentoSubtitle: {
-    fontSize: 10.5,
   },
   // Tarjeta Unificada de Configuración (Estilo iOS)
   settingsUnifiedCard: {
