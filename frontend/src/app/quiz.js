@@ -6,6 +6,65 @@ import Header from '../components/Header';
 import OptionButton from '../components/OptionButton';
 import { useTheme } from '../context/ThemeContext';
 
+const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, elevation = 3) => {
+  if (Platform.OS === 'web') {
+    const r = parseInt(color.slice(1, 3), 16) || 0;
+    const g = parseInt(color.slice(3, 5), 16) || 0;
+    const b = parseInt(color.slice(5, 7), 16) || 0;
+    return {
+      boxShadow: `0px ${offsetY}px ${radius}px rgba(${r},${g},${b},${opacity})`,
+    };
+  }
+  return {
+    shadowColor: color,
+    shadowOffset: { width: 0, height: offsetY },
+    shadowOpacity: opacity,
+    shadowRadius: radius,
+    elevation,
+  };
+};
+
+const InteractiveActionBtn = ({
+  style,
+  accentColor = '#6C63FF',
+  onPress,
+  disabled = false,
+  children,
+  activeOpacity = 0.75,
+  ...props
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <TouchableOpacity
+      style={[
+        style,
+        Platform.OS === 'web' && {
+          transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease, opacity 0.2s ease',
+          cursor: disabled ? 'default' : 'pointer',
+        },
+        isHovered && !disabled && {
+          transform: [{ translateY: -2 }],
+          borderColor: accentColor,
+          ...createShadow(accentColor, 4, 0.28, 10, 4),
+        },
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={activeOpacity}
+      {...(Platform.OS === 'web' && !disabled
+        ? {
+            onMouseEnter: () => setIsHovered(true),
+            onMouseLeave: () => setIsHovered(false),
+          }
+        : {})}
+      {...props}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+};
+
 export default function QuizScreen() {
   const { categoryId, categoryName, roomCode, initialLives: passedLives, gameMode, timePerQuestion: passedTime } = useLocalSearchParams();
   const router = useRouter();
@@ -289,11 +348,15 @@ export default function QuizScreen() {
       {/* Botón Siguiente / Terminar */}
       {isAnswered && lives > 0 && (
         <View style={[styles.footer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
-          <TouchableOpacity style={[styles.nextButton, { backgroundColor: colors.primary }]} onPress={handleNext}>
+          <InteractiveActionBtn 
+            style={[styles.nextButton, { backgroundColor: colors.primary }]} 
+            accentColor={colors.primary}
+            onPress={handleNext}
+          >
             <Text style={[styles.nextButtonText, { color: colors.primaryText }]}>
               {currentIndex < questions.length - 1 ? 'Siguiente Pregunta' : 'Ver Resultados'}
             </Text>
-          </TouchableOpacity>
+          </InteractiveActionBtn>
         </View>
       )}
 
@@ -308,21 +371,23 @@ export default function QuizScreen() {
             </Text>
 
             <View style={styles.modalButtons}>
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[styles.cancelBtn, { backgroundColor: colors.border }]}
+                accentColor={colors.textSecondary}
                 onPress={() => setExitModalVisible(false)}
               >
                 <Text style={[styles.cancelBtnText, { color: colors.text }]}>Seguir Jugando</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </InteractiveActionBtn>
+              <InteractiveActionBtn
                 style={[styles.abandonBtn, { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B' }]}
+                accentColor="#FF6B6B"
                 onPress={() => {
                   setExitModalVisible(false);
                   finishQuiz(score, userAnswers, 0);
                 }}
               >
                 <Text style={[styles.abandonBtnText, { color: '#FF6B6B' }]}>Abandonar</Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
           </View>
         </View>

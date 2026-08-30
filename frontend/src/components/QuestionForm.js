@@ -133,12 +133,13 @@ export default function QuestionForm({ visible, onClose, onSave, question = null
               {categories.map((cat) => {
                 const isSelected = categoryId === cat._id;
                 return (
-                  <TouchableOpacity
+                  <InteractiveActionBtn
                     key={cat._id}
                     style={[
                       styles.categoryChip,
                       { borderColor: cat.color, backgroundColor: isSelected ? cat.color : colors.card },
                     ]}
+                    accentColor={cat.color}
                     onPress={() => setCategoryId(cat._id)}
                   >
                     <Text
@@ -149,7 +150,7 @@ export default function QuestionForm({ visible, onClose, onSave, question = null
                     >
                       {cat.icon} {cat.name}
                     </Text>
-                  </TouchableOpacity>
+                  </InteractiveActionBtn>
                 );
               })}
             </View>
@@ -172,12 +173,13 @@ export default function QuestionForm({ visible, onClose, onSave, question = null
               const isCorrect = correctAnswer === index;
               return (
                 <View key={index} style={styles.optionRow}>
-                  <TouchableOpacity
+                  <InteractiveActionBtn
                     style={[
                       styles.radioButton,
                       { backgroundColor: colors.background, borderColor: colors.border },
                       isCorrect && { backgroundColor: '#4ECDC4', borderColor: '#4ECDC4' },
                     ]}
+                    accentColor="#4ECDC4"
                     onPress={() => setCorrectAnswer(index)}
                   >
                     <Text
@@ -189,7 +191,7 @@ export default function QuestionForm({ visible, onClose, onSave, question = null
                     >
                       {letters[index]}
                     </Text>
-                  </TouchableOpacity>
+                  </InteractiveActionBtn>
                   <TextInput
                     style={[
                       styles.optionInput,
@@ -244,7 +246,6 @@ const styles = StyleSheet.create({
   modal: {
     borderRadius: 16,
     borderWidth: 1.5,
-    borderLeftWidth: 5,
     padding: 24,
     width: '100%',
     maxWidth: 500,

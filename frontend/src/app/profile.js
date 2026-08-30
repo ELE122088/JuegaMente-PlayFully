@@ -2340,22 +2340,26 @@ export default function ProfileScreen() {
               )}
             </ScrollView>
 
-            <TouchableOpacity 
+            <InteractiveActionBtn 
               style={[styles.rankingButton, { backgroundColor: '#F59E0B', marginBottom: 10, marginTop: 4 }]} 
+              accentColor="#F59E0B"
               onPress={() => {
                 setModalVisible(false);
                 handleOpenCategoryRanking(selectedGame?.category, selectedGame?.categoryName);
               }}
-              activeOpacity={0.8}
             >
               <Text style={styles.rankingButtonText}>
                 🏆 Ver Tabla de Posiciones / Ranking de esta Materia
               </Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
 
-            <TouchableOpacity style={[styles.closeModalBtn, { backgroundColor: colors.inputBg, borderColor: colors.border, borderWidth: 1 }]} onPress={() => setModalVisible(false)}>
+            <InteractiveActionBtn 
+              style={[styles.closeModalBtn, { backgroundColor: colors.inputBg, borderColor: colors.border, borderWidth: 1 }]} 
+              accentColor={colors.textSecondary}
+              onPress={() => setModalVisible(false)}
+            >
               <Text style={[styles.closeModalBtnText, { color: colors.text }]}>Cerrar Detalles</Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
           </View>
         </View>
       </Modal>
@@ -2387,12 +2391,13 @@ export default function ProfileScreen() {
                 </Text>
               </View>
 
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[styles.rankingCloseBtn, { backgroundColor: colors.inputBg }]}
+                accentColor={colors.textSecondary}
                 onPress={() => setRankingModalVisible(false)}
               >
                 <Text style={[styles.rankingCloseBtnText, { color: colors.text }]}>✕</Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
 
             {/* Notificación de actualización en tiempo real */}
@@ -2481,12 +2486,13 @@ export default function ProfileScreen() {
             )}
 
             {/* Botón de Salir del Ranking */}
-            <TouchableOpacity
+            <InteractiveActionBtn
               style={[styles.closeModalBtn, { backgroundColor: colors.primary, marginTop: 12 }]}
+              accentColor={colors.primary}
               onPress={() => setRankingModalVisible(false)}
             >
               <Text style={[styles.closeModalBtnText, { color: colors.primaryText }]}>Entendido</Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
 
           </View>
         </View>

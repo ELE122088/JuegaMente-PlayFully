@@ -6,6 +6,65 @@ import { getSocket } from '../services/socket';
 import storage from '../services/storage';
 import { useTheme } from '../context/ThemeContext';
 
+const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, elevation = 3) => {
+  if (Platform.OS === 'web') {
+    const r = parseInt(color.slice(1, 3), 16) || 0;
+    const g = parseInt(color.slice(3, 5), 16) || 0;
+    const b = parseInt(color.slice(5, 7), 16) || 0;
+    return {
+      boxShadow: `0px ${offsetY}px ${radius}px rgba(${r},${g},${b},${opacity})`,
+    };
+  }
+  return {
+    shadowColor: color,
+    shadowOffset: { width: 0, height: offsetY },
+    shadowOpacity: opacity,
+    shadowRadius: radius,
+    elevation,
+  };
+};
+
+const InteractiveActionBtn = ({
+  style,
+  accentColor = '#6C63FF',
+  onPress,
+  disabled = false,
+  children,
+  activeOpacity = 0.75,
+  ...props
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <TouchableOpacity
+      style={[
+        style,
+        Platform.OS === 'web' && {
+          transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease, opacity 0.2s ease',
+          cursor: disabled ? 'default' : 'pointer',
+        },
+        isHovered && !disabled && {
+          transform: [{ translateY: -2 }],
+          borderColor: accentColor,
+          ...createShadow(accentColor, 4, 0.28, 10, 4),
+        },
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={activeOpacity}
+      {...(Platform.OS === 'web' && !disabled
+        ? {
+            onMouseEnter: () => setIsHovered(true),
+            onMouseLeave: () => setIsHovered(false),
+          }
+        : {})}
+      {...props}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+};
+
 export default function ResultsScreen() {
   const { score, total, categoryName, categoryId, roomCode, initialLives: passedInitialLives, gameMode, questions: questionsStr, userAnswers: answersStr, lives } = useLocalSearchParams();
   const router = useRouter();
@@ -259,14 +318,15 @@ export default function ResultsScreen() {
       {/* Botón para ver respuestas correctas */}
       {questions.length > 0 && (
         <View style={styles.reviewSection}>
-          <TouchableOpacity 
+          <InteractiveActionBtn 
             style={[styles.reviewButton, { backgroundColor: colors.card, borderColor: colors.border }]}
+            accentColor={colors.primary}
             onPress={() => setShowReview(!showReview)}
           >
             <Text style={[styles.reviewButtonText, { color: colors.text }]}>
               {showReview ? '🔼 Ocultar Respuestas' : '🔽 Ver Respuestas Correctas'}
             </Text>
-          </TouchableOpacity>
+          </InteractiveActionBtn>
 
           {showReview && (
             <View style={styles.reviewList}>
@@ -321,10 +381,10 @@ export default function ResultsScreen() {
       )}
 
       <View style={styles.footer}>
-        <TouchableOpacity 
+        <InteractiveActionBtn 
           style={[styles.rankingButton, { backgroundColor: '#4ECDC41A', borderColor: '#4ECDC4', marginBottom: 14 }]}
+          accentColor="#4ECDC4"
           onPress={fetchLiveRanking}
-          activeOpacity={0.8}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <Text style={{ fontSize: 20 }}>🏆</Text>
@@ -332,14 +392,15 @@ export default function ResultsScreen() {
               Ver Tabla de Posiciones / Ranking
             </Text>
           </View>
-        </TouchableOpacity>
+        </InteractiveActionBtn>
 
-        <TouchableOpacity 
-          style={[styles.primaryButton, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
+        <InteractiveActionBtn 
+          style={[styles.primaryButton, { backgroundColor: colors.primary }]}
+          accentColor={colors.primary}
           onPress={() => router.replace('/')}
         >
           <Text style={[styles.primaryButtonText, { color: colors.primaryText }]}>Volver a Categorías</Text>
-        </TouchableOpacity>
+        </InteractiveActionBtn>
       </View>
 
       {/* Modal de Ranking de Alumnos en Tiempo Real */}
@@ -368,12 +429,13 @@ export default function ResultsScreen() {
                 </View>
               </View>
 
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[styles.closeModalBtn, { backgroundColor: colors.border }]}
+                accentColor={colors.textSecondary}
                 onPress={() => setRankingModalVisible(false)}
               >
                 <Text style={[styles.closeModalText, { color: colors.text }]}>✕</Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
 
             {/* Contenido del Ranking */}
@@ -449,6 +511,15 @@ export default function ResultsScreen() {
                 }}
               />
             )}
+
+            {/* Botón de Cierre Inferior */}
+            <InteractiveActionBtn
+              style={[styles.closeBottomBtn, { backgroundColor: colors.primary, marginTop: 12 }]}
+              accentColor={colors.primary}
+              onPress={() => setRankingModalVisible(false)}
+            >
+              <Text style={[styles.closeBottomBtnText, { color: colors.primaryText }]}>Entendido</Text>
+            </InteractiveActionBtn>
           </View>
         </View>
       </Modal>
@@ -750,5 +821,18 @@ const styles = StyleSheet.create({
   rankingLives: {
     fontSize: 11,
     marginTop: 2,
+  },
+  closeBottomBtn: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+    marginTop: 10,
+  },
+  closeBottomBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
   },
 });

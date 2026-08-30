@@ -148,94 +148,94 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
             {/* Estado de la Sala / Examen (Abierto vs Bloqueado) */}
             <Text style={[styles.label, { color: colors.text }]}>Estado de la Sala</Text>
             <View style={styles.segmentedControl}>
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[
                   styles.segmentBtn,
                   { backgroundColor: colors.background, borderColor: colors.border },
                   isActive && { backgroundColor: '#4ECDC420', borderColor: '#4ECDC4' }
                 ]}
+                accentColor="#4ECDC4"
                 onPress={() => setIsActive(true)}
-                activeOpacity={0.7}
               >
                 <Text style={[styles.segmentBtnText, { color: isActive ? '#4ECDC4' : colors.textSecondary }]} numberOfLines={1}>
                   🟢 Abierto
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </InteractiveActionBtn>
+              <InteractiveActionBtn
                 style={[
                   styles.segmentBtn,
                   { backgroundColor: colors.background, borderColor: colors.border },
                   !isActive && { backgroundColor: '#FF6B6B20', borderColor: '#FF6B6B' }
                 ]}
+                accentColor="#FF6B6B"
                 onPress={() => setIsActive(false)}
-                activeOpacity={0.7}
               >
                 <Text style={[styles.segmentBtnText, { color: !isActive ? '#FF6B6B' : colors.textSecondary }]} numberOfLines={1}>
                   🔴 Cerrado
                 </Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
 
             {/* 1. Tipo de Acceso (Privado con PIN vs Público) */}
             <Text style={[styles.label, { color: colors.text }]}>🌐 Tipo de Acceso</Text>
             <View style={styles.segmentedControl}>
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[
                   styles.segmentBtn,
                   { backgroundColor: colors.background, borderColor: colors.border },
                   !isPublic && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
                 ]}
+                accentColor={colors.primary}
                 onPress={() => setIsPublic(false)}
-                activeOpacity={0.7}
               >
                 <Text style={[styles.segmentBtnText, { color: !isPublic ? colors.primary : colors.textSecondary }]} numberOfLines={1}>
                   🔒 Con PIN
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </InteractiveActionBtn>
+              <InteractiveActionBtn
                 style={[
                   styles.segmentBtn,
                   { backgroundColor: colors.background, borderColor: colors.border },
                   isPublic && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
                 ]}
+                accentColor={colors.primary}
                 onPress={() => setIsPublic(true)}
-                activeOpacity={0.7}
               >
                 <Text style={[styles.segmentBtnText, { color: isPublic ? colors.primary : colors.textSecondary }]} numberOfLines={1}>
                   🌐 Público
                 </Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
 
             {/* 2. Modalidad de Juego (Examen vs Práctica) */}
             <Text style={[styles.label, { color: colors.text }]}>🎮 Modo de Juego</Text>
             <View style={styles.segmentedControl}>
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[
                   styles.segmentBtn,
                   { backgroundColor: colors.background, borderColor: colors.border },
                   gameMode === 'exam' && { backgroundColor: '#8B5CF620', borderColor: '#8B5CF6' }
                 ]}
+                accentColor="#8B5CF6"
                 onPress={() => setGameMode('exam')}
-                activeOpacity={0.7}
               >
                 <Text style={[styles.segmentBtnText, { color: gameMode === 'exam' ? '#8B5CF6' : colors.textSecondary }]} numberOfLines={1}>
                   📝 Examen
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </InteractiveActionBtn>
+              <InteractiveActionBtn
                 style={[
                   styles.segmentBtn,
                   { backgroundColor: colors.background, borderColor: colors.border },
                   gameMode === 'practice' && { backgroundColor: '#10B98120', borderColor: '#10B981' }
                 ]}
+                accentColor="#10B981"
                 onPress={() => setGameMode('practice')}
-                activeOpacity={0.7}
               >
                 <Text style={[styles.segmentBtnText, { color: gameMode === 'practice' ? '#10B981' : colors.textSecondary }]} numberOfLines={1}>
                   💡 Práctica
                 </Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
 
             {/* 3. Cantidad de Vidas */}
@@ -247,20 +247,20 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                 { label: '5 ❤️', value: 5 },
                 { label: '10 ❤️', value: 10 },
               ].map((item) => (
-                <TouchableOpacity
+                <InteractiveActionBtn
                   key={item.value}
                   style={[
                     styles.segmentBtn,
                     { backgroundColor: colors.background, borderColor: colors.border, paddingVertical: 8, paddingHorizontal: 2 },
                     initialLives === item.value && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
                   ]}
+                  accentColor={colors.primary}
                   onPress={() => setInitialLives(item.value)}
-                  activeOpacity={0.7}
                 >
                   <Text style={[styles.segmentBtnText, { fontSize: 12.5, color: initialLives === item.value ? colors.primary : colors.textSecondary }]} numberOfLines={1}>
                     {item.label}
                   </Text>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
               ))}
             </View>
 
@@ -274,20 +274,20 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                 { label: '60s', value: 60 },
                 { label: '♾️ Libre', value: 0 },
               ].map((item) => (
-                <TouchableOpacity
+                <InteractiveActionBtn
                   key={item.value}
                   style={[
                     styles.segmentBtn,
                     { backgroundColor: colors.background, borderColor: colors.border, paddingVertical: 8, paddingHorizontal: 2 },
                     timePerQuestion === item.value && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
                   ]}
+                  accentColor={colors.primary}
                   onPress={() => setTimePerQuestion(item.value)}
-                  activeOpacity={0.7}
                 >
                   <Text style={[styles.segmentBtnText, { fontSize: 12, color: timePerQuestion === item.value ? colors.primary : colors.textSecondary }]} numberOfLines={1}>
                     {item.label}
                   </Text>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
               ))}
             </View>
 
@@ -317,17 +317,18 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
             <Text style={[styles.label, { color: colors.text }]}>Icono</Text>
             <View style={styles.optionsGrid}>
               {EMOJI_OPTIONS.map((emoji) => (
-                <TouchableOpacity
+                <InteractiveActionBtn
                   key={emoji}
                   style={[
                     styles.emojiOption, 
                     { backgroundColor: colors.background },
                     icon === emoji && [styles.emojiSelected, { borderColor: colors.primary, backgroundColor: `${colors.primary}1A` }]
                   ]}
+                  accentColor={colors.primary}
                   onPress={() => setIcon(emoji)}
                 >
                   <Text style={styles.emojiText}>{emoji}</Text>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
               ))}
             </View>
 
@@ -335,17 +336,18 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
             <Text style={[styles.label, { color: colors.text }]}>Color</Text>
             <View style={styles.optionsGrid}>
               {COLOR_OPTIONS.map((c) => (
-                <TouchableOpacity
+                <InteractiveActionBtn
                   key={c}
                   style={[
                     styles.colorOption,
                     { backgroundColor: c },
                     color === c && styles.colorSelected,
                   ]}
+                  accentColor={c}
                   onPress={() => setColor(c)}
                 >
                   {color === c && <Text style={styles.checkMark}>✓</Text>}
-                </TouchableOpacity>
+                </InteractiveActionBtn>
               ))}
             </View>
 

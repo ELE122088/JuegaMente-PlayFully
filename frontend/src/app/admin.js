@@ -1107,29 +1107,30 @@ export default function AdminScreen() {
           <View style={[styles.bulkModalCard, { backgroundColor: colors.card }]}>
             <View style={styles.bulkModalHeader}>
               <Text style={[styles.bulkModalTitle, { color: colors.text }]}>📥 Carga Masiva de Preguntas</Text>
-              <TouchableOpacity onPress={() => setShowBulkModal(false)} style={styles.closeModalBtn}>
+              <InteractiveActionBtn onPress={() => setShowBulkModal(false)} style={styles.closeModalBtn} accentColor={colors.textSecondary}>
                 <Text style={[styles.closeModalText, { color: colors.textSecondary }]}>✕</Text>
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
               <Text style={[styles.bulkSectionLabel, { color: colors.text }]}>1. Selecciona la Materia de Destino:</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsScroll}>
                 {categories.map((cat) => (
-                  <TouchableOpacity
+                  <InteractiveActionBtn
                     key={cat._id}
                     style={[
                       styles.categoryPickerChip,
                       { backgroundColor: colors.background, borderColor: colors.border },
                       bulkCategoryId === cat._id && { backgroundColor: `${cat.color || colors.primary}25`, borderColor: cat.color || colors.primary }
                     ]}
+                    accentColor={cat.color || colors.primary}
                     onPress={() => setBulkCategoryId(cat._id)}
                   >
                     <Text style={styles.chipEmoji}>{cat.icon || '📚'}</Text>
                     <Text style={[styles.chipText, { color: colors.text, fontWeight: bulkCategoryId === cat._id ? 'bold' : 'normal' }]}>
                       {cat.name}
                     </Text>
-                  </TouchableOpacity>
+                  </InteractiveActionBtn>
                 ))}
               </ScrollView>
 
@@ -1176,14 +1177,16 @@ export default function AdminScreen() {
             </ScrollView>
 
             <View style={styles.bulkModalFooter}>
-              <TouchableOpacity
+              <InteractiveActionBtn
                 style={[styles.cancelBtn, { borderColor: colors.border }]}
+                accentColor={colors.textSecondary}
                 onPress={() => setShowBulkModal(false)}
               >
                 <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </InteractiveActionBtn>
+              <InteractiveActionBtn
                 style={[styles.confirmBulkBtn, { backgroundColor: colors.primary }]}
+                accentColor={colors.primary}
                 onPress={handleExecuteBulkImport}
                 disabled={bulkLoading}
               >
@@ -1192,7 +1195,7 @@ export default function AdminScreen() {
                 ) : (
                   <Text style={[styles.confirmBulkBtnText, { color: colors.primaryText }]}>Importar Preguntas</Text>
                 )}
-              </TouchableOpacity>
+              </InteractiveActionBtn>
             </View>
           </View>
         </View>
@@ -1229,40 +1232,41 @@ export default function AdminScreen() {
 
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 {rankingData?.ranking && rankingData.ranking.length > 0 && (
-                  <TouchableOpacity
+                  <InteractiveActionBtn
                     style={[styles.clearAllRankingBtn, { backgroundColor: '#FF6B6B18', borderColor: '#FF6B6B' }]}
+                    accentColor="#FF6B6B"
                     onPress={handleClearAllRanking}
-                    activeOpacity={0.8}
                   >
                     <Text style={styles.clearAllRankingBtnText}>🧹 Vaciar</Text>
-                  </TouchableOpacity>
+                  </InteractiveActionBtn>
                 )}
-                <TouchableOpacity
+                <InteractiveActionBtn
                   style={styles.closeModalBtn}
+                  accentColor={colors.textSecondary}
                   onPress={() => setRankingModalVisible(false)}
                 >
                   <Text style={[styles.closeModalText, { color: colors.textSecondary }]}>✕</Text>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
               </View>
             </View>
 
             {/* Barra de Acciones de Exportar Ranking */}
             {rankingData?.ranking && rankingData.ranking.length > 0 && (
               <View style={styles.rankingExportRow}>
-                <TouchableOpacity
+                <InteractiveActionBtn
                   style={[styles.exportRankingBtn, { backgroundColor: '#4ECDC418', borderColor: '#4ECDC4' }]}
+                  accentColor="#4ECDC4"
                   onPress={handleExportRankingCSV}
-                  activeOpacity={0.8}
                 >
                   <Text style={[styles.exportRankingBtnText, { color: '#4ECDC4' }]}>📥 Exportar Excel/CSV</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </InteractiveActionBtn>
+                <InteractiveActionBtn
                   style={[styles.exportRankingBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
+                  accentColor={colors.primary}
                   onPress={handleCopyRankingText}
-                  activeOpacity={0.8}
                 >
                   <Text style={[styles.exportRankingBtnText, { color: colors.primary }]}>📋 Copiar Notas</Text>
-                </TouchableOpacity>
+                </InteractiveActionBtn>
               </View>
             )}
 
@@ -1325,25 +1329,26 @@ export default function AdminScreen() {
                       </View>
 
                       {/* Botón para eliminar calificación individual */}
-                      <TouchableOpacity
+                      <InteractiveActionBtn
                         style={styles.deleteRankingItemBtn}
+                        accentColor="#EF4444"
                         onPress={() => handleDeleteRankingItem(item)}
-                        activeOpacity={0.7}
                       >
                         <Text style={styles.deleteRankingItemBtnText}>🗑️</Text>
-                      </TouchableOpacity>
+                      </InteractiveActionBtn>
                     </View>
                   );
                 }}
               />
             )}
 
-            <TouchableOpacity
+            <InteractiveActionBtn
               style={[styles.closeBottomBtn, { backgroundColor: colors.primary }]}
+              accentColor={colors.primary}
               onPress={() => setRankingModalVisible(false)}
             >
               <Text style={[styles.closeBottomBtnText, { color: colors.primaryText }]}>Cerrar</Text>
-            </TouchableOpacity>
+            </InteractiveActionBtn>
           </View>
         </View>
       </Modal>
