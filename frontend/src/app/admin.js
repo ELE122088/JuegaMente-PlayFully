@@ -1209,11 +1209,11 @@ export default function AdminScreen() {
             <View style={[styles.rankingHeader, { borderBottomColor: colors.border }]}>
               <View style={styles.rankingHeaderTitleContainer}>
                 <Text style={styles.rankingCategoryIcon}>{rankingCategory?.icon || '📚'}</Text>
-                <View>
-                  <Text style={[styles.rankingTitle, { color: colors.text }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.rankingTitle, { color: colors.text }]} numberOfLines={1}>
                     Ranking: {rankingCategory?.name}
                   </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2, flexWrap: 'wrap' }}>
                     <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981' }} />
                     <Text style={{ fontSize: 11.5, fontWeight: '700', color: '#10B981' }}>
                       En Vivo
@@ -1230,27 +1230,16 @@ export default function AdminScreen() {
                 </View>
               </View>
 
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                {rankingData?.ranking && rankingData.ranking.length > 0 && (
-                  <InteractiveActionBtn
-                    style={[styles.clearAllRankingBtn, { backgroundColor: '#FF6B6B18', borderColor: '#FF6B6B' }]}
-                    accentColor="#FF6B6B"
-                    onPress={handleClearAllRanking}
-                  >
-                    <Text style={styles.clearAllRankingBtnText}>🧹 Vaciar</Text>
-                  </InteractiveActionBtn>
-                )}
-                <InteractiveActionBtn
-                  style={styles.closeModalBtn}
-                  accentColor={colors.textSecondary}
-                  onPress={() => setRankingModalVisible(false)}
-                >
-                  <Text style={[styles.closeModalText, { color: colors.textSecondary }]}>✕</Text>
-                </InteractiveActionBtn>
-              </View>
+              <InteractiveActionBtn
+                style={styles.closeModalBtn}
+                accentColor={colors.textSecondary}
+                onPress={() => setRankingModalVisible(false)}
+              >
+                <Text style={[styles.closeModalText, { color: colors.textSecondary }]}>✕</Text>
+              </InteractiveActionBtn>
             </View>
 
-            {/* Barra de Acciones de Exportar Ranking */}
+            {/* Barra de Acciones de Exportar y Vaciar Ranking */}
             {rankingData?.ranking && rankingData.ranking.length > 0 && (
               <View style={styles.rankingExportRow}>
                 <InteractiveActionBtn
@@ -1258,7 +1247,7 @@ export default function AdminScreen() {
                   accentColor="#4ECDC4"
                   onPress={handleExportRankingCSV}
                 >
-                  <Text style={[styles.exportRankingBtnText, { color: '#4ECDC4' }]}>📥 Exportar Excel/CSV</Text>
+                  <Text style={[styles.exportRankingBtnText, { color: '#4ECDC4' }]}>📥 Exportar CSV</Text>
                 </InteractiveActionBtn>
                 <InteractiveActionBtn
                   style={[styles.exportRankingBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
@@ -1266,6 +1255,13 @@ export default function AdminScreen() {
                   onPress={handleCopyRankingText}
                 >
                   <Text style={[styles.exportRankingBtnText, { color: colors.primary }]}>📋 Copiar Notas</Text>
+                </InteractiveActionBtn>
+                <InteractiveActionBtn
+                  style={[styles.exportRankingBtn, { backgroundColor: '#FF6B6B18', borderColor: '#FF6B6B' }]}
+                  accentColor="#FF6B6B"
+                  onPress={handleClearAllRanking}
+                >
+                  <Text style={[styles.exportRankingBtnText, { color: '#FF6B6B' }]}>🧹 Vaciar Ranking</Text>
                 </InteractiveActionBtn>
               </View>
             )}
@@ -1586,12 +1582,13 @@ const styles = StyleSheet.create({
   // Estilos del Modal de Ranking
   rankingModalCard: {
     width: '100%',
-    maxWidth: 480,
+    maxWidth: 520,
     height: Platform.OS === 'web' ? undefined : '82%',
     maxHeight: '88%',
     flexDirection: 'column',
     borderRadius: 20,
     padding: 16,
+    borderWidth: 1,
     boxShadow: '0px 8px 24px rgba(0,0,0,0.15)',
     elevation: 8,
   },
