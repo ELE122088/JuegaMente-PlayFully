@@ -102,13 +102,35 @@ export default function AdminScreen() {
   const handleOpenRanking = async (category) => {
     setRankingCategory(category);
     setRankingModalVisible(true);
-    setRankingLoading(true);
+
+    // ⚡ Carga instantánea de ranking en caché a 0ms
+    if (category?._id) {
+      try {
+        const cachedRank = storage.getItem(`cached_ranking_${category._id}`);
+        if (cachedRank) {
+          setRankingData(JSON.parse(cachedRank));
+          setRankingLoading(false);
+        } else {
+          setRankingLoading(true);
+        }
+      } catch (e) {
+        setRankingLoading(true);
+      }
+    } else {
+      setRankingLoading(true);
+    }
+
     try {
       const response = await api.get(`/categories/${category._id}/ranking`);
       setRankingData(response.data);
+      try {
+        storage.setItem(`cached_ranking_${category._id}`, JSON.stringify(response.data));
+      } catch (e) {}
     } catch (error) {
       console.error('Error al cargar ranking:', error);
-      Alert.alert('Error', 'No se pudo cargar el ranking de alumnos');
+      if (!rankingData) {
+        Alert.alert('Error', 'No se pudo cargar el ranking de alumnos');
+      }
     } finally {
       setRankingLoading(false);
     }

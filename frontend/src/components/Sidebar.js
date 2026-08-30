@@ -64,30 +64,89 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
   const handleOpenRankingModal = async () => {
     onClose();
     setRankingModalVisible(true);
-    setRankingLoading(true);
+
+    // ⚡ Obtener materias en caché inmediatamente a 0ms
+    let cats = [];
     try {
-      const res = await api.get('/categories');
-      const cats = res.data || [];
+      const cached = storage.getItem('cached_categories');
+      if (cached) cats = JSON.parse(cached);
+    } catch (e) {}
+
+    if (cats.length > 0) {
       setRankingCategories(cats);
-      if (cats.length > 0) {
-        const initialCat = selectedRankingCat || cats[0];
-        setSelectedRankingCat(initialCat);
+      const initialCat = selectedRankingCat || cats[0];
+      setSelectedRankingCat(initialCat);
+
+      // Si existe ranking en caché para esta materia, mostrarlo inmediatamente (0ms)
+      try {
+        const cachedRank = storage.getItem(`cached_ranking_${initialCat._id}`);
+        if (cachedRank) {
+          setRankingData(JSON.parse(cachedRank));
+          setRankingLoading(false);
+        } else {
+          setRankingLoading(true);
+        }
+      } catch (e) {
+        setRankingLoading(true);
+      }
+
+      // Sincronizar en segundo plano sin bloquear
+      try {
         const rankRes = await api.get(`/categories/${initialCat._id}/ranking`);
         setRankingData(rankRes.data);
+        try {
+          storage.setItem(`cached_ranking_${initialCat._id}`, JSON.stringify(rankRes.data));
+        } catch (e) {}
+      } catch (err) {
+        console.error('Error al sincronizar ranking:', err.message);
+      } finally {
+        setRankingLoading(false);
       }
-    } catch (err) {
-      console.error('Error al cargar rankings en vivo:', err.message);
-    } finally {
-      setRankingLoading(false);
+    } else {
+      setRankingLoading(true);
+      try {
+        const res = await api.get('/categories');
+        const freshCats = res.data || [];
+        setRankingCategories(freshCats);
+        if (freshCats.length > 0) {
+          const initialCat = freshCats[0];
+          setSelectedRankingCat(initialCat);
+          const rankRes = await api.get(`/categories/${initialCat._id}/ranking`);
+          setRankingData(rankRes.data);
+          try {
+            storage.setItem(`cached_ranking_${initialCat._id}`, JSON.stringify(rankRes.data));
+          } catch (e) {}
+        }
+      } catch (err) {
+        console.error('Error al cargar rankings en vivo:', err.message);
+      } finally {
+        setRankingLoading(false);
+      }
     }
   };
 
   const handleSelectRankingCat = async (cat) => {
     setSelectedRankingCat(cat);
-    setRankingLoading(true);
+
+    // ⚡ Mostrar ranking en caché a 0ms si existe
+    try {
+      const cachedRank = storage.getItem(`cached_ranking_${cat._id}`);
+      if (cachedRank) {
+        setRankingData(JSON.parse(cachedRank));
+        setRankingLoading(false);
+      } else {
+        setRankingLoading(true);
+      }
+    } catch (e) {
+      setRankingLoading(true);
+    }
+
     try {
       const res = await api.get(`/categories/${cat._id}/ranking`);
       setRankingData(res.data);
+      try {
+        storage.setItem(`cached_ranking_${cat._id}`, JSON.stringify(res.data));
+      } catch (e) {}
     } catch (err) {
       console.error('Error al cambiar materia en ranking:', err.message);
     } finally {

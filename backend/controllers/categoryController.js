@@ -125,22 +125,34 @@ const getCategoryByRoomCode = async (req, res) => {
   }
 };
 
-// @desc    Obtener ranking / calificaciones de alumnos para una categoría
-// @route   GET /api/categories/:id/ranking
 const getCategoryRanking = async (req, res) => {
   try {
-    const category = await Category.findById(req.params.id);
+    const category = await Category.findById(req.params.id).lean();
     if (!category) {
       return res.status(404).json({ message: 'Categoría no encontrada' });
     }
 
-    // Buscar todos los usuarios que hayan jugado esta categoría
-    const users = await User.find({
-      $or: [
-        { 'history.categoryId': category._id },
-        { 'history.categoryName': category.name }
-      ]
-    }).select('username profileImage history');
+    // ⚡ Optimización de alto rendimiento: Proyectar solo los campos necesarios, excluyendo el pesado subdocumento 'questions' y usando .lean()
+    const users = await User.find(
+      {
+        $or: [
+          { 'history.categoryId': category._id },
+          { 'history.categoryName': category.name }
+        ]
+      },
+      {
+        username: 1,
+        profileImage: 1,
+        'history._id': 1,
+        'history.categoryId': 1,
+        'history.categoryName': 1,
+        'history.score': 1,
+        'history.total': 1,
+        'history.percentage': 1,
+        'history.lives': 1,
+        'history.date': 1,
+      }
+    ).lean();
 
     const ranking = [];
     users.forEach((u) => {

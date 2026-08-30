@@ -123,13 +123,33 @@ export default function ProfileScreen() {
 
   const handleOpenCategoryRanking = async (categoryId, categoryName) => {
     setRankingModalVisible(true);
-    setRankingLoading(true);
     setSelectedRankingCat({ _id: categoryId, name: categoryName });
+
+    // ⚡ Carga instantánea de ranking en caché a 0ms
+    if (categoryId) {
+      try {
+        const cachedRank = storage.getItem(`cached_ranking_${categoryId}`);
+        if (cachedRank) {
+          setRankingData(JSON.parse(cachedRank));
+          setRankingLoading(false);
+        } else {
+          setRankingLoading(true);
+        }
+      } catch (e) {
+        setRankingLoading(true);
+      }
+    } else {
+      setRankingLoading(true);
+    }
+
     try {
       if (categoryId) {
         const res = await api.get(`/categories/${categoryId}/ranking`);
         setRankingData(res.data);
         setSelectedRankingCat(res.data.category || { _id: categoryId, name: categoryName });
+        try {
+          storage.setItem(`cached_ranking_${categoryId}`, JSON.stringify(res.data));
+        } catch (e) {}
       } else {
         const catsRes = await api.get('/categories');
         const match = catsRes.data?.find(c => c.name === categoryName);
@@ -137,11 +157,16 @@ export default function ProfileScreen() {
           const res = await api.get(`/categories/${match._id}/ranking`);
           setRankingData(res.data);
           setSelectedRankingCat(match);
+          try {
+            storage.setItem(`cached_ranking_${match._id}`, JSON.stringify(res.data));
+          } catch (e) {}
         }
       }
     } catch (err) {
       console.error('Error al abrir ranking desde perfil:', err);
-      Alert.alert('Aviso', 'No se pudo cargar el ranking en este momento');
+      if (!rankingData) {
+        Alert.alert('Aviso', 'No se pudo cargar el ranking en este momento');
+      }
     } finally {
       setRankingLoading(false);
     }
