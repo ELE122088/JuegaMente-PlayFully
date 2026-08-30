@@ -583,7 +583,7 @@ export default function CategoriesScreen() {
               <Text style={styles.kahootInputIcon}>🔒</Text>
               <TextInput
                 style={[styles.kahootTextInput, { color: colors.text }]}
-                placeholder="PIN DE SALA (ej. 8492)"
+                placeholder="PIN (ej. 8492)"
                 placeholderTextColor={colors.textSecondary}
                 value={roomPin}
                 onChangeText={(val) => setRoomPin(val.toUpperCase())}
@@ -1451,9 +1451,9 @@ const styles = StyleSheet.create({
   },
   kahootTextInput: {
     flex: 1,
-    fontSize: 13.5,
-    fontWeight: '800',
-    letterSpacing: 2,
+    fontSize: 12.5,
+    fontWeight: '700',
+    letterSpacing: 1,
     paddingVertical: 0,
     outlineWidth: 0,
     ...(Platform.OS === 'web' ? { outline: 'none', outlineStyle: 'none' } : {}),
@@ -1465,18 +1465,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 14,
-    height: 42,
+    paddingHorizontal: 12,
+    height: 40,
     borderRadius: 12,
-    gap: 6,
+    gap: 5,
     ...(Platform.OS === 'web' ? { cursor: 'pointer', transition: 'transform 0.15s ease' } : {}),
   },
   kahootJoinBtnText: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '800',
   },
   kahootJoinBtnArrow: {
-    fontSize: 13.5,
+    fontSize: 13,
     fontWeight: '900',
   },
   // Estilos de Carrusel de Destacados (Opción 3 - Estilo Vitrina de Logros)
@@ -1626,9 +1626,10 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     padding: 0,
     outlineWidth: 0,
+    ...(Platform.OS === 'web' ? { outline: 'none', outlineStyle: 'none' } : {}),
   },
   clearSearchBtn: {
     padding: 6,
@@ -1720,12 +1721,12 @@ const styles = StyleSheet.create({
   pinInput: {
     borderWidth: 1,
     borderRadius: 10,
-    padding: 12,
-    fontSize: 20,
+    padding: 10,
+    fontSize: 16,
     textAlign: 'center',
-    letterSpacing: 8,
+    letterSpacing: 3,
     width: '100%',
-    marginBottom: 20,
+    marginBottom: 16,
     outlineWidth: 0,
     ...(Platform.OS === 'web' ? { outline: 'none', outlineStyle: 'none' } : {}),
   },
