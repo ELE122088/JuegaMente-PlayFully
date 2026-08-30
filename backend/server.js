@@ -53,7 +53,7 @@ io.on('connection', (socket) => {
   socket.username = (rawUser && rawUser !== 'undefined' && rawUser !== 'null') ? rawUser : 'Invitado/Anónimo';
   socket.role = (rawRole && rawRole !== 'undefined' && rawRole !== 'null') ? rawRole : 'Estudiante';
 
-  console.log(`[${getSocketTimestamp()}] ⚡ [CONECTADO] 👤 ${socket.username} (${socket.role}) | Socket ID: ${socket.id}`);
+  console.log(`[${getSocketTimestamp()}][CONECTADO] ${socket.username} (${socket.role}) | Socket ID: ${socket.id}`);
 
   // Evento cuando el cliente inicia sesión o cambia de nombre
   socket.on('user:identify', (userData) => {
@@ -62,13 +62,13 @@ io.on('connection', (socket) => {
       socket.username = userData.username;
       socket.role = userData.isAdmin || userData.role === 'admin' || userData.role === 'Administrador' ? 'Administrador' : 'Estudiante';
       if (prevName !== socket.username) {
-        console.log(`[${getSocketTimestamp()}] 🆔 [IDENTIFICADO] ${prevName} -> 👤 ${socket.username} (${socket.role}) | Socket ID: ${socket.id}`);
+        console.log(`[${getSocketTimestamp()}] 🆔 [IDENTIFICADO] ${prevName} -> ${socket.username} (${socket.role}) | Socket ID: ${socket.id}`);
       }
     }
   });
 
   socket.on('disconnect', (reason) => {
-    console.log(`[${getSocketTimestamp()}] 🔌 [DESCONECTADO] 👤 ${socket.username} (${socket.role}) | Socket ID: ${socket.id} (Motivo: ${reason})`);
+    console.log(`[${getSocketTimestamp()}] 🔌 [DESCONECTADO] ${socket.username} (${socket.role}) | Socket ID: ${socket.id} (Motivo: ${reason})`);
   });
 });
 

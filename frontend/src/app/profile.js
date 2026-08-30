@@ -11,62 +11,80 @@ import { useSidebar } from '../context/SidebarContext';
 
 export const PRESET_AVATARS = [
   {
-    id: 'megabot',
-    name: 'MegaBot',
-    desc: 'Robot Genio',
-    url: 'https://api.dicebear.com/7.x/bottts/png?seed=MegaBot&backgroundColor=b6e3f4,c0aede,d1d4f9',
-    badge: '🤖',
+    id: 'megamind_baby_gamer',
+    name: 'Bebé Gamer',
+    desc: 'Bebé con audífonos',
+    badge: '👶',
+    localSource: require('../../assets/images/avatars/avatar_megamind_baby_gamer.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_baby_gamer.png',
   },
   {
-    id: 'sabio',
-    name: 'Sabio Astral',
-    desc: 'Mago Mental',
-    url: 'https://api.dicebear.com/7.x/adventurer/png?seed=Wizard&backgroundColor=ffd5dc',
-    badge: '🧙‍♂️',
+    id: 'megamind_baby_elegante',
+    name: 'Bebé con Capa',
+    desc: 'Traje negro y picos',
+    badge: '🖤',
+    localSource: require('../../assets/images/avatars/avatar_megamind_baby_elegante.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_baby_elegante.png',
   },
   {
-    id: 'cuantico',
-    name: 'Dr. Cuántico',
-    desc: 'Científico',
-    url: 'https://api.dicebear.com/7.x/bottts/png?seed=Quantum&backgroundColor=b6e3f4',
-    badge: '🧬',
-  },
-  {
-    id: 'astromind',
-    name: 'Astro-Mente',
-    desc: 'Cosmonauta',
-    url: 'https://api.dicebear.com/7.x/adventurer/png?seed=Genius&backgroundColor=b6e3f4',
-    badge: '🚀',
-  },
-  {
-    id: 'cyberbrain',
-    name: 'Cyber-Brain',
-    desc: 'Cerebrito',
-    url: 'https://api.dicebear.com/7.x/bottts/png?seed=CyberBrain&backgroundColor=ffdfbf',
-    badge: '🧠',
-  },
-  {
-    id: 'buho',
-    name: 'Búho Maestro',
-    desc: 'Guardián',
-    url: 'https://api.dicebear.com/7.x/adventurer/png?seed=Scholar&backgroundColor=d1d4f9',
-    badge: '🦉',
-  },
-  {
-    id: 'campeon',
-    name: 'Megamente',
-    desc: 'Campeón',
-    url: 'https://api.dicebear.com/7.x/bottts/png?seed=Titan&backgroundColor=c0aede',
-    badge: '👑',
-  },
-  {
-    id: 'chispa',
-    name: 'Chispa Veloz',
-    desc: 'Rayos de Saber',
-    url: 'https://api.dicebear.com/7.x/adventurer/png?seed=Champion&backgroundColor=ffdfbf',
+    id: 'megamind_baby_travieso',
+    name: 'Bebé Travieso',
+    desc: 'Guiño de genio',
     badge: '⚡',
+    localSource: require('../../assets/images/avatars/avatar_megamind_baby_travieso.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_baby_travieso.png',
+  },
+  {
+    id: 'megamind_college',
+    name: 'Universitario',
+    desc: 'Chaqueta colegial JM',
+    badge: '🎓',
+    localSource: require('../../assets/images/avatars/avatar_megamind_college.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_college.png',
+  },
+  {
+    id: 'megamind_sabio',
+    name: 'Científico',
+    desc: 'Átomo de ciencia',
+    badge: '🔬',
+    localSource: require('../../assets/images/avatars/avatar_megamind_sabio.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_sabio.png',
+  },
+  {
+    id: 'megamind_graduado',
+    name: 'Campeón Nº 1',
+    desc: 'Birrete y copa dorada',
+    badge: '🏆',
+    localSource: require('../../assets/images/avatars/avatar_megamind_graduado.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_graduado.png',
+  },
+  {
+    id: 'cerebrito_gamer',
+    name: 'Cerebrito JM',
+    desc: 'Mente estelar',
+    badge: '🧠',
+    localSource: require('../../assets/images/avatars/avatar_cerebrito_gamer.png'),
+    serverPath: '/uploads/avatars/avatar_cerebrito_gamer.png',
+  },
+  {
+    id: 'control_neon',
+    name: 'Mando Neón',
+    desc: 'Circuito cerebral',
+    badge: '🎮',
+    localSource: require('../../assets/images/avatars/avatar_control_neon.png'),
+    serverPath: '/uploads/avatars/avatar_control_neon.png',
   },
 ];
+
+export const getAvatarSource = (profileImage) => {
+  if (!profileImage) return null;
+  const match = PRESET_AVATARS.find((a) => a.serverPath === profileImage || a.id === profileImage);
+  if (match) return match.localSource;
+  if (profileImage.startsWith('http://') || profileImage.startsWith('https://') || profileImage.startsWith('data:')) {
+    return { uri: profileImage };
+  }
+  return { uri: `${BASE_URL}${profileImage}` };
+};
 
 export default function ProfileScreen() {
   // ⚡ Inicialización instantánea con datos en caché para carga a 0ms
@@ -342,8 +360,8 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSelectPresetAvatar = async (avatarUrl) => {
-    if (avatarUrl === profile?.profileImage) return;
+  const handleSelectPresetAvatar = async (serverPath) => {
+    if (serverPath === profile?.profileImage) return;
 
     setAvatarUpdating(true);
 
@@ -351,7 +369,7 @@ export default function ProfileScreen() {
     setProfile((prev) => {
       const updated = {
         ...prev,
-        profileImage: avatarUrl,
+        profileImage: serverPath,
       };
       try {
         storage.setItem('cached_profile', JSON.stringify(updated));
@@ -359,17 +377,17 @@ export default function ProfileScreen() {
       return updated;
     });
 
-    storage.setItem('profileImage', avatarUrl);
+    storage.setItem('profileImage', serverPath);
     refreshUser();
 
     try {
       await api.put('/auth/profile', {
-        profileImage: avatarUrl,
+        profileImage: serverPath,
       });
 
-      const successMsg = '¡Avatar de personaje actualizado con éxito! 🎭';
+      const successMsg = '¡Avatar de Megamente actualizado con éxito! 🧠✨';
       if (Platform.OS === 'web') alert(successMsg);
-      else Alert.alert('Avatar Actualizado', successMsg);
+      else Alert.alert('Avatar de Megamente', successMsg);
     } catch (err) {
       console.error('Error al actualizar avatar:', err);
       const msg = err.response?.data?.message || 'No se pudo guardar el avatar';
@@ -809,7 +827,7 @@ export default function ProfileScreen() {
               >
                 {profile?.profileImage ? (
                   <Image
-                    source={{ uri: profile.profileImage.startsWith('http') ? profile.profileImage : `${BASE_URL}${profile.profileImage}` }}
+                    source={getAvatarSource(profile.profileImage)}
                     style={styles.slimAvatarImg}
                   />
                 ) : (
@@ -851,7 +869,7 @@ export default function ProfileScreen() {
                   <View style={[styles.settingsIconCircle, { backgroundColor: '#8B5CF618' }]}>
                     <Text style={styles.settingsRowIcon}>🎭</Text>
                   </View>
-                  <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Avatar de Personaje</Text>
+                  <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Avatar de Megamente</Text>
                 </View>
                 <View style={styles.settingsRowRight}>
                   <Text style={[styles.settingsRowValue, { color: colors.primary }]}>
@@ -884,13 +902,13 @@ export default function ProfileScreen() {
                   </TouchableOpacity>
 
                   <Text style={[styles.avatarGallerySectionTitle, { color: colors.textSecondary }]}>
-                    O elige uno de nuestros 8 personajes PlayFully:
+                    O elige uno de nuestros 8 avatares exclusivos de Megamente:
                   </Text>
 
-                  {/* Cuadrícula de Avatares Prediseñados */}
+                  {/* Cuadrícula de Avatares Prediseñados de Megamente */}
                   <View style={styles.avatarGrid}>
                     {PRESET_AVATARS.map((av) => {
-                      const isSelected = profile?.profileImage === av.url;
+                      const isSelected = profile?.profileImage === av.serverPath || profile?.profileImage === av.id;
                       return (
                         <TouchableOpacity
                           key={av.id}
@@ -899,11 +917,11 @@ export default function ProfileScreen() {
                             { backgroundColor: colors.background, borderColor: colors.border },
                             isSelected && { borderColor: colors.primary, borderWidth: 2, backgroundColor: `${colors.primary}18` },
                           ]}
-                          onPress={() => handleSelectPresetAvatar(av.url)}
+                          onPress={() => handleSelectPresetAvatar(av.serverPath)}
                           disabled={avatarUpdating}
                           activeOpacity={0.7}
                         >
-                          <Image source={{ uri: av.url }} style={styles.avatarCardImg} />
+                          <Image source={av.localSource} style={styles.avatarCardImg} />
                           <Text style={[styles.avatarCardName, { color: colors.text }]} numberOfLines={1}>
                             {av.name}
                           </Text>
@@ -1142,7 +1160,7 @@ export default function ProfileScreen() {
             {/* =========================================================
                 PROPUESTA C (ACTIVA): Tira Horizontal Ultra-Compacta (Estilo Apple Analytics)
             ========================================================= */}
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Resumen de Rendimiento</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>    Resumen de Rendimiento</Text>
             <View style={[styles.stripContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {/* 1. Partidas */}
               <View style={styles.stripCol}>
