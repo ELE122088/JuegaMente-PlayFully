@@ -80,7 +80,7 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
       <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
-        <View style={[styles.modal, { backgroundColor: colors.card }]}>
+        <View style={[styles.modal, { backgroundColor: colors.card, borderColor: colors.border, borderLeftColor: color }]}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text style={[styles.title, { color: colors.text }]}>
               {isEditing ? '✏️ Editar Categoría' : '➕ Nueva Categoría'}
@@ -424,8 +424,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    borderRadius: 12,
-    borderLeftWidth: 6,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderLeftWidth: 5,
     gap: 12,
   },
   previewIcon: {

@@ -8,6 +8,24 @@ import CategoryForm from '../components/CategoryForm';
 import QuestionForm from '../components/QuestionForm';
 import { useTheme } from '../context/ThemeContext';
 
+const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, elevation = 3) => {
+  if (Platform.OS === 'web') {
+    const r = parseInt(color.slice(1, 3), 16) || 0;
+    const g = parseInt(color.slice(3, 5), 16) || 0;
+    const b = parseInt(color.slice(5, 7), 16) || 0;
+    return {
+      boxShadow: `0px ${offsetY}px ${radius}px rgba(${r},${g},${b},${opacity})`,
+    };
+  }
+  return {
+    shadowColor: color,
+    shadowOffset: { width: 0, height: offsetY },
+    shadowOpacity: opacity,
+    shadowRadius: radius,
+    elevation,
+  };
+};
+
 export default function AdminScreen() {
   const [activeTab, setActiveTab] = useState('categories');
   const [categories, setCategories] = useState([]);
@@ -537,111 +555,149 @@ export default function AdminScreen() {
     }
   };
 
-  // ==================== RENDERS ====================
-  const renderCategoryItem = ({ item }) => (
-    <View style={[
-      styles.categoryCardAdmin, 
-      { 
-        backgroundColor: colors.card, 
-        borderLeftColor: item.color, 
-      }
-    ]}>
-      <View style={styles.categoryCardAdminMain}>
-        <Text style={styles.cardIconCompact}>{item.icon}</Text>
-        <View style={styles.cardInfoCompact}>
-          {/* Fila 1: Título y Estado Abierto/Cerrado */}
-          <View style={styles.categoryTitleRow}>
-            <Text style={[styles.categoryTitleText, { color: colors.text }]} numberOfLines={1}>
-              {item.name}
-            </Text>
-            
-            {/* Badge de Estado Activo/Bloqueado con 1 toque */}
-            <TouchableOpacity 
-              onPress={() => handleToggleCategoryStatus(item)}
-              activeOpacity={0.7}
-              style={[
-                styles.pinBadgeCompact, 
-                { 
-                  backgroundColor: item.isActive !== false ? '#4ECDC418' : '#FF6B6B18', 
-                  borderColor: item.isActive !== false ? '#4ECDC4' : '#FF6B6B' 
-                }
-              ]}
-            >
-              <Text style={[styles.pinBadgeTextCompact, { color: item.isActive !== false ? '#4ECDC4' : '#FF6B6B' }]}>
-                {item.isActive !== false ? '🟢 Abierto' : '🔴 Cerrado'}
+  // ==================== SUBCOMPONENTES INTERACTIVOS CON HOVER GLOW ====================
+  const CategoryAdminCardItem = ({ item }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const cardColor = item.color || colors.primary;
+
+    return (
+      <View
+        style={[
+          styles.categoryCardAdmin,
+          {
+            backgroundColor: colors.card,
+            borderColor: isHovered ? cardColor : colors.border,
+            borderLeftColor: cardColor,
+            transform: isHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
+            ...(isHovered
+              ? createShadow(cardColor, 6, 0.22, 14, 6)
+              : createShadow('#000', 1, 0.04, 3, 2)),
+          },
+          Platform.OS === 'web' && {
+            transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
+          },
+        ]}
+        {...(Platform.OS === 'web'
+          ? {
+              onMouseEnter: () => setIsHovered(true),
+              onMouseLeave: () => setIsHovered(false),
+            }
+          : {})}
+      >
+        <View style={styles.categoryCardAdminMain}>
+          <Text style={styles.cardIconCompact}>{item.icon}</Text>
+          <View style={styles.cardInfoCompact}>
+            {/* Fila 1: Título y Estado Abierto/Cerrado */}
+            <View style={styles.categoryTitleRow}>
+              <Text style={[styles.categoryTitleText, { color: colors.text }]} numberOfLines={1}>
+                {item.name}
               </Text>
+
+              {/* Badge de Estado Activo/Bloqueado con 1 toque */}
+              <TouchableOpacity
+                onPress={() => handleToggleCategoryStatus(item)}
+                activeOpacity={0.7}
+                style={[
+                  styles.pinBadgeCompact,
+                  {
+                    backgroundColor: item.isActive !== false ? '#4ECDC418' : '#FF6B6B18',
+                    borderColor: item.isActive !== false ? '#4ECDC4' : '#FF6B6B',
+                  },
+                ]}
+              >
+                <Text style={[styles.pinBadgeTextCompact, { color: item.isActive !== false ? '#4ECDC4' : '#FF6B6B' }]}>
+                  {item.isActive !== false ? '🟢 Abierto' : '🔴 Cerrado'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Fila 2: Badges de Tipo/PIN, Modo de Juego y Segundero */}
+            <View style={styles.categoryBadgesRow}>
+              {item.isPublic || !item.roomCode ? (
+                <View style={[styles.pinBadgeCompact, { backgroundColor: '#4ECDC418', borderColor: '#4ECDC4' }]}>
+                  <Text style={[styles.pinBadgeTextCompact, { color: '#4ECDC4' }]}>🌐 Público</Text>
+                </View>
+              ) : (
+                <View style={[styles.pinBadgeCompact, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}>
+                  <Text style={[styles.pinBadgeTextCompact, { color: colors.primary }]}>🎯 PIN: {item.roomCode}</Text>
+                </View>
+              )}
+
+              <View style={[styles.pinBadgeCompact, { backgroundColor: item.gameMode === 'exam' ? '#8B5CF618' : '#10B98118', borderColor: item.gameMode === 'exam' ? '#8B5CF6' : '#10B981' }]}>
+                <Text style={[styles.pinBadgeTextCompact, { color: item.gameMode === 'exam' ? '#8B5CF6' : '#10B981' }]}>
+                  {item.gameMode === 'exam' ? '📝 Examen' : '💡 Práctica'} ({item.initialLives || (item.gameMode === 'exam' ? 3 : 5)} ❤️)
+                </Text>
+              </View>
+
+              <View style={[styles.pinBadgeCompact, { backgroundColor: `${colors.textSecondary}15`, borderColor: `${colors.textSecondary}30` }]}>
+                <Text style={[styles.pinBadgeTextCompact, { color: colors.textSecondary }]}>
+                  ⏱️ {item.timePerQuestion === 0 ? 'Sin límite' : `${item.timePerQuestion || 15}s`}
+                </Text>
+              </View>
+            </View>
+
+            {item.description ? (
+              <Text style={[styles.categorySubtitleText, { color: colors.textSecondary }]} numberOfLines={2}>
+                {item.description}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+
+        <View style={styles.categoryAdminBottomRow}>
+          <TouchableOpacity
+            style={[styles.rankingBtnCompact, { backgroundColor: `${colors.primary}14`, borderColor: colors.primary }]}
+            onPress={() => handleOpenRanking(item)}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.rankingBtnTextCompact, { color: colors.primary }]}>
+              📊 Ranking ({item.questionCount || 0} preg.)
+            </Text>
+          </TouchableOpacity>
+
+          <View style={styles.cardActionsCompact}>
+            <TouchableOpacity style={styles.editBtnCompact} onPress={() => handleEditCategory(item)}>
+              <Text style={styles.editBtnTextCompact}>✏️</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteBtnCompact} onPress={() => handleDeleteCategory(item)}>
+              <Text style={styles.deleteBtnTextCompact}>🗑️</Text>
             </TouchableOpacity>
           </View>
-
-          {/* Fila 2: Badges de Tipo/PIN, Modo de Juego y Segundero */}
-          <View style={styles.categoryBadgesRow}>
-            {item.isPublic || !item.roomCode ? (
-              <View style={[styles.pinBadgeCompact, { backgroundColor: '#4ECDC418', borderColor: '#4ECDC4' }]}>
-                <Text style={[styles.pinBadgeTextCompact, { color: '#4ECDC4' }]}>🌐 Público</Text>
-              </View>
-            ) : (
-              <View style={[styles.pinBadgeCompact, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}>
-                <Text style={[styles.pinBadgeTextCompact, { color: colors.primary }]}>🎯 PIN: {item.roomCode}</Text>
-              </View>
-            )}
-
-            <View style={[styles.pinBadgeCompact, { backgroundColor: item.gameMode === 'exam' ? '#8B5CF618' : '#10B98118', borderColor: item.gameMode === 'exam' ? '#8B5CF6' : '#10B981' }]}>
-              <Text style={[styles.pinBadgeTextCompact, { color: item.gameMode === 'exam' ? '#8B5CF6' : '#10B981' }]}>
-                {item.gameMode === 'exam' ? '📝 Examen' : '💡 Práctica'} ({item.initialLives || (item.gameMode === 'exam' ? 3 : 5)} ❤️)
-              </Text>
-            </View>
-
-            <View style={[styles.pinBadgeCompact, { backgroundColor: `${colors.textSecondary}15`, borderColor: `${colors.textSecondary}30` }]}>
-              <Text style={[styles.pinBadgeTextCompact, { color: colors.textSecondary }]}>
-                ⏱️ {item.timePerQuestion === 0 ? 'Sin límite' : `${item.timePerQuestion || 15}s`}
-              </Text>
-            </View>
-          </View>
-
-          {item.description ? (
-            <Text style={[styles.categorySubtitleText, { color: colors.textSecondary }]} numberOfLines={2}>
-              {item.description}
-            </Text>
-          ) : null}
         </View>
       </View>
+    );
+  };
 
-      <View style={styles.categoryAdminBottomRow}>
-        <TouchableOpacity
-          style={[styles.rankingBtnCompact, { backgroundColor: `${colors.primary}14`, borderColor: colors.primary }]}
-          onPress={() => handleOpenRanking(item)}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.rankingBtnTextCompact, { color: colors.primary }]}>
-            📊 Ranking ({item.questionCount || 0} preg.)
-          </Text>
-        </TouchableOpacity>
-
-        <View style={styles.cardActionsCompact}>
-          <TouchableOpacity style={styles.editBtnCompact} onPress={() => handleEditCategory(item)}>
-            <Text style={styles.editBtnTextCompact}>✏️</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteBtnCompact} onPress={() => handleDeleteCategory(item)}>
-            <Text style={styles.deleteBtnTextCompact}>🗑️</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
-
-  const renderQuestionItem = ({ item }) => {
+  const QuestionAdminCardItem = ({ item }) => {
+    const [isHovered, setIsHovered] = useState(false);
     const catName = typeof item.category === 'object' ? item.category?.name : '';
     const catColor = typeof item.category === 'object' ? item.category?.color : '#6C63FF';
     const letters = ['A', 'B', 'C', 'D'];
 
     return (
-      <View style={[
-        styles.questionCardClassic, 
-        { 
-          backgroundColor: colors.card, 
-          borderLeftColor: catColor, 
-        }
-      ]}>
+      <View
+        style={[
+          styles.questionCardClassic,
+          {
+            backgroundColor: colors.card,
+            borderColor: isHovered ? catColor : colors.border,
+            borderLeftColor: catColor,
+            transform: isHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
+            ...(isHovered
+              ? createShadow(catColor, 6, 0.22, 14, 6)
+              : createShadow('#000', 1, 0.04, 3, 2)),
+          },
+          Platform.OS === 'web' && {
+            transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
+          },
+        ]}
+        {...(Platform.OS === 'web'
+          ? {
+              onMouseEnter: () => setIsHovered(true),
+              onMouseLeave: () => setIsHovered(false),
+            }
+          : {})}
+      >
         <View style={styles.questionCardHeaderRow}>
           <View style={[styles.categoryBadge, { backgroundColor: `${catColor}18`, borderColor: catColor }]}>
             <Text style={[styles.categoryBadgeText, { color: catColor }]}>{catName}</Text>
@@ -689,10 +745,35 @@ export default function AdminScreen() {
   const totalTeachers = filteredUsers.filter((u) => u.role === 'admin').length;
   const totalStudents = filteredUsers.filter((u) => u.role !== 'admin').length;
 
-  const renderUserItem = ({ item }) => {
+  const UserAdminCardItem = ({ item }) => {
+    const [isHovered, setIsHovered] = useState(false);
     const isUserAdmin = item.role === 'admin';
+    const userAccent = isUserAdmin ? '#F59E0B' : '#10B981';
+
     return (
-      <View style={[styles.userCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View
+        style={[
+          styles.userCard,
+          {
+            backgroundColor: colors.card,
+            borderColor: isHovered ? userAccent : colors.border,
+            borderLeftColor: userAccent,
+            transform: isHovered ? [{ translateY: -2 }] : [{ translateY: 0 }],
+            ...(isHovered
+              ? createShadow(userAccent, 6, 0.22, 14, 6)
+              : createShadow('#000', 1, 0.04, 3, 2)),
+          },
+          Platform.OS === 'web' && {
+            transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease',
+          },
+        ]}
+        {...(Platform.OS === 'web'
+          ? {
+              onMouseEnter: () => setIsHovered(true),
+              onMouseLeave: () => setIsHovered(false),
+            }
+          : {})}
+      >
         <View style={styles.userCardHeader}>
           <View style={[styles.userAvatarMini, { backgroundColor: isUserAdmin ? '#F59E0B' : colors.primary }]}>
             <Text style={styles.userAvatarText}>
@@ -703,10 +784,15 @@ export default function AdminScreen() {
           <View style={{ flex: 1, marginLeft: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               <Text style={[styles.userNameText, { color: colors.text }]}>{item.username}</Text>
-              <View style={[
-                styles.userRoleBadge, 
-                { backgroundColor: isUserAdmin ? '#F59E0B20' : '#10B98120', borderColor: isUserAdmin ? '#F59E0B' : '#10B981' }
-              ]}>
+              <View
+                style={[
+                  styles.userRoleBadge,
+                  {
+                    backgroundColor: isUserAdmin ? '#F59E0B20' : '#10B98120',
+                    borderColor: isUserAdmin ? '#F59E0B' : '#10B981',
+                  },
+                ]}
+              >
                 <Text style={[styles.userRoleBadgeText, { color: isUserAdmin ? '#D97706' : '#10B981' }]}>
                   {isUserAdmin ? '👑 Docente' : '🎓 Estudiante'}
                 </Text>
@@ -731,10 +817,10 @@ export default function AdminScreen() {
           <TouchableOpacity
             style={[
               styles.toggleRoleBtn,
-              { 
-                backgroundColor: isUserAdmin ? '#F59E0B18' : `${colors.primary}18`, 
-                borderColor: isUserAdmin ? '#F59E0B' : colors.primary 
-              }
+              {
+                backgroundColor: isUserAdmin ? '#F59E0B18' : `${colors.primary}18`,
+                borderColor: isUserAdmin ? '#F59E0B' : colors.primary,
+              },
             ]}
             onPress={() => handleToggleUserRole(item)}
           >
@@ -746,6 +832,10 @@ export default function AdminScreen() {
       </View>
     );
   };
+
+  const renderCategoryItem = ({ item }) => <CategoryAdminCardItem item={item} />;
+  const renderQuestionItem = ({ item }) => <QuestionAdminCardItem item={item} />;
+  const renderUserItem = ({ item }) => <UserAdminCardItem item={item} />;
 
   if (loading && categories.length === 0) {
     return (

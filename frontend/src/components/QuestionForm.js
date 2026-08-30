@@ -56,11 +56,13 @@ export default function QuestionForm({ visible, onClose, onSave, question = null
   };
 
   const letters = ['A', 'B', 'C', 'D'];
+  const selectedCat = categories.find((c) => c._id === categoryId);
+  const selectedCatColor = selectedCat?.color || colors.primary;
 
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
       <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
-        <View style={[styles.modal, { backgroundColor: colors.card }]}>
+        <View style={[styles.modal, { backgroundColor: colors.card, borderColor: colors.border, borderLeftColor: selectedCatColor }]}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text style={[styles.title, { color: colors.text }]}>
               {isEditing ? '✏️ Editar Pregunta' : '➕ Nueva Pregunta'}
@@ -174,6 +176,8 @@ const styles = StyleSheet.create({
   },
   modal: {
     borderRadius: 16,
+    borderWidth: 1.5,
+    borderLeftWidth: 5,
     padding: 24,
     width: '100%',
     maxWidth: 500,
