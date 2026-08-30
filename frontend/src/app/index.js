@@ -8,6 +8,7 @@ import CategoryCard from '../components/CategoryCard';
 import storage from '../services/storage';
 import { useTheme } from '../context/ThemeContext';
 import { useSidebar } from '../context/SidebarContext';
+import { getAvatarSource } from './profile';
 
 export default function CategoriesScreen() {
   const [categories, setCategories] = useState(() => {
@@ -264,6 +265,57 @@ export default function CategoriesScreen() {
     }
   };
 
+  // Frases motivacionales de Megamente
+  const MEGAMIND_QUOTES = [
+    "¡Tu intelecto no tiene límites hoy! 🧠",
+    "¡El conocimiento es tu mayor superpoder! ⚡",
+    "¡Demuestra tu genialidad en cada respuesta! 🚀",
+    "¡La mente más brillante siempre gana la partida! 👑",
+    "¡Listo para conquistar un nuevo récord cerebral! 🏆",
+    "¡Desafía tus límites y lidera el podio! 🌟",
+  ];
+
+  const [motivationalQuote] = useState(() => {
+    const index = Math.floor(Math.random() * MEGAMIND_QUOTES.length);
+    return MEGAMIND_QUOTES[index];
+  });
+
+  // Calcular racha de días activos a partir del historial en caché
+  const getStreakDays = () => {
+    try {
+      const cachedProfile = storage.getItem('cached_profile');
+      if (cachedProfile) {
+        const parsed = JSON.parse(cachedProfile);
+        if (parsed.history && parsed.history.length > 0) {
+          const uniqueDays = new Set(
+            parsed.history.map((h) => {
+              const d = new Date(h.createdAt || Date.now());
+              return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+            })
+          );
+          return Math.max(1, uniqueDays.size);
+        }
+      }
+    } catch (e) {}
+    return 1;
+  };
+
+  const streakDays = getStreakDays();
+
+  // Partida rápida aleatoria
+  const handleQuickRandomGame = () => {
+    const activeCats = categories.filter((c) => c.isActive !== false);
+    if (activeCats.length === 0) {
+      const msg = 'No hay materias activas disponibles en este momento.';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Sin Materias', msg);
+      return;
+    }
+    const randomIndex = Math.floor(Math.random() * activeCats.length);
+    const chosenCat = activeCats[randomIndex];
+    handleCategoryPress(chosenCat);
+  };
+
   const ProfileButton = () => (
     <TouchableOpacity 
       style={styles.headerBtn}
@@ -272,7 +324,7 @@ export default function CategoriesScreen() {
     >
       {profileImage ? (
         <Image 
-          source={{ uri: profileImage.startsWith('http') ? profileImage : `${BASE_URL}${profileImage}` }} 
+          source={getAvatarSource(profileImage)} 
           style={styles.headerAvatar} 
         />
       ) : (
@@ -294,7 +346,77 @@ export default function CategoriesScreen() {
       <Header title="🎮 JuegaMente" rightComponent={<ProfileButton />} />
       
       <View style={styles.content}>
-        <Text style={[styles.welcomeText, { color: colors.textSecondary }]}>¡Hola, <Text style={{fontWeight: 'bold', color: colors.text}}>{username}</Text>! 👋</Text>
+        {/* =========================================================
+            BANNER HERO: MEGAMENTE & RACHA DIARIA (OPCIÓN 1)
+        ========================================================= */}
+        <View style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.heroTopRow}>
+            {/* Avatar de Megamente */}
+            <TouchableOpacity
+              style={[styles.heroAvatarWrapper, { borderColor: colors.primary }]}
+              onPress={() => router.push('/profile')}
+              activeOpacity={0.8}
+            >
+              {profileImage ? (
+                <Image
+                  source={getAvatarSource(profileImage)}
+                  style={styles.heroAvatarImg}
+                />
+              ) : (
+                <View style={[styles.heroAvatarPlaceholder, { backgroundColor: colors.primary }]}>
+                  <Text style={[styles.heroAvatarInitial, { color: colors.primaryText }]}>
+                    {username ? username.substring(0, 2).toUpperCase() : 'JM'}
+                  </Text>
+                </View>
+              )}
+              <View style={[styles.heroAvatarMiniBadge, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Text style={{ fontSize: 10 }}>🧠</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Saludo y Racha */}
+            <View style={styles.heroUserTextCol}>
+              <View style={styles.heroGreetingRow}>
+                <Text style={[styles.heroGreeting, { color: colors.text }]} numberOfLines={1}>
+                  ¡Hola, {username || 'Estudiante'}! 👋
+                </Text>
+                <View style={styles.heroStreakPill}>
+                  <Text style={styles.heroStreakText}>🔥 {streakDays}d racha</Text>
+                </View>
+              </View>
+              <Text style={[styles.heroQuote, { color: colors.textSecondary }]} numberOfLines={2}>
+                "{motivationalQuote}"
+              </Text>
+            </View>
+          </View>
+
+          {/* Botones de Acción Rápida Hero */}
+          <View style={[styles.heroActionsRow, { borderTopColor: `${colors.border}66` }]}>
+            {/* 1. Botón: Partida Rápida */}
+            <TouchableOpacity
+              style={[styles.heroQuickPlayBtn, { backgroundColor: colors.primary }]}
+              onPress={handleQuickRandomGame}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.heroQuickPlayIcon}>🎲</Text>
+              <Text style={[styles.heroQuickPlayText, { color: colors.primaryText }]}>
+                Partida Rápida
+              </Text>
+            </TouchableOpacity>
+
+            {/* 2. Botón: Mi Perfil / Ranking */}
+            <TouchableOpacity
+              style={[styles.heroProfileBtn, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}33` }]}
+              onPress={() => router.push('/profile')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.heroProfileIcon}>🏆</Text>
+              <Text style={[styles.heroProfileText, { color: colors.primary }]}>
+                Mi Perfil
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
         
         {/* Banner Slim para unirse con PIN de sala */}
         <TouchableOpacity
@@ -976,6 +1098,137 @@ const styles = StyleSheet.create({
     color: '#FF6B6B',
     lineHeight: 16,
     textAlign: 'center',
+  },
+  // Estilos del Banner Hero Megamente & Racha Diaria (Opción 1)
+  heroCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 12,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 3px 12px rgba(0,0,0,0.06)' }
+      : { elevation: 2 }),
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  heroAvatarWrapper: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}),
+  },
+  heroAvatarImg: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+  },
+  heroAvatarPlaceholder: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroAvatarInitial: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  heroAvatarMiniBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroUserTextCol: {
+    flex: 1,
+    gap: 2,
+  },
+  heroGreetingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+  },
+  heroGreeting: {
+    fontSize: 15.5,
+    fontWeight: '800',
+    flexShrink: 1,
+    fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
+  },
+  heroStreakPill: {
+    backgroundColor: '#F59E0B18',
+    borderColor: '#F59E0B44',
+    borderWidth: 1,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  heroStreakText: {
+    color: '#D97706',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  heroQuote: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    lineHeight: 16,
+  },
+  heroActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+  },
+  heroQuickPlayBtn: {
+    flex: 1.2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    gap: 6,
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', transition: 'transform 0.15s ease' } : {}),
+  },
+  heroQuickPlayIcon: {
+    fontSize: 15,
+  },
+  heroQuickPlayText: {
+    fontSize: 12.5,
+    fontWeight: '800',
+  },
+  heroProfileBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 6,
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', transition: 'transform 0.15s ease' } : {}),
+  },
+  heroProfileIcon: {
+    fontSize: 14,
+  },
+  heroProfileText: {
+    fontSize: 12.5,
+    fontWeight: '700',
   },
   // Estilos de Píldoras de Filtro Rápido
   pillsOuterContainer: {
