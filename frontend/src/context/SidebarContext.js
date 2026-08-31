@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { Alert, Platform } from 'react-native';
 import Sidebar from '../components/Sidebar';
 import storage from '../services/storage';
+import api from '../services/api';
 import { identifySocketUser } from '../services/socket';
 
 const SidebarContext = createContext({
@@ -22,16 +23,42 @@ export function SidebarProvider({ children }) {
   const [profileImage, setProfileImage] = useState('');
   const router = useRouter();
 
-  const refreshUser = () => {
+  const refreshUser = async () => {
     try {
       const storedUser = storage.getItem('username') || '';
       const storedAdmin = storage.getItem('isAdmin') === 'true';
       const storedImage = storage.getItem('profileImage') || '';
-      setUsername(storedUser);
+      if (storedUser) setUsername(storedUser);
       setIsAdmin(storedAdmin);
-      setProfileImage(storedImage);
+      if (storedImage) setProfileImage(storedImage);
+
       if (storedUser) {
         identifySocketUser({ username: storedUser, isAdmin: storedAdmin });
+      }
+
+      // ⚡ Consultar en segundo plano al backend para obtener avatar actualizado de la BD
+      const token = storage.getItem('token');
+      if (token) {
+        try {
+          const res = await api.get('/auth/profile');
+          if (res.data) {
+            if (res.data.username) {
+              setUsername(res.data.username);
+              storage.setItem('username', res.data.username);
+            }
+            if (res.data.profileImage !== undefined) {
+              setProfileImage(res.data.profileImage || '');
+              storage.setItem('profileImage', res.data.profileImage || '');
+            }
+            if (res.data.isAdmin !== undefined || res.data.role !== undefined) {
+              const adminFlag = res.data.isAdmin || res.data.role === 'admin';
+              setIsAdmin(adminFlag);
+              storage.setItem('isAdmin', String(adminFlag));
+            }
+          }
+        } catch (err) {
+          // Fallback silencioso con datos locales
+        }
       }
     } catch (e) {
       console.warn('Error al leer storage:', e);

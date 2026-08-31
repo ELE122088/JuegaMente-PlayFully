@@ -58,13 +58,20 @@ export const PRESET_AVATARS = [
 ];
 
 export const getAvatarSource = (profileImage) => {
-  if (!profileImage) return null;
-  const match = PRESET_AVATARS.find((a) => a.serverPath === profileImage || a.id === profileImage);
+  if (!profileImage) return require('../../assets/images/megamind_sidebar.png');
+  const imgStr = String(profileImage).trim();
+  const match = PRESET_AVATARS.find((a) => 
+    a.serverPath === imgStr || 
+    a.id === imgStr || 
+    imgStr.includes(a.id) || 
+    imgStr.endsWith(a.serverPath)
+  );
   if (match) return match.localSource;
-  if (profileImage.startsWith('http://') || profileImage.startsWith('https://') || profileImage.startsWith('data:')) {
-    return { uri: profileImage };
+  if (imgStr.startsWith('http://') || imgStr.startsWith('https://') || imgStr.startsWith('data:')) {
+    return { uri: imgStr };
   }
-  return { uri: `${BASE_URL}${profileImage}` };
+  const cleanPath = imgStr.startsWith('/') ? imgStr : `/${imgStr}`;
+  return { uri: `${BASE_URL}${cleanPath}` };
 };
 
 const DRAWER_WIDTH = 295;
@@ -193,16 +200,35 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
   const [currentProfileImage, setCurrentProfileImage] = useState(profileImage);
   const [currentUsername, setCurrentUsername] = useState(username);
 
+  const fetchProfileData = async () => {
+    try {
+      const storedImg = storage.getItem('profileImage');
+      const storedUser = storage.getItem('username');
+      if (storedImg) setCurrentProfileImage(storedImg);
+      if (storedUser) setCurrentUsername(storedUser);
+
+      const token = storage.getItem('token');
+      if (token) {
+        const res = await api.get('/auth/profile');
+        if (res.data) {
+          if (res.data.profileImage !== undefined) {
+            setCurrentProfileImage(res.data.profileImage || '');
+            storage.setItem('profileImage', res.data.profileImage || '');
+          }
+          if (res.data.username) {
+            setCurrentUsername(res.data.username);
+            storage.setItem('username', res.data.username);
+          }
+        }
+      }
+    } catch (e) {}
+  };
+
   useEffect(() => {
     if (isOpen) {
-      try {
-        const storedImg = storage.getItem('profileImage') || profileImage;
-        const storedUser = storage.getItem('username') || username;
-        setCurrentProfileImage(storedImg);
-        setCurrentUsername(storedUser);
-      } catch (e) {}
+      fetchProfileData();
     }
-  }, [isOpen, profileImage, username]);
+  }, [isOpen]);
 
   const activeAvatarSource = getAvatarSource(currentProfileImage || profileImage);
   const displayUsername = currentUsername || username;
@@ -962,10 +988,13 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     overflow: 'hidden',
+    ...(Platform.OS === 'web' ? { objectFit: 'cover' } : {}),
   },
   avatarText: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
+    color: '#FFFFFF',
+    textAlign: 'center',
   },
   profileInfo: {
     flex: 1,
