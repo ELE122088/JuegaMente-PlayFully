@@ -135,27 +135,28 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   leftContainer: {
-    flex: 1,
+    minWidth: 40,
     flexDirection: 'row',
     alignItems: 'center',
   },
   titleContainer: {
-    flex: 2,
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6,
+    paddingHorizontal: 4,
   },
   headerMascot: {
-    width: 28,
-    height: 28,
+    width: 26,
+    height: 26,
     borderRadius: 8,
     ...(Platform.OS === 'web'
       ? { boxShadow: '0px 2px 4px rgba(108,99,255,0.2)' }
       : { shadowColor: '#6C63FF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, elevation: 2 }),
   },
   rightContainer: {
-    flex: 1,
+    minWidth: 40,
     alignItems: 'flex-end',
   },
   backButton: {
@@ -168,9 +169,9 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    fontSize: Platform.OS === 'web' ? 22 : 18,
+    fontSize: Platform.OS === 'web' ? 20 : 16.5,
     fontWeight: '800',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
     fontFamily: Platform.OS === 'web' ? 'var(--font-display)' : undefined,
   },
 });
