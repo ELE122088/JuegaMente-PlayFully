@@ -2525,11 +2525,15 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 40,
+    width: '100%',
+    maxWidth: 920,
+    alignSelf: 'center',
+    paddingTop: Platform.OS === 'web' ? 12 : 6,
   },
   profileSlimHeaderCard: {
     marginHorizontal: 16,
-    marginTop: Platform.OS === 'web' ? 14 : 44,
-    marginBottom: 4,
+    marginTop: Platform.OS === 'web' ? 6 : 44,
+    marginBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
@@ -2626,7 +2630,7 @@ const styles = StyleSheet.create({
   },
   // Estilos de la Barra de Pestañas Superiores (Ultra-Responsive Móvil + Web)
   profileTabBar: {
-    marginHorizontal: 12,
+    marginHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -2878,7 +2882,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   stripContainer: {
-    marginHorizontal: 12,
+    marginHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
