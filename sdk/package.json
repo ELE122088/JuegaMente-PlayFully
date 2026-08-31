@@ -1,0 +1,17 @@
+{
+  "name": "juegamente-sdk",
+  "version": "1.0.0",
+  "description": "SDK oficial de JavaScript / Node.js para conectar con la API y WebSockets de JuegaMente (PlayFully)",
+  "main": "src/index.js",
+  "keywords": [
+    "juegamente",
+    "quiz",
+    "trivia",
+    "sdk",
+    "api",
+    "websockets",
+    "education"
+  ],
+  "author": "JuegaMente Team",
+  "license": "MIT"
+}
