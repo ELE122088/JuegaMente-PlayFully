@@ -405,9 +405,11 @@ export default function AdminScreen() {
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (silent = false) => {
     try {
-      setUsersLoading(true);
+      if (!silent && (!users || users.length === 0)) {
+        setUsersLoading(true);
+      }
       const res = await api.get('/auth/users');
       setUsers(res.data || []);
     } catch (e) {
@@ -960,7 +962,7 @@ export default function AdminScreen() {
             ]}
             onPress={() => {
               setActiveTab('users');
-              fetchUsers();
+              fetchUsers(true);
             }}
             activeOpacity={0.75}
           >

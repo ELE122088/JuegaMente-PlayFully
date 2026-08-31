@@ -503,8 +503,9 @@ const getAllUsers = async (req, res) => {
       isSuperAdmin: { $ne: true },
       username: { $ne: 'SuperAdmin' },
     })
-      .select('-password')
-      .sort({ createdAt: -1 });
+      .select('-password -history')
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener usuarios', error: error.message });
