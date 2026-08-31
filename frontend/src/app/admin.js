@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Platform, Image, Modal, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Platform, Image, Modal, ScrollView, TextInput, useWindowDimensions } from 'react-native';
 import api from '../services/api';
 import { getSocket } from '../services/socket';
 import storage from '../services/storage';
@@ -70,6 +70,10 @@ const InteractiveActionBtn = ({
 };
 
 export default function AdminScreen() {
+  const { width: windowWidth } = useWindowDimensions();
+  const isMobileView = windowWidth < 640;
+  const isVerySmall = windowWidth < 390;
+
   const [activeTab, setActiveTab] = useState('categories');
   const [categories, setCategories] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -897,29 +901,45 @@ export default function AdminScreen() {
         showBack={true} 
       />
 
-      {/* Tabs */}
+      {/* Tabs Responsivos */}
       <View style={[styles.tabs, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'categories' && [styles.tabActive, { borderBottomColor: colors.primary }]]}
           onPress={() => setActiveTab('categories')}
+          activeOpacity={0.7}
         >
-          <Text style={[
-            styles.tabText, 
-            { color: colors.textSecondary },
-            activeTab === 'categories' && [styles.tabTextActive, { color: colors.primary }]
-          ]}>
+          <Text 
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={[
+              styles.tabText, 
+              { 
+                color: colors.textSecondary,
+                fontSize: isVerySmall ? 11 : isMobileView ? 12.5 : 14.5,
+              },
+              activeTab === 'categories' && [styles.tabTextActive, { color: colors.primary }]
+            ]}
+          >
             📂 Materias ({categories.length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'questions' && [styles.tabActive, { borderBottomColor: colors.primary }]]}
           onPress={() => setActiveTab('questions')}
+          activeOpacity={0.7}
         >
-          <Text style={[
-            styles.tabText, 
-            { color: colors.textSecondary },
-            activeTab === 'questions' && [styles.tabTextActive, { color: colors.primary }]
-          ]}>
+          <Text 
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={[
+              styles.tabText, 
+              { 
+                color: colors.textSecondary,
+                fontSize: isVerySmall ? 11 : isMobileView ? 12.5 : 14.5,
+              },
+              activeTab === 'questions' && [styles.tabTextActive, { color: colors.primary }]
+            ]}
+          >
             ❓ Preguntas ({questions.length})
           </Text>
         </TouchableOpacity>
@@ -932,12 +952,20 @@ export default function AdminScreen() {
               setActiveTab('users');
               fetchUsers();
             }}
+            activeOpacity={0.7}
           >
-            <Text style={[
-              styles.tabText, 
-              { color: colors.textSecondary },
-              activeTab === 'users' && [styles.tabTextActive, { color: colors.primary }]
-            ]}>
+            <Text 
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={[
+                styles.tabText, 
+                { 
+                  color: colors.textSecondary,
+                  fontSize: isVerySmall ? 11 : isMobileView ? 12.5 : 14.5,
+                },
+                activeTab === 'users' && [styles.tabTextActive, { color: colors.primary }]
+              ]}
+            >
               👥 Usuarios ({filteredUsers.length})
             </Text>
           </TouchableOpacity>
@@ -1385,11 +1413,16 @@ const styles = StyleSheet.create({
   tabs: {
     flexDirection: 'row',
     borderBottomWidth: 1,
+    maxWidth: 920,
+    width: '100%',
+    alignSelf: 'center',
   },
   tab: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 2,
     alignItems: 'center',
+    justifyContent: 'center',
     borderBottomWidth: 3,
     borderBottomColor: 'transparent',
   },
@@ -1397,8 +1430,9 @@ const styles = StyleSheet.create({
     // Definido dinámicamente
   },
   tabText: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 13.5,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   tabTextActive: {
     // Definido dinámicamente
