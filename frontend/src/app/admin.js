@@ -893,7 +893,7 @@ export default function AdminScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header 
-        title={isSuperAdmin ? (Platform.OS === 'web' ? '👑 Administración (SuperAdmin)' : '👑 SuperAdmin') : '👨‍🏫 Panel Docente'} 
+        title={isSuperAdmin ? '👑 SuperAdmin' : '👨‍🏫 Panel Docente'} 
         showBack={true} 
       />
 
