@@ -242,7 +242,7 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
 
             {/* 3. Cantidad de Vidas */}
             <Text style={[styles.label, { color: colors.text }]}>❤️ Cantidad de Vidas</Text>
-            <View style={styles.segmentedControl}>
+            <View style={styles.segmentedControlWrap}>
               {[
                 { label: '1 ❤️', value: 1 },
                 { label: '3 ❤️', value: 3 },
@@ -252,14 +252,14 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                 <InteractiveActionBtn
                   key={item.value}
                   style={[
-                    styles.segmentBtn,
-                    { backgroundColor: colors.background, borderColor: colors.border, paddingVertical: 8, paddingHorizontal: 2 },
+                    styles.segmentBtnWrap,
+                    { backgroundColor: colors.background, borderColor: colors.border },
                     initialLives === item.value && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
                   ]}
                   accentColor={colors.primary}
                   onPress={() => setInitialLives(item.value)}
                 >
-                  <Text style={[styles.segmentBtnText, { fontSize: 12.5, color: initialLives === item.value ? colors.primary : colors.textSecondary }]} numberOfLines={1}>
+                  <Text style={[styles.segmentBtnWrapText, { color: initialLives === item.value ? colors.primary : colors.textSecondary }]} numberOfLines={1}>
                     {item.label}
                   </Text>
                 </InteractiveActionBtn>
@@ -268,7 +268,7 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
 
             {/* 4. Tiempo por Pregunta */}
             <Text style={[styles.label, { color: colors.text }]}>⏱️ Tiempo por Pregunta</Text>
-            <View style={styles.segmentedControl}>
+            <View style={styles.segmentedControlWrap}>
               {[
                 { label: '10s', value: 10 },
                 { label: '15s', value: 15 },
@@ -279,14 +279,14 @@ export default function CategoryForm({ visible, onClose, onSave, category = null
                 <InteractiveActionBtn
                   key={item.value}
                   style={[
-                    styles.segmentBtn,
-                    { backgroundColor: colors.background, borderColor: colors.border, paddingVertical: 8, paddingHorizontal: 2 },
+                    styles.segmentBtnWrap,
+                    { backgroundColor: colors.background, borderColor: colors.border },
                     timePerQuestion === item.value && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
                   ]}
                   accentColor={colors.primary}
                   onPress={() => setTimePerQuestion(item.value)}
                 >
-                  <Text style={[styles.segmentBtnText, { fontSize: 12, color: timePerQuestion === item.value ? colors.primary : colors.textSecondary }]} numberOfLines={1}>
+                  <Text style={[styles.segmentBtnWrapText, { color: timePerQuestion === item.value ? colors.primary : colors.textSecondary }]} numberOfLines={1}>
                     {item.label}
                   </Text>
                 </InteractiveActionBtn>
@@ -404,55 +404,77 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: Platform.OS === 'web' ? 12 : 16,
   },
   modal: {
     borderRadius: 16,
-    padding: 24,
+    borderWidth: 1.5,
+    padding: Platform.OS === 'web' ? 16 : 20,
     width: '100%',
     maxWidth: 500,
-    maxHeight: '90%',
+    maxHeight: '92%',
   },
   title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 16,
     textAlign: 'center',
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-    marginTop: 16,
+    fontSize: 13.5,
+    fontWeight: '700',
+    marginBottom: 6,
+    marginTop: 14,
   },
   segmentedControl: {
     flexDirection: 'row',
     gap: 6,
   },
+  segmentedControlWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
   segmentBtn: {
     flex: 1,
-    paddingVertical: 9,
-    paddingHorizontal: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
     borderRadius: 10,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   segmentBtnText: {
-    fontSize: 12.5,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  segmentBtnWrap: {
+    flex: 1,
+    minWidth: 50,
+    paddingVertical: 7,
+    paddingHorizontal: 3,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentBtnWrapText: {
+    fontSize: 11.5,
     fontWeight: '700',
   },
   input: {
     borderWidth: 1,
     borderRadius: 10,
-    padding: 12,
-    fontSize: 16,
-    ...(Platform.OS === 'web' ? { outlineWidth: 0, outline: 'none', outlineStyle: 'none' } : {}),
+    padding: 10,
+    fontSize: 15,
+    outlineWidth: 0,
+    ...(Platform.OS === 'web' ? { outline: 'none', outlineStyle: 'none' } : {}),
   },
   textArea: {
-    minHeight: 80,
+    minHeight: 70,
     textAlignVertical: 'top',
-    ...(Platform.OS === 'web' ? { outlineWidth: 0, outline: 'none', outlineStyle: 'none' } : {}),
+    outlineWidth: 0,
+    ...(Platform.OS === 'web' ? { outline: 'none', outlineStyle: 'none' } : {}),
   },
   optionsGrid: {
     flexDirection: 'row',
@@ -460,24 +482,24 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emojiOption: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: 'transparent',
   },
   emojiSelected: {
     // Definido dinámicamente
   },
   emojiText: {
-    fontSize: 22,
+    fontSize: 20,
   },
   colorOption: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
@@ -489,52 +511,60 @@ const styles = StyleSheet.create({
   checkMark: {
     color: '#FFFFFF',
     fontWeight: 'bold',
-    fontSize: 18,
+    fontSize: 16,
   },
   preview: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
+    padding: 14,
+    borderRadius: 14,
     borderWidth: 1.5,
     borderLeftWidth: 5,
-    gap: 12,
+    gap: 10,
   },
   previewIcon: {
-    fontSize: 32,
+    fontSize: 28,
   },
   previewName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
   },
   previewDesc: {
-    fontSize: 13,
+    fontSize: 12.5,
     marginTop: 2,
   },
   buttons: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 20,
+    gap: 10,
+    marginTop: 18,
   },
   cancelButton: {
     flex: 1,
-    padding: 14,
-    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 46,
   },
   cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   saveButton: {
-    flex: 1,
-    padding: 14,
-    borderRadius: 10,
+    flex: 1.3,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 46,
   },
   saveButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '800',
     color: '#FFFFFF',
+    textAlign: 'center',
   },
 });
