@@ -1013,52 +1013,50 @@ export default function AdminScreen() {
           }
         />
       ) : activeTab === 'questions' ? (
-        <View style={{ flex: 1 }}>
-          {/* Tarjeta Redondeada de Carga Masiva (Ultra-Responsive Móvil + Web) */}
-          <View style={[styles.adminActionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={styles.bulkCardInner}>
-              <View style={styles.bulkCardLeft}>
-                <Text style={styles.bulkCardEmoji}>📚</Text>
-                <Text style={[styles.questionsCountTitle, { color: colors.text }]} numberOfLines={1}>
-                  <Text style={{ fontWeight: '800' }}>{questions.length}</Text> preguntas registradas
-                </Text>
+        <FlatList
+          data={questions}
+          keyExtractor={(item) => item._id}
+          renderItem={renderQuestionItem}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <View style={[styles.adminActionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={styles.bulkCardInner}>
+                <View style={styles.bulkCardLeft}>
+                  <Text style={styles.bulkCardEmoji}>📚</Text>
+                  <Text style={[styles.questionsCountTitle, { color: colors.text }]} numberOfLines={1}>
+                    <Text style={{ fontWeight: '800' }}>{questions.length}</Text> preguntas registradas
+                  </Text>
+                </View>
+                <InteractiveActionBtn
+                  style={[styles.bulkImportBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
+                  accentColor={colors.primary}
+                  onPress={() => {
+                    if (categories.length === 0) {
+                      Alert.alert('Aviso', 'Primero debes crear al menos una categoría');
+                      return;
+                    }
+                    setBulkCategoryId(categories[0]._id);
+                    setShowBulkModal(true);
+                  }}
+                >
+                  <Text style={[styles.bulkImportBtnText, { color: colors.primary }]}>📥 Carga Masiva</Text>
+                </InteractiveActionBtn>
               </View>
-              <InteractiveActionBtn
-                style={[styles.bulkImportBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
-                accentColor={colors.primary}
-                onPress={() => {
-                  if (categories.length === 0) {
-                    Alert.alert('Aviso', 'Primero debes crear al menos una categoría');
-                    return;
-                  }
-                  setBulkCategoryId(categories[0]._id);
-                  setShowBulkModal(true);
-                }}
-              >
-                <Text style={[styles.bulkImportBtnText, { color: colors.primary }]}>📥 Carga Masiva</Text>
-              </InteractiveActionBtn>
             </View>
-          </View>
-
-          <FlatList
-            data={questions}
-            keyExtractor={(item) => item._id}
-            renderItem={renderQuestionItem}
-            contentContainerStyle={styles.list}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              <View style={styles.emptyState}>
-                <Image
-                  source={require('../../assets/images/empty_questions.jpg')}
-                  style={styles.emptyIllustration}
-                  resizeMode="contain"
-                />
-                <Text style={[styles.emptyText, { color: colors.text }]}>No hay preguntas registradas</Text>
-                <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>Crea categorías primero, luego agrega preguntas con el botón '+' o con Carga Masiva</Text>
-              </View>
-            }
-          />
-        </View>
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Image
+                source={require('../../assets/images/empty_questions.jpg')}
+                style={styles.emptyIllustration}
+                resizeMode="contain"
+              />
+              <Text style={[styles.emptyText, { color: colors.text }]}>No hay preguntas registradas</Text>
+              <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>Crea categorías primero, luego agrega preguntas con el botón '+' o con Carga Masiva</Text>
+            </View>
+          }
+        />
       ) : isSuperAdmin && activeTab === 'users' ? (
         <View style={{ flex: 1 }}>
           {/* Barra de Búsqueda de Usuarios (Estilo Ventana Principal) */}
@@ -1535,7 +1533,7 @@ const styles = StyleSheet.create({
   },
   adminTabBar: {
     marginHorizontal: 16,
-    marginTop: 10,
+    marginTop: 8,
     marginBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
@@ -1545,9 +1543,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 4,
     maxWidth: 920,
-    alignSelf: 'center',
+    alignSelf: Platform.OS === 'web' ? 'center' : 'stretch',
+    width: Platform.OS === 'web' ? 'calc(100% - 32px)' : undefined,
     ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.04)', width: 'calc(100% - 32px)' }
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.04)' }
       : { elevation: 1 }),
   },
   adminTabItem: {
@@ -1950,7 +1949,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     padding: 14,
     maxWidth: 920,
-    alignSelf: 'center',
+    alignSelf: Platform.OS === 'web' ? 'center' : 'stretch',
     width: Platform.OS === 'web' ? 'calc(100% - 32px)' : undefined,
     ...(Platform.OS === 'web'
       ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.04)' }
