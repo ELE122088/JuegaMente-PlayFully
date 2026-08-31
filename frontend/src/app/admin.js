@@ -901,77 +901,85 @@ export default function AdminScreen() {
         showBack={true} 
       />
 
-      {/* Tabs Responsivos */}
-      <View style={[styles.tabsHeaderWrapper, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <View style={styles.tabs}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'categories' && [styles.tabActive, { borderBottomColor: colors.primary }]]}
-            onPress={() => setActiveTab('categories')}
-            activeOpacity={0.7}
+      {/* Barra de Pestañas Segmentada (Estilo Cápsula Redondeada) */}
+      <View style={[styles.adminTabBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <TouchableOpacity
+          style={[
+            styles.adminTabItem,
+            activeTab === 'categories' && [styles.adminTabItemActive, { backgroundColor: colors.primary }]
+          ]}
+          onPress={() => setActiveTab('categories')}
+          activeOpacity={0.75}
+        >
+          <Text style={styles.adminTabEmoji}>📂</Text>
+          <Text 
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={[
+              styles.adminTabTitle, 
+              { 
+                color: activeTab === 'categories' ? '#FFFFFF' : colors.textSecondary,
+                fontSize: isVerySmall ? 11 : isMobileView ? 12 : 13.5,
+              }
+            ]}
           >
-            <Text 
-              numberOfLines={1}
-              ellipsizeMode="tail"
-              style={[
-                styles.tabText, 
-                { 
-                  color: colors.textSecondary,
-                  fontSize: isVerySmall ? 11 : isMobileView ? 12.5 : 14.5,
-                },
-                activeTab === 'categories' && [styles.tabTextActive, { color: colors.primary }]
-              ]}
-            >
-              📂 Materias ({categories.length})
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'questions' && [styles.tabActive, { borderBottomColor: colors.primary }]]}
-            onPress={() => setActiveTab('questions')}
-            activeOpacity={0.7}
-          >
-            <Text 
-              numberOfLines={1}
-              ellipsizeMode="tail"
-              style={[
-                styles.tabText, 
-                { 
-                  color: colors.textSecondary,
-                  fontSize: isVerySmall ? 11 : isMobileView ? 12.5 : 14.5,
-                },
-                activeTab === 'questions' && [styles.tabTextActive, { color: colors.primary }]
-              ]}
-            >
-              ❓ Preguntas ({questions.length})
-            </Text>
-          </TouchableOpacity>
+            Materias ({categories.length})
+          </Text>
+        </TouchableOpacity>
 
-          {/* 👑 Pestaña de Usuarios: SOLO VISIBLE PARA EL SUPERADMIN */}
-          {isSuperAdmin && (
-            <TouchableOpacity
-              style={[styles.tab, activeTab === 'users' && [styles.tabActive, { borderBottomColor: colors.primary }]]}
-              onPress={() => {
-                setActiveTab('users');
-                fetchUsers();
-              }}
-              activeOpacity={0.7}
+        <TouchableOpacity
+          style={[
+            styles.adminTabItem,
+            activeTab === 'questions' && [styles.adminTabItemActive, { backgroundColor: colors.primary }]
+          ]}
+          onPress={() => setActiveTab('questions')}
+          activeOpacity={0.75}
+        >
+          <Text style={styles.adminTabEmoji}>❓</Text>
+          <Text 
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={[
+              styles.adminTabTitle, 
+              { 
+                color: activeTab === 'questions' ? '#FFFFFF' : colors.textSecondary,
+                fontSize: isVerySmall ? 11 : isMobileView ? 12 : 13.5,
+              }
+            ]}
+          >
+            Preguntas ({questions.length})
+          </Text>
+        </TouchableOpacity>
+
+        {/* 👑 Pestaña de Usuarios: SOLO VISIBLE PARA EL SUPERADMIN */}
+        {isSuperAdmin && (
+          <TouchableOpacity
+            style={[
+              styles.adminTabItem,
+              activeTab === 'users' && [styles.adminTabItemActive, { backgroundColor: colors.primary }]
+            ]}
+            onPress={() => {
+              setActiveTab('users');
+              fetchUsers();
+            }}
+            activeOpacity={0.75}
+          >
+            <Text style={styles.adminTabEmoji}>👥</Text>
+            <Text 
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={[
+                styles.adminTabTitle, 
+                { 
+                  color: activeTab === 'users' ? '#FFFFFF' : colors.textSecondary,
+                  fontSize: isVerySmall ? 11 : isMobileView ? 12 : 13.5,
+                }
+              ]}
             >
-              <Text 
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                style={[
-                  styles.tabText, 
-                  { 
-                    color: colors.textSecondary,
-                    fontSize: isVerySmall ? 11 : isMobileView ? 12.5 : 14.5,
-                  },
-                  activeTab === 'users' && [styles.tabTextActive, { color: colors.primary }]
-                ]}
-              >
-                👥 Usuarios ({filteredUsers.length})
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+              Usuarios ({filteredUsers.length})
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Lista de Contenido por Pestaña */}
@@ -996,12 +1004,20 @@ export default function AdminScreen() {
         />
       ) : activeTab === 'questions' ? (
         <View style={{ flex: 1 }}>
-          {/* Barra de Acciones de Preguntas */}
-          <View style={[styles.topBarHeaderWrapper, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-            <View style={styles.questionsTopBar}>
-              <Text style={[styles.questionsCountTitle, { color: colors.text }]}>
-                {questions.length} preguntas registradas
-              </Text>
+          {/* Tarjeta Redondeada de Carga Masiva (Estilo KahootPinCard) */}
+          <View style={[styles.adminActionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+              <View style={styles.adminActionLeft}>
+                <View style={[styles.adminActionIconCircle, { backgroundColor: `${colors.primary}15` }]}>
+                  <Text style={styles.adminActionEmoji}>📚</Text>
+                </View>
+                <View>
+                  <Text style={[styles.adminActionTitle, { color: colors.text }]}>Banco de Reactivos</Text>
+                  <Text style={[styles.adminActionSubtitle, { color: colors.textSecondary }]}>
+                    {questions.length} preguntas registradas
+                  </Text>
+                </View>
+              </View>
               <InteractiveActionBtn
                 style={[styles.bulkImportBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
                 accentColor={colors.primary}
@@ -1040,36 +1056,34 @@ export default function AdminScreen() {
         </View>
       ) : isSuperAdmin && activeTab === 'users' ? (
         <View style={{ flex: 1 }}>
-          {/* Barra de Estadísticas y Buscador de Usuarios */}
-          <View style={[styles.topBarHeaderWrapper, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-            <View style={styles.usersTopContainer}>
-              <View style={styles.userStatsRow}>
-                <View style={[styles.statChip, { backgroundColor: `${colors.primary}18` }]}>
-                  <Text style={[styles.statChipText, { color: colors.primary }]}>👥 Total: {filteredUsers.length}</Text>
-                </View>
-                <View style={[styles.statChip, { backgroundColor: '#F59E0B18' }]}>
-                  <Text style={[styles.statChipText, { color: '#D97706' }]}>👑 Docentes: {totalTeachers}</Text>
-                </View>
-                <View style={[styles.statChip, { backgroundColor: '#10B98118' }]}>
-                  <Text style={[styles.statChipText, { color: '#10B981' }]}>🎓 Alumnos: {totalStudents}</Text>
-                </View>
+          {/* Tarjeta Redondeada de Estadísticas y Buscador de Usuarios */}
+          <View style={[styles.adminActionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={styles.userStatsRow}>
+              <View style={[styles.statChip, { backgroundColor: `${colors.primary}18` }]}>
+                <Text style={[styles.statChipText, { color: colors.primary }]}>👥 Total: {filteredUsers.length}</Text>
               </View>
+              <View style={[styles.statChip, { backgroundColor: '#F59E0B18' }]}>
+                <Text style={[styles.statChipText, { color: '#D97706' }]}>👑 Docentes: {totalTeachers}</Text>
+              </View>
+              <View style={[styles.statChip, { backgroundColor: '#10B98118' }]}>
+                <Text style={[styles.statChipText, { color: '#10B981' }]}>🎓 Alumnos: {totalStudents}</Text>
+              </View>
+            </View>
 
-              <View style={[styles.userSearchBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                <Text style={{ fontSize: 14 }}>🔍</Text>
-                <TextInput
-                  style={[styles.userSearchInput, { color: colors.text }]}
-                  placeholder="Buscar usuario o docente..."
-                  placeholderTextColor={colors.textSecondary}
-                  value={userSearchQuery}
-                  onChangeText={setUserSearchQuery}
-                />
-                {userSearchQuery.length > 0 && (
-                  <TouchableOpacity onPress={() => setUserSearchQuery('')}>
-                    <Text style={{ color: colors.textSecondary, fontSize: 14 }}>✕</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+            <View style={[styles.userSearchBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
+              <Text style={{ fontSize: 14 }}>🔍</Text>
+              <TextInput
+                style={[styles.userSearchInput, { color: colors.text }]}
+                placeholder="Buscar usuario o docente..."
+                placeholderTextColor={colors.textSecondary}
+                value={userSearchQuery}
+                onChangeText={setUserSearchQuery}
+              />
+              {userSearchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setUserSearchQuery('')}>
+                  <Text style={{ color: colors.textSecondary, fontSize: 14 }}>✕</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -1416,39 +1430,46 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  tabsHeaderWrapper: {
-    width: '100%',
-    borderBottomWidth: 1,
-  },
-  topBarHeaderWrapper: {
-    width: '100%',
-    borderBottomWidth: 1,
-  },
-  tabs: {
+  adminTabBar: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 8,
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 4,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 4,
     maxWidth: 920,
-    width: '100%',
     alignSelf: 'center',
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.04)', width: 'calc(100% - 32px)' }
+      : { elevation: 1 }),
   },
-  tab: {
+  adminTabItem: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 2,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderBottomWidth: 3,
-    borderBottomColor: 'transparent',
+    paddingVertical: 9,
+    paddingHorizontal: 4,
+    borderRadius: 10,
+    gap: 5,
+    minWidth: 0,
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', userSelect: 'none', transition: 'all 0.15s ease' } : {}),
   },
-  tabActive: {
-    // Definido dinámicamente
+  adminTabItemActive: {
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 6px rgba(0,0,0,0.12)' }
+      : { elevation: 2 }),
   },
-  tabText: {
-    fontSize: 13.5,
+  adminTabEmoji: {
+    fontSize: 14,
+  },
+  adminTabTitle: {
     fontWeight: '700',
     textAlign: 'center',
-  },
-  tabTextActive: {
-    // Definido dinámicamente
   },
   list: {
     padding: Platform.OS === 'web' ? 16 : 10,
@@ -1815,20 +1836,44 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
-  // Barra Superior de Preguntas
-  questionsTopBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Platform.OS === 'web' ? 16 : 10,
-    paddingVertical: 10,
+  // Estilos de Tarjetas de Acciones y Cabeceras en Admin
+  adminActionCard: {
+    marginHorizontal: 16,
+    marginTop: 6,
+    marginBottom: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 12,
     maxWidth: 920,
-    width: '100%',
     alignSelf: 'center',
+    gap: 10,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)', width: 'calc(100% - 32px)' }
+      : { elevation: 2 }),
   },
-  questionsCountTitle: {
-    fontSize: 13,
-    fontWeight: '600',
+  adminActionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  adminActionIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  adminActionEmoji: {
+    fontSize: 18,
+  },
+  adminActionTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  adminActionSubtitle: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   bulkImportBtn: {
     paddingVertical: 6,
@@ -1948,14 +1993,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   // Estilos de la Pestaña de Usuarios y Docentes
-  usersTopContainer: {
-    paddingHorizontal: Platform.OS === 'web' ? 16 : 10,
-    paddingVertical: 12,
-    gap: 12,
-    maxWidth: 920,
-    width: '100%',
-    alignSelf: 'center',
-  },
   userStatsRow: {
     flexDirection: 'row',
     gap: 8,
@@ -1965,6 +2002,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 8,
+    borderWidth: 1,
   },
   statChipText: {
     fontSize: 12,
