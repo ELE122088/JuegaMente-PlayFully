@@ -1006,19 +1006,14 @@ export default function AdminScreen() {
         />
       ) : activeTab === 'questions' ? (
         <View style={{ flex: 1 }}>
-          {/* Tarjeta Redondeada de Carga Masiva (Estilo KahootPinCard) */}
+          {/* Tarjeta Redondeada de Carga Masiva (Ultra-Responsive Móvil + Web) */}
           <View style={[styles.adminActionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-              <View style={styles.adminActionLeft}>
-                <View style={[styles.adminActionIconCircle, { backgroundColor: `${colors.primary}15` }]}>
-                  <Text style={styles.adminActionEmoji}>📚</Text>
-                </View>
-                <View>
-                  <Text style={[styles.adminActionTitle, { color: colors.text }]}>Banco de Reactivos</Text>
-                  <Text style={[styles.adminActionSubtitle, { color: colors.textSecondary }]}>
-                    {questions.length} preguntas registradas
-                  </Text>
-                </View>
+            <View style={styles.bulkCardInner}>
+              <View style={styles.bulkCardLeft}>
+                <Text style={styles.bulkCardEmoji}>📚</Text>
+                <Text style={[styles.questionsCountTitle, { color: colors.text }]} numberOfLines={1}>
+                  <Text style={{ fontWeight: '800' }}>{questions.length}</Text> preguntas registradas
+                </Text>
               </View>
               <InteractiveActionBtn
                 style={[styles.bulkImportBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
@@ -1032,7 +1027,7 @@ export default function AdminScreen() {
                   setShowBulkModal(true);
                 }}
               >
-                <Text style={[styles.bulkImportBtnText, { color: colors.primary }]}>📥 Carga Masiva (JSON)</Text>
+                <Text style={[styles.bulkImportBtnText, { color: colors.primary }]}>📥 Carga Masiva</Text>
               </InteractiveActionBtn>
             </View>
           </View>
@@ -1849,45 +1844,42 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 6,
     marginBottom: 8,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    padding: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     maxWidth: 920,
     alignSelf: 'center',
-    gap: 10,
+    width: Platform.OS === 'web' ? 'calc(100% - 32px)' : undefined,
     ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.05)', width: 'calc(100% - 32px)' }
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.04)' }
       : { elevation: 2 }),
   },
-  adminActionLeft: {
+  bulkCardInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  bulkCardLeft: {
     flex: 1,
-  },
-  adminActionIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 6,
   },
-  adminActionEmoji: {
-    fontSize: 18,
+  bulkCardEmoji: {
+    fontSize: 16,
   },
-  adminActionTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  adminActionSubtitle: {
-    fontSize: 12,
-    fontWeight: '500',
+  questionsCountTitle: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   bulkImportBtn: {
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
+    flexShrink: 0,
   },
   bulkImportBtnText: {
     fontSize: 12,
