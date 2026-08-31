@@ -112,6 +112,7 @@ export default function AdminScreen() {
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState('all');
 
   const { colors } = useTheme();
 
@@ -785,14 +786,21 @@ export default function AdminScreen() {
     );
   };
 
-  const filteredUsers = users.filter((u) => {
+  const nonSuperUsers = users.filter((u) => {
     const isSuper = u.isSuperAdmin === true || (u.username || '').toLowerCase() === 'superadmin';
-    if (isSuper) return false;
-    return (u.username || '').toLowerCase().includes(userSearchQuery.toLowerCase());
+    return !isSuper;
   });
 
-  const totalTeachers = filteredUsers.filter((u) => u.role === 'admin').length;
-  const totalStudents = filteredUsers.filter((u) => u.role !== 'admin').length;
+  const totalTeachers = nonSuperUsers.filter((u) => u.role === 'admin').length;
+  const totalStudents = nonSuperUsers.filter((u) => u.role !== 'admin').length;
+
+  const filteredUsers = nonSuperUsers.filter((u) => {
+    const matchesSearch = (u.username || '').toLowerCase().includes(userSearchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    if (userRoleFilter === 'admin') return u.role === 'admin';
+    if (userRoleFilter === 'user') return u.role !== 'admin';
+    return true;
+  });
 
   const UserAdminCardItem = ({ item }) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -1053,35 +1061,127 @@ export default function AdminScreen() {
         </View>
       ) : isSuperAdmin && activeTab === 'users' ? (
         <View style={{ flex: 1 }}>
-          {/* Tarjeta Redondeada de Estadísticas y Buscador de Usuarios */}
-          <View style={[styles.adminActionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={styles.userStatsRow}>
-              <View style={[styles.statChip, { backgroundColor: `${colors.primary}18` }]}>
-                <Text style={[styles.statChipText, { color: colors.primary }]}>👥 Total: {filteredUsers.length}</Text>
-              </View>
-              <View style={[styles.statChip, { backgroundColor: '#F59E0B18' }]}>
-                <Text style={[styles.statChipText, { color: '#D97706' }]}>👑 Docentes: {totalTeachers}</Text>
-              </View>
-              <View style={[styles.statChip, { backgroundColor: '#10B98118' }]}>
-                <Text style={[styles.statChipText, { color: '#10B981' }]}>🎓 Alumnos: {totalStudents}</Text>
-              </View>
-            </View>
+          {/* Barra de Búsqueda de Usuarios (Estilo Ventana Principal) */}
+          <View style={[styles.searchContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={styles.searchIcon}>🔍</Text>
+            <TextInput
+              style={[styles.searchInput, { color: colors.text }]}
+              placeholder="Buscar usuario o docente..."
+              placeholderTextColor={colors.textSecondary}
+              value={userSearchQuery}
+              onChangeText={setUserSearchQuery}
+            />
+            {userSearchQuery.length > 0 && (
+              <InteractiveActionBtn 
+                onPress={() => setUserSearchQuery('')} 
+                style={styles.clearSearchBtn} 
+                accentColor={colors.primary}
+              >
+                <Text style={[styles.clearSearchText, { color: colors.textSecondary }]}>✕</Text>
+              </InteractiveActionBtn>
+            )}
+          </View>
 
-            <View style={[styles.userSearchBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
-              <Text style={{ fontSize: 14 }}>🔍</Text>
-              <TextInput
-                style={[styles.userSearchInput, { color: colors.text }]}
-                placeholder="Buscar usuario o docente..."
-                placeholderTextColor={colors.textSecondary}
-                value={userSearchQuery}
-                onChangeText={setUserSearchQuery}
-              />
-              {userSearchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setUserSearchQuery('')}>
-                  <Text style={{ color: colors.textSecondary, fontSize: 14 }}>✕</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+          {/* Píldoras de Filtro y Conteo de Usuarios (Estilo Ventana Principal) */}
+          <View style={styles.userPillsRow}>
+            {/* Todos */}
+            <InteractiveActionBtn
+              style={[
+                styles.pillBtn,
+                { backgroundColor: colors.card, borderColor: colors.border },
+                userRoleFilter === 'all' && { backgroundColor: colors.primary, borderColor: colors.primary }
+              ]}
+              accentColor={colors.primary}
+              onPress={() => setUserRoleFilter('all')}
+            >
+              <Text style={styles.pillIconEmoji}>👥</Text>
+              <Text style={[styles.pillText, { color: userRoleFilter === 'all' ? '#FFFFFF' : colors.text }]}>
+                Todos
+              </Text>
+              <View
+                style={[
+                  styles.pillCountBubble,
+                  {
+                    backgroundColor: userRoleFilter === 'all' ? 'rgba(255,255,255,0.25)' : `${colors.textSecondary}15`,
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.pillCountText,
+                    { color: userRoleFilter === 'all' ? '#FFFFFF' : colors.textSecondary }
+                  ]}
+                >
+                  {nonSuperUsers.length}
+                </Text>
+              </View>
+            </InteractiveActionBtn>
+
+            {/* Docentes */}
+            <InteractiveActionBtn
+              style={[
+                styles.pillBtn,
+                { backgroundColor: colors.card, borderColor: colors.border },
+                userRoleFilter === 'admin' && { backgroundColor: '#F59E0B', borderColor: '#F59E0B' }
+              ]}
+              accentColor="#F59E0B"
+              onPress={() => setUserRoleFilter(userRoleFilter === 'admin' ? 'all' : 'admin')}
+            >
+              <Text style={styles.pillIconEmoji}>👑</Text>
+              <Text style={[styles.pillText, { color: userRoleFilter === 'admin' ? '#FFFFFF' : colors.text }]}>
+                Docentes
+              </Text>
+              <View
+                style={[
+                  styles.pillCountBubble,
+                  {
+                    backgroundColor: userRoleFilter === 'admin' ? 'rgba(255,255,255,0.25)' : '#F59E0B20',
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.pillCountText,
+                    { color: userRoleFilter === 'admin' ? '#FFFFFF' : '#D97706' }
+                  ]}
+                >
+                  {totalTeachers}
+                </Text>
+              </View>
+            </InteractiveActionBtn>
+
+            {/* Alumnos */}
+            <InteractiveActionBtn
+              style={[
+                styles.pillBtn,
+                { backgroundColor: colors.card, borderColor: colors.border },
+                userRoleFilter === 'user' && { backgroundColor: '#10B981', borderColor: '#10B981' }
+              ]}
+              accentColor="#10B981"
+              onPress={() => setUserRoleFilter(userRoleFilter === 'user' ? 'all' : 'user')}
+            >
+              <Text style={styles.pillIconEmoji}>🎓</Text>
+              <Text style={[styles.pillText, { color: userRoleFilter === 'user' ? '#FFFFFF' : colors.text }]}>
+                Alumnos
+              </Text>
+              <View
+                style={[
+                  styles.pillCountBubble,
+                  {
+                    backgroundColor: userRoleFilter === 'user' ? 'rgba(255,255,255,0.25)' : '#10B98120',
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.pillCountText,
+                    { color: userRoleFilter === 'user' ? '#FFFFFF' : '#10B981' }
+                  ]}
+                >
+                  {totalStudents}
+                </Text>
+              </View>
+            </InteractiveActionBtn>
           </View>
 
           {usersLoading ? (
@@ -1099,7 +1199,7 @@ export default function AdminScreen() {
                 <View style={styles.emptyState}>
                   <Text style={[styles.emptyText, { color: colors.text }]}>No se encontraron usuarios</Text>
                   <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
-                    {userSearchQuery.length > 0 ? 'No hay coincidencias con la búsqueda' : 'Aún no hay usuarios registrados'}
+                    {userSearchQuery.length > 0 ? `No hay coincidencias para "${userSearchQuery}"` : 'Aún no hay usuarios registrados en esta categoría'}
                   </Text>
                 </View>
               }
@@ -1994,36 +2094,79 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
   },
-  // Estilos de la Pestaña de Usuarios y Docentes
-  userStatsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  statChip: {
-    paddingVertical: 5,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    borderWidth: 1.5,
-  },
-  statChipText: {
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  userSearchBox: {
+  // Estilos de Barra de Búsqueda y Píldoras de Usuarios (Idénticos a Pantalla Principal)
+  searchContainer: {
+    marginHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
-    borderRadius: 12,
+    paddingVertical: Platform.OS === 'web' ? 10 : 8,
+    borderRadius: 14,
     borderWidth: 1.5,
-    height: 44,
-    marginTop: 10,
-    gap: 8,
+    marginBottom: 8,
+    marginTop: 4,
+    maxWidth: 920,
+    alignSelf: 'center',
+    width: Platform.OS === 'web' ? 'calc(100% - 32px)' : undefined,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 2px 8px rgba(0,0,0,0.04)' }
+      : { elevation: 2 }),
   },
-  userSearchInput: {
+  searchIcon: {
+    fontSize: 18,
+    marginRight: 10,
+  },
+  searchInput: {
     flex: 1,
-    fontSize: 13.5,
-    height: '100%',
+    fontSize: 14,
+    padding: 0,
+    outlineWidth: 0,
+    ...(Platform.OS === 'web' ? { outline: 'none', outlineStyle: 'none' } : {}),
+  },
+  clearSearchBtn: {
+    padding: 6,
+  },
+  clearSearchText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  userPillsRow: {
+    marginHorizontal: 16,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+    maxWidth: 920,
+    alignSelf: 'center',
+    width: Platform.OS === 'web' ? 'calc(100% - 32px)' : undefined,
+  },
+  pillBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    gap: 6,
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', userSelect: 'none', transition: 'all 0.15s ease' } : {}),
+  },
+  pillIconEmoji: {
+    fontSize: 13,
+  },
+  pillText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  pillCountBubble: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 10,
+    marginLeft: 2,
+  },
+  pillCountText: {
+    fontSize: 11,
+    fontWeight: '800',
   },
   userCard: {
     marginHorizontal: 16,
