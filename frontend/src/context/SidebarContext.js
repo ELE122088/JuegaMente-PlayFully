@@ -75,11 +75,18 @@ export function SidebarProvider({ children }) {
     }
   };
 
+  const handleSetSidebarOpen = (open) => {
+    if (open) {
+      refreshUser();
+    }
+    setSidebarOpen(open);
+  };
+
   return (
     <SidebarContext.Provider
       value={{
         sidebarOpen,
-        setSidebarOpen,
+        setSidebarOpen: handleSetSidebarOpen,
         username,
         isAdmin,
         profileImage,

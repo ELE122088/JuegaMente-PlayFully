@@ -4,6 +4,68 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../context/ThemeContext';
 import api, { BASE_URL } from '../services/api';
 import { getSocket } from '../services/socket';
+import storage from '../services/storage';
+
+export const PRESET_AVATARS = [
+  {
+    id: 'megamind_baby_gamer',
+    name: 'Bebé Gamer',
+    localSource: require('../../assets/images/avatars/avatar_megamind_baby_gamer.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_baby_gamer.png',
+  },
+  {
+    id: 'megamind_baby_elegante',
+    name: 'Bebé con Capa',
+    localSource: require('../../assets/images/avatars/avatar_megamind_baby_elegante.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_baby_elegante.png',
+  },
+  {
+    id: 'megamind_baby_travieso',
+    name: 'Bebé Travieso',
+    localSource: require('../../assets/images/avatars/avatar_megamind_baby_travieso.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_baby_travieso.png',
+  },
+  {
+    id: 'megamind_college',
+    name: 'Universitario',
+    localSource: require('../../assets/images/avatars/avatar_megamind_college.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_college.png',
+  },
+  {
+    id: 'megamind_sabio',
+    name: 'Científico',
+    localSource: require('../../assets/images/avatars/avatar_megamind_sabio.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_sabio.png',
+  },
+  {
+    id: 'megamind_graduado',
+    name: 'Campeón Nº 1',
+    localSource: require('../../assets/images/avatars/avatar_megamind_graduado.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_graduado.png',
+  },
+  {
+    id: 'cerebrito_gamer',
+    name: 'Cerebrito JM',
+    localSource: require('../../assets/images/avatars/avatar_cerebrito_gamer.png'),
+    serverPath: '/uploads/avatars/avatar_cerebrito_gamer.png',
+  },
+  {
+    id: 'control_neon',
+    name: 'Mando Neón',
+    localSource: require('../../assets/images/avatars/avatar_control_neon.png'),
+    serverPath: '/uploads/avatars/avatar_control_neon.png',
+  },
+];
+
+export const getAvatarSource = (profileImage) => {
+  if (!profileImage) return null;
+  const match = PRESET_AVATARS.find((a) => a.serverPath === profileImage || a.id === profileImage);
+  if (match) return match.localSource;
+  if (profileImage.startsWith('http://') || profileImage.startsWith('https://') || profileImage.startsWith('data:')) {
+    return { uri: profileImage };
+  }
+  return { uri: `${BASE_URL}${profileImage}` };
+};
 
 const DRAWER_WIDTH = 295;
 
@@ -127,6 +189,23 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
   const [isLogoutHovered, setIsLogoutHovered] = useState(false);
   const [isThemeSecHovered, setIsThemeSecHovered] = useState(false);
   const userAccent = (isAdmin || role === 'admin') ? '#F59E0B' : colors.primary;
+
+  const [currentProfileImage, setCurrentProfileImage] = useState(profileImage);
+  const [currentUsername, setCurrentUsername] = useState(username);
+
+  useEffect(() => {
+    if (isOpen) {
+      try {
+        const storedImg = storage.getItem('profileImage') || profileImage;
+        const storedUser = storage.getItem('username') || username;
+        setCurrentProfileImage(storedImg);
+        setCurrentUsername(storedUser);
+      } catch (e) {}
+    }
+  }, [isOpen, profileImage, username]);
+
+  const activeAvatarSource = getAvatarSource(currentProfileImage || profileImage);
+  const displayUsername = currentUsername || username;
 
   // Estados para el Modal de PIN
   const [pinVisible, setPinVisible] = useState(false);
@@ -422,11 +501,11 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
               <View 
                 style={[styles.avatar, { backgroundColor: userAccent }]}
               >
-                {profileImage ? (
-                  <Image source={{ uri: profileImage.startsWith('http') ? profileImage : `${BASE_URL}${profileImage}` }} style={styles.avatarImage} />
+                {activeAvatarSource ? (
+                  <Image source={activeAvatarSource} style={styles.avatarImage} resizeMode="cover" />
                 ) : (
                   <Text style={[styles.avatarText, { color: colors.primaryText }]}>
-                    {username?.substring(0, 2).toUpperCase()}
+                    {displayUsername?.substring(0, 2).toUpperCase()}
                   </Text>
                 )}
               </View>
@@ -434,7 +513,7 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
               {/* Información de Usuario en el centro */}
               <View style={styles.profileInfo}>
                 <Text style={[styles.username, { color: colors.text }]} numberOfLines={1}>
-                  {username}
+                  {displayUsername}
                 </Text>
                 <View style={[
                   styles.roleBadge, 
@@ -873,6 +952,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
     ...(Platform.OS === 'web'
       ? { boxShadow: '0px 2px 5px rgba(0,0,0,0.12)' }
       : { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 3, elevation: 3 }),
@@ -881,6 +961,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
+    overflow: 'hidden',
   },
   avatarText: {
     fontSize: 17,
