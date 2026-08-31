@@ -3,13 +3,25 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import storage from './storage';
 
-// Función para obtener la URL base del backend local
+// URL del Backend en la Nube (Render)
+export const CLOUD_BACKEND_URL = 'https://juegamente-playfully-1.onrender.com';
+
+// Función para obtener la URL base del backend según el entorno
 export const getBaseUrl = () => {
+  // 1. En entorno Web (Navegador)
   if (Platform.OS === 'web') {
-    return 'http://localhost:5000';
+    if (typeof window !== 'undefined' && window.location) {
+      const hostname = window.location.hostname;
+      // Si estamos en desarrollo local en PC (localhost o 127.0.0.1)
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:5000';
+      }
+    }
+    // En Vercel / Netlify / Producción Web en la nube
+    return CLOUD_BACKEND_URL;
   }
 
-  // Expo Go sabe la IP de la computadora mediante hostUri (ej. "192.168.1.15:8081")
+  // 2. En entorno Móvil (Expo Go en red local)
   const hostUri =
     Constants.expoConfig?.hostUri ||
     Constants.manifest2?.extra?.expoGo?.debuggerHost ||
@@ -20,8 +32,8 @@ export const getBaseUrl = () => {
     return `http://${ip}:5000`;
   }
 
-  // Fallback para emulador Android
-  return 'http://10.0.2.2:5000';
+  // 3. En APK de Producción móvil o sin red local
+  return CLOUD_BACKEND_URL;
 };
 
 export const BASE_URL = getBaseUrl();
