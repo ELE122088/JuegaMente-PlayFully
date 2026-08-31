@@ -86,9 +86,14 @@ export default function Header({ title, showBack = false, rightComponent, onBack
     <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
       <View style={styles.leftContainer}>
         {showBack ? (
-          <InteractiveActionBtn onPress={handleBack} style={[styles.backButton, { borderColor: 'transparent' }]} accentColor={colors.primary}>
-            <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
-          </InteractiveActionBtn>
+          <TouchableOpacity
+            onPress={handleBack}
+            style={styles.iosBackBtn}
+            activeOpacity={0.6}
+          >
+            <Text style={[styles.iosBackChevron, { color: colors.primary }]}>‹</Text>
+            <Text style={[styles.iosBackText, { color: colors.primary }]}>volver</Text>
+          </TouchableOpacity>
         ) : (
           <InteractiveActionBtn 
             onPress={() => setSidebarOpen(true)} 
@@ -138,6 +143,24 @@ const styles = StyleSheet.create({
     minWidth: 40,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  iosBackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingRight: 6,
+    gap: 2,
+    marginLeft: -4,
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', userSelect: 'none' } : {}),
+  },
+  iosBackChevron: {
+    fontSize: 22,
+    fontWeight: '300',
+    marginTop: -2,
+  },
+  iosBackText: {
+    fontSize: 12.5,
+    fontWeight: '600',
   },
   titleContainer: {
     flex: 1,
