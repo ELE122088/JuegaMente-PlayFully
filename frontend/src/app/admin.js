@@ -1171,30 +1171,36 @@ export default function AdminScreen() {
 
             <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
               <Text style={[styles.bulkSectionLabel, { color: colors.text }]}>1. Selecciona la Materia de Destino:</Text>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false} 
-                style={styles.chipsScroll}
-                contentContainerStyle={styles.chipsScrollContent}
-              >
-                {categories.map((cat) => (
-                  <InteractiveActionBtn
-                    key={cat._id}
-                    style={[
-                      styles.categoryPickerChip,
-                      { backgroundColor: colors.background, borderColor: colors.border },
-                      bulkCategoryId === cat._id && { backgroundColor: `${cat.color || colors.primary}25`, borderColor: cat.color || colors.primary }
-                    ]}
-                    accentColor={cat.color || colors.primary}
-                    onPress={() => setBulkCategoryId(cat._id)}
-                  >
-                    <Text style={styles.chipEmoji}>{cat.icon || '📚'}</Text>
-                    <Text style={[styles.chipText, { color: colors.text, fontWeight: bulkCategoryId === cat._id ? 'bold' : 'normal' }]}>
-                      {cat.name}
-                    </Text>
-                  </InteractiveActionBtn>
-                ))}
-              </ScrollView>
+              <View style={styles.chipsContainer}>
+                {categories.map((cat) => {
+                  const isSelected = bulkCategoryId === cat._id;
+                  const catColor = cat.color || colors.primary;
+                  return (
+                    <InteractiveActionBtn
+                      key={cat._id}
+                      style={[
+                        styles.categoryPickerChip,
+                        { backgroundColor: colors.background, borderColor: colors.border },
+                        isSelected && { 
+                          backgroundColor: `${catColor}22`, 
+                          borderColor: catColor,
+                          borderWidth: 2,
+                        }
+                      ]}
+                      accentColor={catColor}
+                      onPress={() => setBulkCategoryId(cat._id)}
+                    >
+                      <Text style={styles.chipEmoji}>{cat.icon || '📚'}</Text>
+                      <Text style={[styles.chipText, { color: isSelected ? catColor : colors.text, fontWeight: isSelected ? 'bold' : '600' }]}>
+                        {cat.name}
+                      </Text>
+                      {isSelected && (
+                        <Text style={{ fontSize: 11, color: catColor, fontWeight: '900', marginLeft: 2 }}>✓</Text>
+                      )}
+                    </InteractiveActionBtn>
+                  );
+                })}
+              </View>
 
               <View style={styles.bulkJsonHeaderRow}>
                 <Text style={[styles.bulkSectionLabel, { color: colors.text, marginBottom: 0 }]}>2. Pega el JSON de Preguntas:</Text>
@@ -1918,14 +1924,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 8,
   },
-  chipsScroll: {
-    marginBottom: 10,
-    paddingVertical: 2,
-  },
-  chipsScrollContent: {
-    paddingVertical: 6,
-    paddingHorizontal: 2,
+  chipsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
+    marginBottom: 12,
+    marginTop: 4,
+    maxHeight: 150,
+    ...(Platform.OS === 'web' ? { overflowY: 'auto' } : {}),
   },
   categoryPickerChip: {
     flexDirection: 'row',
@@ -1935,6 +1941,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 1.5,
+    ...(Platform.OS === 'web' ? { cursor: 'pointer', userSelect: 'none', transition: 'all 0.15s ease' } : {}),
   },
   chipEmoji: {
     fontSize: 16,
