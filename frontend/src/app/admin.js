@@ -1080,7 +1080,7 @@ export default function AdminScreen() {
             )}
           </View>
 
-          {/* Píldoras de Filtro y Conteo de Usuarios (Estilo Ventana Principal) */}
+          {/* Píldoras de Filtro y Conteo de Usuarios (1 Sola Fila Compacta y Simétrica) */}
           <View style={styles.userPillsRow}>
             {/* Todos */}
             <InteractiveActionBtn
@@ -1093,7 +1093,7 @@ export default function AdminScreen() {
               onPress={() => setUserRoleFilter('all')}
             >
               <Text style={styles.pillIconEmoji}>👥</Text>
-              <Text style={[styles.pillText, { color: userRoleFilter === 'all' ? '#FFFFFF' : colors.text }]}>
+              <Text style={[styles.pillText, { color: userRoleFilter === 'all' ? '#FFFFFF' : colors.text }]} numberOfLines={1}>
                 Todos
               </Text>
               <View
@@ -1109,6 +1109,7 @@ export default function AdminScreen() {
                     styles.pillCountText,
                     { color: userRoleFilter === 'all' ? '#FFFFFF' : colors.textSecondary }
                   ]}
+                  numberOfLines={1}
                 >
                   {nonSuperUsers.length}
                 </Text>
@@ -1126,7 +1127,7 @@ export default function AdminScreen() {
               onPress={() => setUserRoleFilter(userRoleFilter === 'admin' ? 'all' : 'admin')}
             >
               <Text style={styles.pillIconEmoji}>👑</Text>
-              <Text style={[styles.pillText, { color: userRoleFilter === 'admin' ? '#FFFFFF' : colors.text }]}>
+              <Text style={[styles.pillText, { color: userRoleFilter === 'admin' ? '#FFFFFF' : colors.text }]} numberOfLines={1}>
                 Docentes
               </Text>
               <View
@@ -1142,6 +1143,7 @@ export default function AdminScreen() {
                     styles.pillCountText,
                     { color: userRoleFilter === 'admin' ? '#FFFFFF' : '#D97706' }
                   ]}
+                  numberOfLines={1}
                 >
                   {totalTeachers}
                 </Text>
@@ -1159,7 +1161,7 @@ export default function AdminScreen() {
               onPress={() => setUserRoleFilter(userRoleFilter === 'user' ? 'all' : 'user')}
             >
               <Text style={styles.pillIconEmoji}>🎓</Text>
-              <Text style={[styles.pillText, { color: userRoleFilter === 'user' ? '#FFFFFF' : colors.text }]}>
+              <Text style={[styles.pillText, { color: userRoleFilter === 'user' ? '#FFFFFF' : colors.text }]} numberOfLines={1}>
                 Alumnos
               </Text>
               <View
@@ -1175,6 +1177,7 @@ export default function AdminScreen() {
                     styles.pillCountText,
                     { color: userRoleFilter === 'user' ? '#FFFFFF' : '#10B981' }
                   ]}
+                  numberOfLines={1}
                 >
                   {totalStudents}
                 </Text>
@@ -2134,37 +2137,40 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 6,
     maxWidth: 920,
-    alignSelf: 'center',
+    alignSelf: Platform.OS === 'web' ? 'center' : 'stretch',
     width: Platform.OS === 'web' ? 'calc(100% - 32px)' : undefined,
   },
   pillBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
+    justifyContent: 'center',
+    paddingVertical: 7,
+    paddingHorizontal: 4,
+    borderRadius: 14,
     borderWidth: 1.5,
-    gap: 6,
+    gap: 4,
+    minWidth: 0,
     ...(Platform.OS === 'web' ? { cursor: 'pointer', userSelect: 'none', transition: 'all 0.15s ease' } : {}),
   },
   pillIconEmoji: {
-    fontSize: 13,
+    fontSize: 12.5,
   },
   pillText: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '700',
   },
   pillCountBubble: {
-    paddingHorizontal: 6,
+    paddingHorizontal: 5,
     paddingVertical: 1,
-    borderRadius: 10,
-    marginLeft: 2,
+    borderRadius: 8,
+    marginLeft: 1,
   },
   pillCountText: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '800',
   },
   userCard: {
