@@ -281,38 +281,145 @@ export default function AdminScreen() {
     }
   };
 
-  // Ejecutar carga masiva de preguntas JSON
+  // Abrir modal de carga masiva con validación previa de materias existentes
+  const handleOpenBulkModal = () => {
+    if (categories.length === 0) {
+      const msg = '⚠️ Aún no tienes materias creadas.\n\nPrimero debes crear al menos una materia antes de poder importar preguntas en lote.';
+      if (Platform.OS === 'web') {
+        const createNow = window.confirm(`${msg}\n\n¿Deseas crear una nueva materia ahora?`);
+        if (createNow) {
+          setEditingCategory(null);
+          setShowCategoryForm(true);
+        }
+      } else {
+        Alert.alert(
+          '⚠️ Sin Materias Disponibles',
+          msg,
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: '➕ Crear Materia',
+              onPress: () => {
+                setEditingCategory(null);
+                setShowCategoryForm(true);
+              },
+            },
+          ]
+        );
+      }
+      return;
+    }
+    setBulkCategoryId(categories[0]?._id || '');
+    setBulkJsonText('');
+    setShowBulkModal(true);
+  };
+
+  // Abrir modal de nueva pregunta con validación previa de materias existentes
+  const handleOpenAddQuestion = () => {
+    if (categories.length === 0) {
+      const msg = '⚠️ Aún no tienes materias creadas.\n\nPrimero debes crear al menos una materia antes de poder agregar preguntas.';
+      if (Platform.OS === 'web') {
+        const createNow = window.confirm(`${msg}\n\n¿Deseas crear una nueva materia ahora?`);
+        if (createNow) {
+          setEditingCategory(null);
+          setShowCategoryForm(true);
+        }
+      } else {
+        Alert.alert(
+          '⚠️ Sin Materias Disponibles',
+          msg,
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: '➕ Crear Materia',
+              onPress: () => {
+                setEditingCategory(null);
+                setShowCategoryForm(true);
+              },
+            },
+          ]
+        );
+      }
+      return;
+    }
+    setEditingQuestion(null);
+    setShowQuestionForm(true);
+  };
+
+  // Ejecutar carga masiva de preguntas JSON con validación exhaustiva
   const handleExecuteBulkImport = async () => {
     if (!bulkCategoryId) {
-      Alert.alert('Error', 'Selecciona una categoría de destino');
+      const msg = '⚠️ Por favor, selecciona la materia de destino para las preguntas.';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Materia Requerida', msg);
       return;
     }
     if (!bulkJsonText.trim()) {
-      Alert.alert('Error', 'Pega el código JSON con las preguntas');
+      const msg = '⚠️ El código JSON está vacío. Puedes hacer clic en "📋 Cargar Plantilla" para insertar la estructura de ejemplo.';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('JSON Vacío', msg);
       return;
     }
 
+    let parsed;
     try {
-      const parsed = JSON.parse(bulkJsonText.trim());
-      if (!Array.isArray(parsed)) {
-        Alert.alert('Error de Formato', 'El JSON debe ser un arreglo de preguntas [...]');
+      parsed = JSON.parse(bulkJsonText.trim());
+    } catch (e) {
+      const msg = '⚠️ El formato JSON no es válido. Asegúrate de que las llaves y comillas estén bien cerradas (puedes usar "📋 Cargar Plantilla" como base).';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('JSON Inválido', msg);
+      return;
+    }
+
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      const msg = '⚠️ El JSON debe ser un arreglo con al menos una pregunta: [ { "text": "...", "options": [...], "correctAnswer": 0 } ]';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Arreglo Requerido', msg);
+      return;
+    }
+
+    // Validar estructura de cada pregunta en el lote
+    for (let i = 0; i < parsed.length; i++) {
+      const q = parsed[i];
+      if (!q.text || typeof q.text !== 'string' || !q.text.trim()) {
+        const msg = `⚠️ La pregunta #${i + 1} no tiene texto válido en el campo "text".`;
+        if (Platform.OS === 'web') alert(msg);
+        else Alert.alert('Pregunta Incompleta', msg);
         return;
       }
+      if (!Array.isArray(q.options) || q.options.length < 2) {
+        const msg = `⚠️ La pregunta #${i + 1} debe contener al menos 2 opciones de respuesta en el arreglo "options".`;
+        if (Platform.OS === 'web') alert(msg);
+        else Alert.alert('Opciones Inválidas', msg);
+        return;
+      }
+      if (typeof q.correctAnswer !== 'number' || q.correctAnswer < 0 || q.correctAnswer >= q.options.length) {
+        const msg = `⚠️ La pregunta #${i + 1} tiene un índice "correctAnswer" inválido (debe ser un número del 0 al ${q.options.length - 1}).`;
+        if (Platform.OS === 'web') alert(msg);
+        else Alert.alert('Respuesta Correcta Inválida', msg);
+        return;
+      }
+    }
 
+    try {
       setBulkLoading(true);
       const response = await api.post('/questions/bulk', {
         categoryId: bulkCategoryId,
         questions: parsed,
       });
 
-      Alert.alert('✅ ¡Éxito!', response.data.message || 'Preguntas importadas exitosamente');
+      const successMsg = `✅ ¡Carga Masiva Exitosa!\n\n${response.data.message || `Se importaron ${parsed.length} preguntas correctamente.`}`;
+      if (Platform.OS === 'web') alert(successMsg);
+      else Alert.alert('✅ ¡Éxito!', successMsg);
+
       setShowBulkModal(false);
       setBulkJsonText('');
       setBulkCategoryId('');
       fetchData();
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'JSON inválido. Revisa la estructura.';
-      Alert.alert('Error en Carga Masiva', msg);
+      const msg = err.response?.data?.message || err.message || 'Error al importar lote de preguntas';
+      if (Platform.OS === 'web') alert(`Error: ${msg}`);
+      else Alert.alert('Error en Carga Masiva', msg);
     } finally {
       setBulkLoading(false);
     }
@@ -532,12 +639,18 @@ export default function AdminScreen() {
   };
 
   const handleDeleteCategory = (category) => {
+    const associatedQuestions = questions.filter(q => {
+      const catId = (q.category && typeof q.category === 'object') ? q.category._id : q.category;
+      return String(catId) === String(category._id);
+    });
+    const questionCount = associatedQuestions.length;
+
     const performDelete = async () => {
       try {
         await api.delete(`/categories/${category._id}`);
         fetchData();
       } catch (error) {
-        const msg = error.response?.data?.message || 'No se pudo eliminar la categoría';
+        const msg = error.response?.data?.message || 'No se pudo eliminar la materia';
         if (Platform.OS === 'web') {
           alert(`Error: ${msg}`);
         } else {
@@ -546,15 +659,19 @@ export default function AdminScreen() {
       }
     };
 
+    const confirmMsg = questionCount > 0
+      ? `¿Estás seguro de eliminar la materia "${category.name}"?\n\n⚠️ ADVERTENCIA: Esta materia contiene ${questionCount} pregunta(s) asociada(s). Se eliminarán de forma permanente junto con sus estadísticas y rankings.`
+      : `¿Estás seguro de eliminar la materia "${category.name}"?`;
+
     if (Platform.OS === 'web') {
-      const confirmDelete = window.confirm(`¿Estás seguro de eliminar "${category.name}"?\n\nSe eliminarán también todas sus preguntas.`);
+      const confirmDelete = window.confirm(confirmMsg);
       if (confirmDelete) {
         performDelete();
       }
     } else {
       Alert.alert(
-        '🗑️ Eliminar Categoría',
-        `¿Estás seguro de eliminar "${category.name}"?\n\nSe eliminarán también todas sus preguntas.`,
+        '🗑️ Eliminar Materia',
+        confirmMsg,
         [
           { text: 'Cancelar', style: 'cancel' },
           { text: 'Eliminar', style: 'destructive', onPress: performDelete }
@@ -1043,14 +1160,7 @@ export default function AdminScreen() {
                 <InteractiveActionBtn
                   style={[styles.bulkImportBtn, { backgroundColor: `${colors.primary}18`, borderColor: colors.primary }]}
                   accentColor={colors.primary}
-                  onPress={() => {
-                    if (categories.length === 0) {
-                      Alert.alert('Aviso', 'Primero debes crear al menos una categoría');
-                      return;
-                    }
-                    setBulkCategoryId(categories[0]._id);
-                    setShowBulkModal(true);
-                  }}
+                  onPress={handleOpenBulkModal}
                 >
                   <Text style={[styles.bulkImportBtnText, { color: colors.primary }]}>📥 Carga Masiva</Text>
                 </InteractiveActionBtn>
@@ -1231,12 +1341,7 @@ export default function AdminScreen() {
               setEditingCategory(null);
               setShowCategoryForm(true);
             } else {
-              if (categories.length === 0) {
-                Alert.alert('Aviso', 'Primero debes crear al menos una categoría');
-                return;
-              }
-              setEditingQuestion(null);
-              setShowQuestionForm(true);
+              handleOpenAddQuestion();
             }
           }}
         >

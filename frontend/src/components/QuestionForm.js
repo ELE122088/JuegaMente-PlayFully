@@ -95,16 +95,22 @@ export default function QuestionForm({ visible, onClose, onSave, question = null
   };
 
   const handleSave = () => {
+    if (categories.length === 0 || !categoryId) {
+      const msg = '⚠️ No hay materias disponibles. Primero debes crear al menos una materia antes de poder guardar preguntas.';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Sin Materias', msg);
+      return;
+    }
     if (!text.trim()) {
-      Alert.alert('Error', 'El texto de la pregunta es obligatorio');
+      const msg = '⚠️ El texto de la pregunta es obligatorio.';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Pregunta Incompleta', msg);
       return;
     }
     if (options.some((opt) => !opt.trim())) {
-      Alert.alert('Error', 'Todas las opciones deben estar completas');
-      return;
-    }
-    if (!categoryId) {
-      Alert.alert('Error', 'Debes seleccionar una categoría');
+      const msg = '⚠️ Todas las 4 opciones de respuesta deben estar completas.';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Opciones Incompletas', msg);
       return;
     }
 
@@ -129,33 +135,48 @@ export default function QuestionForm({ visible, onClose, onSave, question = null
               {isEditing ? '✏️ Editar Pregunta' : '➕ Nueva Pregunta'}
             </Text>
 
+            {/* Aviso si no hay materias */}
+            {categories.length === 0 && (
+              <View style={{ padding: 12, backgroundColor: '#EF444415', borderColor: '#EF4444', borderWidth: 1, borderRadius: 12, marginBottom: 12 }}>
+                <Text style={{ color: '#EF4444', fontWeight: '800', fontSize: 13, textAlign: 'center' }}>
+                  ⚠️ No tienes materias creadas todavía. Primero debes crear una materia antes de poder registrar preguntas.
+                </Text>
+              </View>
+            )}
+
             {/* Categoría */}
-            <Text style={[styles.label, { color: colors.text }]}>Categoría</Text>
-            <View style={styles.categoryGrid}>
-              {categories.map((cat) => {
-                const isSelected = categoryId === cat._id;
-                return (
-                  <InteractiveActionBtn
-                    key={cat._id}
-                    style={[
-                      styles.categoryChip,
-                      { borderColor: cat.color, backgroundColor: isSelected ? cat.color : colors.card },
-                    ]}
-                    accentColor={cat.color}
-                    onPress={() => setCategoryId(cat._id)}
-                  >
-                    <Text
+            <Text style={[styles.label, { color: colors.text }]}>Categoría / Materia</Text>
+            {categories.length > 0 ? (
+              <View style={styles.categoryGrid}>
+                {categories.map((cat) => {
+                  const isSelected = categoryId === cat._id;
+                  return (
+                    <InteractiveActionBtn
+                      key={cat._id}
                       style={[
-                        styles.categoryChipText,
-                        { color: isSelected ? '#FFFFFF' : colors.text },
+                        styles.categoryChip,
+                        { borderColor: cat.color, backgroundColor: isSelected ? cat.color : colors.card },
                       ]}
+                      accentColor={cat.color}
+                      onPress={() => setCategoryId(cat._id)}
                     >
-                      {cat.icon} {cat.name}
-                    </Text>
-                  </InteractiveActionBtn>
-                );
-              })}
-            </View>
+                      <Text
+                        style={[
+                          styles.categoryChipText,
+                          { color: isSelected ? '#FFFFFF' : colors.text },
+                        ]}
+                      >
+                        {cat.icon} {cat.name}
+                      </Text>
+                    </InteractiveActionBtn>
+                  );
+                })}
+              </View>
+            ) : (
+              <Text style={{ fontSize: 13, color: colors.textSecondary, fontStyle: 'italic', marginBottom: 8 }}>
+                No hay materias disponibles para asignar esta pregunta.
+              </Text>
+            )}
 
             {/* Pregunta */}
             <Text style={[styles.label, { color: colors.text }]}>Pregunta</Text>

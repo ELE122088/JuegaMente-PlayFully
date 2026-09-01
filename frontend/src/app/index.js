@@ -301,6 +301,13 @@ export default function CategoriesScreen() {
       return;
     }
 
+    if (category.questionCount === 0) {
+      const msg = `📚 La materia "${category.name}" aún no tiene preguntas creadas.\n\nTu docente agregará contenido y preguntas pronto.`;
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Sin Preguntas Disponibles', msg);
+      return;
+    }
+
     const isOwner = category.createdBy?.username === username;
 
     // Si es privada (con PIN) y el usuario no es el dueño, pedir PIN primero
