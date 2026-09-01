@@ -119,6 +119,28 @@ export const getCategorySampleQuestions = (catName = '') => {
     ];
   }
 
+  // 1. Ciencia y Tecnología / Computación / Informática / Programación (Evaluar primero para evitar colisión con 'cien')
+  if (nameLower.includes('tec') || nameLower.includes('prog') || nameLower.includes('inf') || nameLower.includes('sist') || nameLower.includes('comp') || nameLower.includes('web') || nameLower.includes('red') || nameLower.includes('soft') || nameLower.includes('hard')) {
+    return [
+      {
+        text: '¿Qué significa la sigla HTML?',
+        options: ['HyperText Markup Language', 'High Transfer Machine Language', 'Home Tool Multi Language', 'Hyperlink Terminal Module Logic'],
+        correctAnswer: 0,
+      },
+      {
+        text: '¿Qué protocolo se utiliza para la transferencia segura en la Web?',
+        options: ['FTP', 'HTTP', 'HTTPS', 'SMTP'],
+        correctAnswer: 2,
+      },
+      {
+        text: '¿Cuál es el lenguaje estándar para dar estilos visuales en páginas web?',
+        options: ['Python', 'CSS', 'SQL', 'C++'],
+        correctAnswer: 1,
+      },
+    ];
+  }
+
+  // 2. Ciencias Naturales / Biología / Química / Física
   if (nameLower.includes('cien') || nameLower.includes('bio') || nameLower.includes('quim') || nameLower.includes('fís') || nameLower.includes('fis') || nameLower.includes('nat')) {
     return [
       {
@@ -134,26 +156,6 @@ export const getCategorySampleQuestions = (catName = '') => {
       {
         text: '¿Cuál es la velocidad aproximada de la luz en el vacío?',
         options: ['150,000 km/s', '300,000 km/s', '500,000 km/s', '1,000,000 km/s'],
-        correctAnswer: 1,
-      },
-    ];
-  }
-
-  if (nameLower.includes('tec') || nameLower.includes('prog') || nameLower.includes('inf') || nameLower.includes('sist') || nameLower.includes('comp') || nameLower.includes('web') || nameLower.includes('red')) {
-    return [
-      {
-        text: '¿Qué significa la sigla HTML?',
-        options: ['HyperText Markup Language', 'High Transfer Machine Language', 'Home Tool Multi Language', 'Hyperlink Terminal Module Logic'],
-        correctAnswer: 0,
-      },
-      {
-        text: '¿Qué protocolo se utiliza para la transferencia segura en la Web?',
-        options: ['FTP', 'HTTP', 'HTTPS', 'SMTP'],
-        correctAnswer: 2,
-      },
-      {
-        text: '¿Cuál es el lenguaje estándar para dar estilos visuales en páginas web?',
-        options: ['Python', 'CSS', 'SQL', 'C++'],
         correctAnswer: 1,
       },
     ];
