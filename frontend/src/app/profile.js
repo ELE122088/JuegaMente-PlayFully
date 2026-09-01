@@ -1071,29 +1071,26 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Fila 2: Fecha y Badges */}
+          {/* Fila 2: Fecha y Badges Compactos */}
           <View style={styles.historyMetaRow}>
             <Text style={[styles.historyDate, { color: colors.textSecondary }]}>
               📅 {formattedDate}
             </Text>
-            <View style={styles.historyBadgesGroup}>
-              {/* Puntos obtenidos */}
-              <View style={[styles.historyBadge, { backgroundColor: `${statusColor}15`, borderColor: `${statusColor}30` }]}>
-                <Text style={[styles.historyBadgeText, { color: statusColor }]}>
-                  🎯 {item.score}/{item.total} pts
-                </Text>
-              </View>
-
-              {/* Estado */}
-              <View style={[styles.historyBadge, { backgroundColor: statusBg, borderColor: `${statusColor}30` }]}>
-                <Text style={[styles.historyBadgeText, { color: statusColor }]}>
-                  {statusText}
-                </Text>
-              </View>
+            {/* Puntos obtenidos */}
+            <View style={[styles.historyBadge, { backgroundColor: `${statusColor}15`, borderColor: `${statusColor}30` }]}>
+              <Text style={[styles.historyBadgeText, { color: statusColor }]}>
+                🎯 {item.score}/{item.total} pts
+              </Text>
+            </View>
+            {/* Estado */}
+            <View style={[styles.historyBadge, { backgroundColor: statusBg, borderColor: `${statusColor}30` }]}>
+              <Text style={[styles.historyBadgeText, { color: statusColor }]}>
+                {statusText}
+              </Text>
             </View>
           </View>
 
-          {/* Fila 3: Botones de Acción (Espaciados y totalmente visibles) */}
+          {/* Fila 3: Botones de Acción */}
           <View style={styles.historyActionGroup}>
             <InteractiveActionBtn
               style={[
@@ -3300,130 +3297,126 @@ const styles = StyleSheet.create({
   // Estilos de Partidas Jugadas Gamificadas (Estilo CategoryCard Moderno)
   historyGamifiedCard: {
     marginHorizontal: 16,
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    marginBottom: 12,
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderLeftWidth: 5,
+    borderLeftWidth: 4.5,
   },
   historyIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 14,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
+    marginRight: 10,
     borderWidth: 1.5,
+    flexShrink: 0,
   },
   historyIcon: {
-    fontSize: 24,
+    fontSize: 22,
   },
   historyInfoContainer: {
     flex: 1,
-    marginRight: 10,
+    marginRight: 8,
   },
   historyTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 8,
-    marginBottom: 4,
+    gap: 6,
+    marginBottom: 2,
   },
   historyTitle: {
     flex: 1,
-    fontSize: 15.5,
+    fontSize: 14.5,
     fontWeight: '800',
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   },
   historyScoreBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2.5,
-    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
     borderWidth: 1,
+    flexShrink: 0,
   },
   historyScoreVal: {
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: '900',
   },
   historyMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   historyDate: {
-    fontSize: 11.5,
+    fontSize: 10.5,
     fontWeight: '500',
-  },
-  historyBadgesGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
   },
   historyBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 2.5,
-    borderRadius: 7,
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 5,
     borderWidth: 1,
   },
   historyBadgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
   },
   historyActionGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 2,
-    paddingTop: 2,
+    gap: 6,
+    marginTop: 1,
   },
   historyActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
     borderWidth: 1,
-    minHeight: 30,
+    minHeight: 24,
     justifyContent: 'center',
     ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}),
   },
   historyActionBtnText: {
-    fontSize: 11.5,
+    fontSize: 10.5,
     fontWeight: '800',
-    lineHeight: 15,
+    lineHeight: 14,
   },
   historyDeleteBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
     borderWidth: 1,
-    minHeight: 30,
+    minHeight: 24,
     justifyContent: 'center',
     ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}),
   },
   historyDeleteBtnText: {
-    fontSize: 12,
-    lineHeight: 15,
+    fontSize: 11,
+    lineHeight: 14,
   },
   historyArrowCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   historyArrowIcon: {
-    fontSize: 14,
+    fontSize: 12.5,
     fontWeight: '900',
   },
   // Estilos de Propuesta 2: Lista Compacta Minimalista

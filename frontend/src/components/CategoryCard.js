@@ -109,7 +109,7 @@ export default function CategoryCard({ category, onPress }) {
 
         {/* Descripción */}
         {category.description ? (
-          <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={2}>
+          <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={1}>
             {category.description}
           </Text>
         ) : null}
@@ -119,7 +119,7 @@ export default function CategoryCard({ category, onPress }) {
           {/* Conteo de preguntas */}
           <View style={[styles.badge, { backgroundColor: `${catColor}15`, borderColor: `${catColor}30` }]}>
             <Text style={[styles.badgeText, { color: catColor }]}>
-              📚 {category.questionCount || 0} {(category.questionCount || 0) === 1 ? 'pregunta' : 'preguntas'}
+              📚 {category.questionCount || 0} preg.
             </Text>
           </View>
 
@@ -142,7 +142,7 @@ export default function CategoryCard({ category, onPress }) {
           {category.timePerQuestion !== undefined && (
             <View style={[styles.badge, { backgroundColor: `${colors.textSecondary}10`, borderColor: `${colors.textSecondary}25` }]}>
               <Text style={[styles.badgeText, { color: colors.textSecondary }]}>
-                ⏱️ {category.timePerQuestion === 0 ? 'Sin límite' : `${category.timePerQuestion}s`}
+                ⏱️ {category.timePerQuestion === 0 ? '∞' : `${category.timePerQuestion}s`}
               </Text>
             </View>
           )}
@@ -198,87 +198,90 @@ export default function CategoryCard({ category, onPress }) {
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    marginBottom: 12,
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderLeftWidth: 5,
+    borderLeftWidth: 4.5,
   },
   iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 14,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
+    marginRight: 10,
     borderWidth: 1.5,
+    flexShrink: 0,
   },
   icon: {
-    fontSize: 24,
+    fontSize: 22,
   },
   infoContainer: {
     flex: 1,
-    marginRight: 10,
+    marginRight: 8,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 8,
-    marginBottom: 3,
+    gap: 6,
+    marginBottom: 2,
   },
   title: {
     flex: 1,
-    fontSize: 15.5,
+    fontSize: 14.5,
     fontWeight: '800',
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   },
   statusBadge: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
     borderWidth: 1,
+    flexShrink: 0,
   },
   statusBadgeText: {
-    fontSize: 10.5,
+    fontSize: 10,
     fontWeight: '800',
   },
   description: {
-    fontSize: 12,
-    lineHeight: 16.5,
-    marginBottom: 8,
+    fontSize: 11.5,
+    lineHeight: 14.5,
+    marginBottom: 4,
     fontWeight: '500',
   },
   badgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     flexWrap: 'wrap',
   },
   badge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 2.5,
-    borderRadius: 7,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 5,
     borderWidth: 1,
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
   },
   actionBtnCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   actionBtnIcon: {
-    fontSize: 14,
+    fontSize: 12.5,
     fontWeight: '900',
   },
 });
