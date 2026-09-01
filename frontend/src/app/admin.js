@@ -421,14 +421,16 @@ export default function AdminScreen() {
   };
 
   const handleToggleUserRole = async (user) => {
-    if (user.isSuperAdmin || ['superadmin', 'admin'].includes((user.username || '').toLowerCase())) {
-      Alert.alert('Acción no permitida', 'La cuenta de SuperAdmin es inmutable y no se puede modificar.');
+    if (user.isSuperAdmin || (user.username || '').toLowerCase() === 'superadmin') {
+      const msg = 'La cuenta principal de SuperAdmin es inmutable y no se puede modificar.';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Acción no permitida', msg);
       return;
     }
 
     const isCurrentlyAdmin = user.role === 'admin';
     const newRole = isCurrentlyAdmin ? 'user' : 'admin';
-    const actionText = isCurrentlyAdmin ? 'cambiar a Estudiante' : 'ascender a Docente / Administrador';
+    const actionText = isCurrentlyAdmin ? 'degradar a Estudiante' : 'ascender a Docente / Administrador';
 
     const performRoleChange = async () => {
       try {
@@ -445,7 +447,11 @@ export default function AdminScreen() {
         fetchUsers();
       } catch (err) {
         const msg = err.response?.data?.message || 'Error al cambiar rol';
-        Alert.alert('Error', msg);
+        if (Platform.OS === 'web') {
+          alert(`Error: ${msg}`);
+        } else {
+          Alert.alert('Error', msg);
+        }
       }
     };
 
@@ -466,8 +472,10 @@ export default function AdminScreen() {
   };
 
   const handleDeleteUser = async (user) => {
-    if (user.isSuperAdmin || ['superadmin', 'admin'].includes((user.username || '').toLowerCase())) {
-      Alert.alert('Acción no permitida', 'La cuenta principal de SuperAdmin no se puede eliminar.');
+    if (user.isSuperAdmin || (user.username || '').toLowerCase() === 'superadmin') {
+      const msg = 'La cuenta principal de SuperAdmin no se puede eliminar.';
+      if (Platform.OS === 'web') alert(msg);
+      else Alert.alert('Acción no permitida', msg);
       return;
     }
 
@@ -477,7 +485,11 @@ export default function AdminScreen() {
         fetchUsers();
       } catch (err) {
         const msg = err.response?.data?.message || 'Error al eliminar usuario';
-        Alert.alert('Error', msg);
+        if (Platform.OS === 'web') {
+          alert(`Error: ${msg}`);
+        } else {
+          Alert.alert('Error', msg);
+        }
       }
     };
 
