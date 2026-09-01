@@ -1252,6 +1252,15 @@ export default function CategoriesScreen() {
               keyboardType="default"
               autoCapitalize="characters"
               autoFocus={true}
+              returnKeyType="go"
+              onSubmitEditing={handleValidateCategoryPin}
+              {...(Platform.OS === 'web' ? {
+                onKeyDown: (e) => {
+                  if (e.key === 'Enter') {
+                    handleValidateCategoryPin();
+                  }
+                }
+              } : {})}
             />
 
             <View style={styles.modalButtons}>

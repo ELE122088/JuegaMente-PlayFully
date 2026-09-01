@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, Platform, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import api from '../services/api';
@@ -9,6 +9,8 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const passwordRef = useRef(null);
 
   // Focus states
   const [userFocused, setUserFocused] = useState(false);
@@ -114,6 +116,15 @@ export default function RegisterScreen() {
             placeholder="Elige un nombre de usuario"
             placeholderTextColor={colors.textSecondary}
             autoCapitalize="none"
+            returnKeyType="next"
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            {...(Platform.OS === 'web' ? {
+              onKeyDown: (e) => {
+                if (e.key === 'Enter') {
+                  passwordRef.current?.focus();
+                }
+              }
+            } : {})}
           />
         </View>
 
@@ -121,6 +132,7 @@ export default function RegisterScreen() {
           <Text style={[styles.label, { color: colors.text }]}>Contraseña</Text>
           <View style={styles.passwordWrapper}>
             <TextInput
+              ref={passwordRef}
               style={[
                 styles.input, 
                 { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text, paddingRight: 45 },
@@ -134,6 +146,15 @@ export default function RegisterScreen() {
               placeholderTextColor={colors.textSecondary}
               secureTextEntry={!showPassword}
               autoCapitalize="none"
+              returnKeyType="go"
+              onSubmitEditing={handleRegister}
+              {...(Platform.OS === 'web' ? {
+                onKeyDown: (e) => {
+                  if (e.key === 'Enter') {
+                    handleRegister();
+                  }
+                }
+              } : {})}
             />
             <TouchableOpacity 
               style={styles.eyeButton} 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, Platform, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import api from '../services/api';
@@ -11,6 +11,9 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // Referencia al campo de contraseña para salto con Enter
+  const passwordRef = useRef(null);
   
   // Estados de foco
   const [userFocused, setUserFocused] = useState(false);
@@ -162,6 +165,15 @@ export default function LoginScreen() {
             placeholder="Introduce tu usuario (mín. 4 letras)"
             placeholderTextColor={colors.textSecondary}
             autoCapitalize="none"
+            returnKeyType="next"
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            {...(Platform.OS === 'web' ? {
+              onKeyDown: (e) => {
+                if (e.key === 'Enter') {
+                  passwordRef.current?.focus();
+                }
+              }
+            } : {})}
           />
           {errors.username ? (
             <Text style={styles.errorHelperText}>⚠️ {errors.username}</Text>
@@ -175,6 +187,7 @@ export default function LoginScreen() {
           </Text>
           <View style={styles.passwordWrapper}>
             <TextInput
+              ref={passwordRef}
               style={[
                 styles.input, 
                 { 
@@ -209,6 +222,15 @@ export default function LoginScreen() {
               placeholderTextColor={colors.textSecondary}
               secureTextEntry={!showPassword}
               autoCapitalize="none"
+              returnKeyType="go"
+              onSubmitEditing={handleLogin}
+              {...(Platform.OS === 'web' ? {
+                onKeyDown: (e) => {
+                  if (e.key === 'Enter') {
+                    handleLogin();
+                  }
+                }
+              } : {})}
             />
             <TouchableOpacity 
               style={styles.eyeButton} 

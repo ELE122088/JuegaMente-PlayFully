@@ -746,6 +746,15 @@ export default function Sidebar({ isOpen, onClose, username, role, isAdmin, prof
               keyboardType="numeric"
               maxLength={4}
               autoFocus
+              returnKeyType="go"
+              onSubmitEditing={handleVerifyPin}
+              {...(Platform.OS === 'web' ? {
+                onKeyDown: (e) => {
+                  if (e.key === 'Enter') {
+                    handleVerifyPin();
+                  }
+                }
+              } : {})}
             />
 
             <View style={styles.modalButtons}>
