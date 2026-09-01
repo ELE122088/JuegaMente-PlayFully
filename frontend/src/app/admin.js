@@ -76,6 +76,130 @@ export const getAvatarSource = (profileImage) => {
   return { uri: `${BASE_URL}${cleanPath}` };
 };
 
+export const getCategorySampleQuestions = (catName = '') => {
+  const nameLower = String(catName).toLowerCase();
+
+  if (nameLower.includes('mat') || nameLower.includes('calc') || nameLower.includes('álg') || nameLower.includes('alg') || nameLower.includes('geom')) {
+    return [
+      {
+        text: '¿Cuánto es 12 × 12?',
+        options: ['124', '144', '154', '164'],
+        correctAnswer: 1,
+      },
+      {
+        text: '¿Cuál es la raíz cuadrada de 81?',
+        options: ['7', '8', '9', '10'],
+        correctAnswer: 2,
+      },
+      {
+        text: 'Si 2x + 6 = 16, ¿cuál es el valor de x?',
+        options: ['3', '5', '7', '8'],
+        correctAnswer: 1,
+      },
+    ];
+  }
+
+  if (nameLower.includes('hist') || nameLower.includes('social') || nameLower.includes('civi') || nameLower.includes('geo')) {
+    return [
+      {
+        text: '¿En qué año llegó el ser humano a la Luna?',
+        options: ['1959', '1969', '1975', '1982'],
+        correctAnswer: 1,
+      },
+      {
+        text: '¿Cuál fue la civilización que construyó Machu Picchu?',
+        options: ['Maya', 'Azteca', 'Inca', 'Olmeca'],
+        correctAnswer: 2,
+      },
+      {
+        text: '¿En qué año comenzó la Segunda Guerra Mundial?',
+        options: ['1914', '1939', '1945', '1950'],
+        correctAnswer: 1,
+      },
+    ];
+  }
+
+  if (nameLower.includes('cien') || nameLower.includes('bio') || nameLower.includes('quim') || nameLower.includes('fís') || nameLower.includes('fis') || nameLower.includes('nat')) {
+    return [
+      {
+        text: '¿Cuál es la fórmula química del agua?',
+        options: ['CO2', 'NaCl', 'H2O', 'O2'],
+        correctAnswer: 2,
+      },
+      {
+        text: '¿Cuál es el órgano principal del sistema circulatorio humano?',
+        options: ['Pulmón', 'Hígado', 'Corazón', 'Cerebro'],
+        correctAnswer: 2,
+      },
+      {
+        text: '¿Cuál es la velocidad aproximada de la luz en el vacío?',
+        options: ['150,000 km/s', '300,000 km/s', '500,000 km/s', '1,000,000 km/s'],
+        correctAnswer: 1,
+      },
+    ];
+  }
+
+  if (nameLower.includes('tec') || nameLower.includes('prog') || nameLower.includes('inf') || nameLower.includes('sist') || nameLower.includes('comp') || nameLower.includes('web') || nameLower.includes('red')) {
+    return [
+      {
+        text: '¿Qué significa la sigla HTML?',
+        options: ['HyperText Markup Language', 'High Transfer Machine Language', 'Home Tool Multi Language', 'Hyperlink Terminal Module Logic'],
+        correctAnswer: 0,
+      },
+      {
+        text: '¿Qué protocolo se utiliza para la transferencia segura en la Web?',
+        options: ['FTP', 'HTTP', 'HTTPS', 'SMTP'],
+        correctAnswer: 2,
+      },
+      {
+        text: '¿Cuál es el lenguaje estándar para dar estilos visuales en páginas web?',
+        options: ['Python', 'CSS', 'SQL', 'C++'],
+        correctAnswer: 1,
+      },
+    ];
+  }
+
+  if (nameLower.includes('mús') || nameLower.includes('mus') || nameLower.includes('art') || nameLower.includes('cult')) {
+    return [
+      {
+        text: '¿Cuántas notas musicales básicas existen en la escala diatónica?',
+        options: ['5', '6', '7', '8'],
+        correctAnswer: 2,
+      },
+      {
+        text: '¿Quién compuso la famosa Quinta Sinfonía?',
+        options: ['Mozart', 'Beethoven', 'Bach', 'Chopin'],
+        correctAnswer: 1,
+      },
+      {
+        text: '¿Qué instrumento de viento madera tiene boquilla de caña simple?',
+        options: ['Flauta traversa', 'Clarinete', 'Trompeta', 'Violín'],
+        correctAnswer: 1,
+      },
+    ];
+  }
+
+  // Plantilla general personalizada para cualquier otra materia
+  const cleanCat = catName ? ` en ${catName}` : '';
+  return [
+    {
+      text: `¿Cuál es el concepto o principio fundamental${cleanCat}?`,
+      options: ['Concepto Básico', 'Concepto Principal (Correcto)', 'Concepto Secundario', 'Distractor'],
+      correctAnswer: 1,
+    },
+    {
+      text: `Pregunta de evaluación temática${cleanCat}:`,
+      options: ['Opción A', 'Opción B', 'Opción C (Correcta)', 'Opción D'],
+      correctAnswer: 2,
+    },
+    {
+      text: `Caso práctico de aplicación${cleanCat}:`,
+      options: ['Respuesta Correcta', 'Alternativa 1', 'Alternativa 2', 'Alternativa 3'],
+      correctAnswer: 0,
+    },
+  ];
+};
+
 const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, elevation = 3) => {
   if (Platform.OS === 'web') {
     const r = parseInt(color.slice(1, 3), 16) || 0;
@@ -1480,7 +1604,9 @@ export default function AdminScreen() {
                         }
                       ]}
                       accentColor={catColor}
-                      onPress={() => setBulkCategoryId(cat._id)}
+                      onPress={() => {
+                        setBulkCategoryId(cat._id);
+                      }}
                     >
                       <Text style={styles.chipEmoji}>{cat.icon || '📚'}</Text>
                       <Text style={[styles.chipText, { color: isSelected ? catColor : colors.text, fontWeight: isSelected ? 'bold' : '600' }]}>
@@ -1496,39 +1622,31 @@ export default function AdminScreen() {
 
               <View style={styles.bulkJsonHeaderRow}>
                 <Text style={[styles.bulkSectionLabel, { color: colors.text, marginBottom: 0 }]}>2. Pega el JSON de Preguntas:</Text>
-                <InteractiveActionBtn
-                  style={{
-                    backgroundColor: `${colors.primary}15`,
-                    borderColor: `${colors.primary}40`,
-                    borderWidth: 1,
-                    borderRadius: 8,
-                    paddingVertical: 5,
-                    paddingHorizontal: 10,
-                  }}
-                  accentColor={colors.primary}
-                  onPress={() => {
-                    const sample = JSON.stringify([
-                      {
-                        "text": "¿Cuál es la capital de Francia?",
-                        "options": ["Madrid", "París", "Roma", "Berlín"],
-                        "correctAnswer": 1
-                      },
-                      {
-                        "text": "¿Cuánto es 7 x 8?",
-                        "options": ["54", "56", "62", "48"],
-                        "correctAnswer": 1
-                      },
-                      {
-                        "text": "¿Cuál es el planeta más cercano al Sol?",
-                        "options": ["Venus", "Marte", "Mercurio", "Júpiter"],
-                        "correctAnswer": 2
-                      }
-                    ], null, 2);
-                    setBulkJsonText(sample);
-                  }}
-                >
-                  <Text style={{ fontSize: 12.5, color: colors.primary, fontWeight: '800' }}>📋 Cargar Plantilla</Text>
-                </InteractiveActionBtn>
+                {(() => {
+                  const currentBulkCat = categories.find((c) => c._id === bulkCategoryId) || categories[0];
+                  return (
+                    <InteractiveActionBtn
+                      style={{
+                        backgroundColor: `${colors.primary}15`,
+                        borderColor: `${colors.primary}40`,
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        paddingVertical: 5,
+                        paddingHorizontal: 10,
+                      }}
+                      accentColor={colors.primary}
+                      onPress={() => {
+                        const targetCat = categories.find((c) => c._id === bulkCategoryId) || categories[0];
+                        const sampleQuestions = getCategorySampleQuestions(targetCat?.name);
+                        setBulkJsonText(JSON.stringify(sampleQuestions, null, 2));
+                      }}
+                    >
+                      <Text style={{ fontSize: 12.5, color: colors.primary, fontWeight: '800' }}>
+                        📋 Cargar Plantilla ({currentBulkCat?.name || 'Materia'})
+                      </Text>
+                    </InteractiveActionBtn>
+                  );
+                })()}
               </View>
 
               <TextInput
