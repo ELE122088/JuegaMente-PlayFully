@@ -1621,7 +1621,9 @@ export default function AdminScreen() {
               </View>
 
               <View style={styles.bulkJsonHeaderRow}>
-                <Text style={[styles.bulkSectionLabel, { color: colors.text, marginBottom: 0 }]}>2. Pega el JSON de Preguntas:</Text>
+                <Text style={[styles.bulkSectionLabel, { color: colors.text, marginBottom: 0, flexShrink: 1 }]}>
+                  2. Pega el JSON de Preguntas:
+                </Text>
                 {(() => {
                   const currentBulkCat = categories.find((c) => c._id === bulkCategoryId) || categories[0];
                   return (
@@ -1632,7 +1634,11 @@ export default function AdminScreen() {
                         borderWidth: 1,
                         borderRadius: 8,
                         paddingVertical: 5,
-                        paddingHorizontal: 10,
+                        paddingHorizontal: 9,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 5,
+                        flexShrink: 0,
                       }}
                       accentColor={colors.primary}
                       onPress={() => {
@@ -1641,9 +1647,16 @@ export default function AdminScreen() {
                         setBulkJsonText(JSON.stringify(sampleQuestions, null, 2));
                       }}
                     >
-                      <Text style={{ fontSize: 12.5, color: colors.primary, fontWeight: '800' }}>
-                        📋 Cargar Plantilla ({currentBulkCat?.name || 'Materia'})
+                      <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '800' }}>
+                        📋 Cargar Plantilla
                       </Text>
+                      {currentBulkCat?.name ? (
+                        <View style={{ backgroundColor: `${colors.primary}25`, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4, maxWidth: 95 }}>
+                          <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '700' }} numberOfLines={1}>
+                            {currentBulkCat.name}
+                          </Text>
+                        </View>
+                      ) : null}
                     </InteractiveActionBtn>
                   );
                 })()}
@@ -2362,6 +2375,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
     marginBottom: 8,
     marginTop: 4,
   },
