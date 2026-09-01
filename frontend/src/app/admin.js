@@ -1,12 +1,80 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Platform, Image, Modal, ScrollView, TextInput, useWindowDimensions } from 'react-native';
-import api from '../services/api';
+import api, { BASE_URL } from '../services/api';
 import { getSocket } from '../services/socket';
 import storage from '../services/storage';
 import Header from '../components/Header';
 import CategoryForm from '../components/CategoryForm';
 import QuestionForm from '../components/QuestionForm';
 import { useTheme } from '../context/ThemeContext';
+
+export const PRESET_AVATARS = [
+  {
+    id: 'megamind_baby_gamer',
+    name: 'Bebé Gamer',
+    localSource: require('../../assets/images/avatars/avatar_megamind_baby_gamer.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_baby_gamer.png',
+  },
+  {
+    id: 'megamind_baby_elegante',
+    name: 'Bebé con Capa',
+    localSource: require('../../assets/images/avatars/avatar_megamind_baby_elegante.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_baby_elegante.png',
+  },
+  {
+    id: 'megamind_baby_travieso',
+    name: 'Bebé Travieso',
+    localSource: require('../../assets/images/avatars/avatar_megamind_baby_travieso.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_baby_travieso.png',
+  },
+  {
+    id: 'megamind_college',
+    name: 'Universitario',
+    localSource: require('../../assets/images/avatars/avatar_megamind_college.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_college.png',
+  },
+  {
+    id: 'megamind_sabio',
+    name: 'Científico',
+    localSource: require('../../assets/images/avatars/avatar_megamind_sabio.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_sabio.png',
+  },
+  {
+    id: 'megamind_graduado',
+    name: 'Campeón Nº 1',
+    localSource: require('../../assets/images/avatars/avatar_megamind_graduado.png'),
+    serverPath: '/uploads/avatars/avatar_megamind_graduado.png',
+  },
+  {
+    id: 'cerebrito_gamer',
+    name: 'Cerebrito JM',
+    localSource: require('../../assets/images/avatars/avatar_cerebrito_gamer.png'),
+    serverPath: '/uploads/avatars/avatar_cerebrito_gamer.png',
+  },
+  {
+    id: 'control_neon',
+    name: 'Mando Neón',
+    localSource: require('../../assets/images/avatars/avatar_control_neon.png'),
+    serverPath: '/uploads/avatars/avatar_control_neon.png',
+  },
+];
+
+export const getAvatarSource = (profileImage) => {
+  if (!profileImage) return require('../../assets/images/megamind_sidebar.png');
+  const imgStr = String(profileImage).trim();
+  const match = PRESET_AVATARS.find((a) => 
+    a.serverPath === imgStr || 
+    a.id === imgStr || 
+    imgStr.includes(a.id) || 
+    imgStr.endsWith(a.serverPath)
+  );
+  if (match) return match.localSource;
+  if (imgStr.startsWith('http://') || imgStr.startsWith('https://') || imgStr.startsWith('data:')) {
+    return { uri: imgStr };
+  }
+  const cleanPath = imgStr.startsWith('/') ? imgStr : `/${imgStr}`;
+  return { uri: `${BASE_URL}${cleanPath}` };
+};
 
 const createShadow = (color = '#000', offsetY = 2, opacity = 0.08, radius = 4, elevation = 3) => {
   if (Platform.OS === 'web') {
@@ -961,10 +1029,17 @@ export default function AdminScreen() {
           : {})}
       >
         <View style={styles.userCardHeader}>
-          <View style={[styles.userAvatarMini, { backgroundColor: isUserAdmin ? '#F59E0B' : colors.primary }]}>
-            <Text style={styles.userAvatarText}>
-              {(item.username || 'U').substring(0, 2).toUpperCase()}
-            </Text>
+          {/* Avatar Circular con Insignia Flotante (Opción 2) */}
+          <View style={[styles.userAvatarContainer, { borderColor: userAccent }]}>
+            <Image 
+              source={getAvatarSource(item.profileImage)} 
+              style={styles.userAvatarImg} 
+              resizeMode="cover" 
+            />
+            {/* Mini Insignia Flotante de Rol */}
+            <View style={[styles.userFloatingBadge, { backgroundColor: isUserAdmin ? '#F59E0B' : '#10B981' }]}>
+              <Text style={styles.userFloatingBadgeEmoji}>{isUserAdmin ? '👑' : '🎓'}</Text>
+            </View>
           </View>
 
           <View style={{ flex: 1, marginLeft: 12 }}>
@@ -984,9 +1059,13 @@ export default function AdminScreen() {
                 </Text>
               </View>
             </View>
-            {isUserAdmin && (
+            {isUserAdmin ? (
               <Text style={[styles.userPinText, { color: colors.textSecondary }]}>
                 PIN de Panel: <Text style={{ fontWeight: 'bold', color: colors.text }}>{item.adminPin || '1234'}</Text>
+              </Text>
+            ) : (
+              <Text style={[styles.userPinText, { color: colors.textSecondary }]}>
+                Estudiante de la plataforma
               </Text>
             )}
           </View>
@@ -2313,17 +2392,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  userAvatarMini: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
+  userAvatarContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    position: 'relative',
     justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    backgroundColor: 'rgba(128,128,128,0.1)',
   },
-  userAvatarText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 14,
+  userAvatarImg: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+    ...(Platform.OS === 'web' ? { objectFit: 'cover' } : {}),
+  },
+  userFloatingBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 1px 3px rgba(0,0,0,0.3)' }
+      : { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.3, shadowRadius: 2, elevation: 2 }),
+  },
+  userFloatingBadgeEmoji: {
+    fontSize: 10,
   },
   userNameText: {
     fontSize: 15,
